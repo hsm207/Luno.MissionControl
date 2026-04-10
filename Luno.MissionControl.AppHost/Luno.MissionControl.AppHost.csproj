@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.2.2" />
     <ProjectReference Include="..\Luno.MissionControl.Web\Luno.MissionControl.Web.csproj" />
   </ItemGroup>
 </Project>

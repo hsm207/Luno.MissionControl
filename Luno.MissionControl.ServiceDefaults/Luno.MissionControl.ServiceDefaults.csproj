@@ -1,8 +1,11 @@
-<Project Sdk="Aspire.ServiceDefaults.Sdk/13.2.2">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <IsAspireServiceDefaults>true</IsAspireServiceDefaults>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.ServiceDefaults.Sdk" Version="13.2.2" />
+  </ItemGroup>
 </Project>
