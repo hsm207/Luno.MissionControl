@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <!-- Exclude the SDK projects from the Mission Control coverage results -->
+          <!-- Syntax: [AssemblyFilter]TypeFilter -->
+          <Exclude>[Luno.SDK*]*</Exclude>
+          
+          <!-- Explicitly include only Mission Control -->
+          <Include>[Luno.MissionControl*]*</Include>
+          
+          <!-- Standard exclusions for system and test assemblies -->
+          <ExcludeByAttribute>GeneratedCode</ExcludeByAttribute>
+          <ExcludeByFile>**/Migrations/*,**/*.designer.cs</ExcludeByFile>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
