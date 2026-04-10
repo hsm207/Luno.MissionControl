@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Luno.MissionControl.Web.Client\Luno.MissionControl.Web.Client.csproj" />
+    <ProjectReference Include="..\Luno.MissionControl.ServiceDefaults\Luno.MissionControl.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\Luno.MissionControl.Application\Luno.MissionControl.Application.csproj" />
+    <ProjectReference Include="..\..\Luno.SDK\Luno.SDK\Luno.SDK.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.11.5" />
+  </ItemGroup>
+</Project>
