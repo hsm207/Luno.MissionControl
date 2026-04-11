@@ -15,7 +15,7 @@
 <FluentStack Orientation="Orientation.Vertical" VerticalGap="20">
     <FluentLabel Typo="Typography.Subject" Color="Color.Accent">BASKET ARCHITECT</FluentLabel>
 
-    <FluentCard Style="padding: 16px;">
+    <FluentCard Style="padding: 16px; overflow: visible;">
             <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="20" HorizontalAlignment="HorizontalAlignment.Left">
                 <FluentLabel Typo="Typography.Body">Total Allocation: <span style="font-weight: bold; color: var(--accent-fill-rest);">@_totalWeight.ToString("P0")</span></FluentLabel>
                 @if (_totalWeight != 1.0m)
