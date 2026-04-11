@@ -1,0 +1,209 @@
+@page "/basket"
+@rendermode InteractiveAuto
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Luno.MissionControl.Application
+@using Luno.MissionControl.Application.Models
+@using Luno.MissionControl.Web.Client.Services
+@using Microsoft.Extensions.Logging
+@inject IBasketService BasketService
+@inject IBasketState State
+@inject IDialogService DialogService
+@inject ILogger<BasketArchitect> Logger
+@inject IToastService ToastService
+@implements IDisposable
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="20">
+    <FluentLabel Typo="Typography.Subject" Color="Color.Accent">BASKET ARCHITECT</FluentLabel>
+
+    <FluentCard Style="padding: 16px;">
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="20" HorizontalAlignment="HorizontalAlignment.Left">
+                <FluentLabel Typo="Typography.Body">Total Allocation: <span style="font-weight: bold; color: var(--accent-fill-rest);">@_totalWeight.ToString("P0")</span></FluentLabel>
+                @if (_totalWeight != 1.0m)
+                {
+                    <FluentBadge Appearance="Appearance.Neutral" Fill="Fill.Highlight">
+                        @( (1.0m - _totalWeight).ToString("P0") ) Remaining
+                    </FluentBadge>
+                }
+            </FluentStack>
+
+            <FluentDivider />
+
+            <FluentDataGrid Items="@_allocations.AsQueryable()" TGridItem="Allocation">
+                <TemplateColumn Title="Asset Pair">
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="10">
+                        <FluentLabel Typo="Typography.Body">@context.Pair</FluentLabel>
+                        <PriceLabel Pair="@context.Pair" />
+                    </FluentStack>
+                </TemplateColumn>
+                <TemplateColumn Title="Weight (%)">
+                    <WeightInput Weight="@context.Weight" 
+                                  HideLabel="true"
+                                  WeightChanged="@(val => UpdateWeight(context.Pair, val))" />
+                </TemplateColumn>
+                <TemplateColumn Title="Remove" Align="Align.Center">
+                    <FluentButton IconEnd="@(new Icons.Regular.Size16.Delete())" 
+                                  OnClick="@(() => RemoveAsset(context.Pair))"
+                                  Appearance="Appearance.Stealth" />
+                </TemplateColumn>
+            </FluentDataGrid>
+
+            <FluentDivider />
+
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="10" VerticalAlignment="VerticalAlignment.Bottom">
+                <FluentSelect Items="@_filteredPairs"
+                               @bind-Value="@_selectedPair"
+                               TOption="string"
+                               Label="Select Asset">
+                    <FluentOption Value="">Select an asset...</FluentOption>
+                </FluentSelect>
+                
+                <FluentButton IconStart="@(new Icons.Regular.Size16.Add())"
+                               OnClick="@AddAsset"
+                               Appearance="Appearance.Outline">
+                    Add Asset
+                </FluentButton>
+            </FluentStack>
+    </FluentCard>
+
+    <FluentButton Appearance="Appearance.Accent" 
+                  Disabled="@(_totalWeight != 1.0m || _isExecuting)"
+                  OnClick="@ExecuteBasket"
+                  Style="width: 200px; align-self: flex-end;">
+        @(_isExecuting ? "Executing..." : "EXECUTE BASKET")
+    </FluentButton>
+</FluentStack>
+
+@code {
+    private List<Allocation> _allocations = new();
+    private List<string> _availablePairs = new() { "XBTZAR", "ETHZAR", "SOLZAR", "LTCZAR", "XRPZAR" };
+    private IEnumerable<string> _filteredPairs => _availablePairs.Where(p => !_allocations.Any(a => a.Pair == p));
+    private string? _selectedPairValue;
+    private string? _selectedPair
+    {
+        get => _selectedPairValue;
+        set
+        {
+            if (_selectedPairValue != value)
+            {
+                using var activity = ForensicTracing.StartActivity("Asset Selected in Dropdown");
+                activity?.SetTag("pair.id", value);
+                Logger.LogInformation("UI: Asset selected in dropdown: {Pair}", value);
+                _selectedPairValue = value;
+            }
+        }
+    }
+    private decimal _totalWeight => _allocations.Sum(a => a.Weight);
+    private bool _isExecuting = false;
+    private bool _hasLoggedRender = false;
+
+    protected override void OnInitialized()
+    {
+        // Default starting state
+        _allocations.Add(new Allocation("XBTZAR", 0.6m));
+        _allocations.Add(new Allocation("ETHZAR", 0.4m));
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!_hasLoggedRender)
+            {
+                using var activity = ForensicTracing.StartActivity("Select Asset Dropdown Rendered");
+                Logger.LogInformation("UI: Select Asset dropdown has been rendered on the client.");
+                _hasLoggedRender = true;
+            }
+
+            // Establish the SignalR connection only once the browser is interactive
+            // This prevents the "Frozen UI" during server-to-client handovers.
+            await State.StartAsync();
+        }
+    }
+
+    public void Dispose()
+    {
+        // State connection is managed by the State container, 
+        // but we ensure we detach high-level lifecycle hooks.
+    }
+
+    private void AddAsset()
+    {
+        using var activity = ForensicTracing.StartActivity("Add Asset Button Clicked");
+        activity?.SetTag("pair.id", _selectedPair);
+        Logger.LogInformation("UI: 'Add Asset' button clicked for Pair: {Pair}", _selectedPair);
+
+        if (string.IsNullOrEmpty(_selectedPair))
+        {
+            ToastService.ShowWarning("Please select an asset first!");
+            return;
+        }
+
+        if (_allocations.Any(a => a.Pair == _selectedPair))
+        {
+            ToastService.ShowWarning($"{_selectedPair} is already in the basket!");
+            return;
+        }
+
+        // Produce a new list — never mutate while FluentDataGrid may be iterating.
+        var addedPair = _selectedPair;
+        _allocations = [.._allocations, new Allocation(addedPair, 0m)];
+        _selectedPair = null;
+        
+        ToastService.ShowSuccess($"Added {addedPair} to the design.");
+    }
+
+    private void RemoveAsset(string pair)
+    {
+        // Produce a new list — never mutate while FluentDataGrid may be iterating.
+        _allocations = _allocations.Where(a => a.Pair != pair).ToList();
+    }
+
+    private void UpdateWeight(string pair, decimal newWeight)
+    {
+        // Produce a new list with the updated record — never mutate while FluentDataGrid
+        // may be mid-iteration (e.g., concurrent price update triggering StateHasChanged).
+        _allocations = _allocations
+            .Select(a => a.Pair == pair ? a with { Weight = newWeight } : a)
+            .ToList();
+    }
+
+    private async Task ExecuteBasket()
+    {
+        using var forensic = Luno.MissionControl.Application.ForensicTracing.StartActivity("BasketExecution");
+        forensic?.SetTag("allocation.count", _allocations.Count);
+        forensic?.SetTag("total.weight", _totalWeight);
+
+        var request = new BasketExecutionRequest(1000m, _allocations); // Default test spend
+
+        var dialog = await DialogService.ShowDialogAsync<ReviewGate>(request, new DialogParameters
+        {
+            Title = "Mission Critical: Confirm Basket",
+            PreventDismissOnOverlayClick = true,
+            PreventScroll = true,
+            Width = "450px"
+        });
+
+        var result = await dialog.Result;
+        if (result.Cancelled)
+        {
+            forensic?.SetStatus(System.Diagnostics.ActivityStatusCode.Error, "User aborted mission.");
+            return;
+        }
+
+        _isExecuting = true;
+        try
+        {
+            await BasketService.ExecuteAsync(request);
+            forensic?.SetStatus(System.Diagnostics.ActivityStatusCode.Ok);
+        }
+        catch (Exception ex)
+        {
+            forensic?.SetStatus(System.Diagnostics.ActivityStatusCode.Error, ex.Message);
+            throw;
+        }
+        finally
+        {
+            _isExecuting = false;
+        }
+    }
+}
