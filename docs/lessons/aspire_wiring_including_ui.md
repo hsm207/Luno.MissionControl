@@ -63,7 +63,7 @@ dotnet linux-dev-certs install
 
 1. **Every interactive Blazor page component MUST have an explicit `@rendermode` directive.** There is no fallback, no inference, no "it just works." Static SSR is the default. Interactivity is opt-in. Verify this before any other layer.
 
-2. **Verify interactivity by clicking, not by reading code.** A component can be architecturally correct in every way and still be completely inert at runtime if `@rendermode` is missing. Use `browser_subagent` to click buttons and confirm state changes after every significant change to a UI component — not just at the end.
+2. **Verify interactivity by running `dotnet test`, not by reading code.** The `RenderModeComplianceTests` in `Tests.Integration` statically analyse every `@page` component and fail immediately if `@rendermode` is absent. Run this before opening any browser. Only use `browser_subagent` for final E2E confirmation after the static tests are green.
 
 3. **On Linux, `dotnet dev-certs https --trust` is not sufficient for OpenSSL trust.** Always run `dotnet linux-dev-certs install` after certificate setup on Linux. Confirm with `dotnet dev-certs https --check --trust -v` and verify the output explicitly says "trusted by OpenSSL."
 
@@ -71,13 +71,16 @@ dotnet linux-dev-certs install
 
 5. **Do not assume a cause from a symptom. Use the tools.** The evidence chain for each failure was available immediately via:
    - `dotnet dev-certs https --check --trust -v` (SSL trust state)
-   - Aspire Dashboard → Resources → webfrontend → Environment Variables panel (OTLP endpoint injection)
-   - Aspire Dashboard → Resources → webfrontend → Health tab (SSL error message verbatim)
-   - Lab project `grep -rn "@rendermode"` comparison (render mode presence)
+   - `mcp_aspire_list_resources` → inspect `healthStatus`, `urls`, and `environment` for any resource without opening a browser
+   - `mcp_aspire_list_structured_logs` → verify telemetry is flowing from `webfrontend`
+   - `mcp_aspire_list_traces` → verify distributed traces are being exported
+   - `grep -rn "@rendermode"` in `Web.Client` (render mode presence)
    
    Applying these before speculating would have reduced the session from multiple hours to under 30 minutes.
 
-6. **The Blazor render mode matrix for Aspire-hosted apps:**
+6. **Use Aspire MCP tools for dashboard inspection, not `browser_subagent`.** The MCP server exposes `list_resources`, `list_structured_logs`, `list_traces`, and `list_console_logs` — all of which return machine-readable data instantly. Spinning up a browser subagent to navigate the Aspire Dashboard UI for diagnostic information is slow, brittle (login tokens, cert warnings), and completely unnecessary. Reserve `browser_subagent` for testing the actual application UI — not for observability infrastructure.
+
+7. **The Blazor render mode matrix for Aspire-hosted apps:**
 
    | Component Location | Recommended Render Mode | Reason |
    |---|---|---|
