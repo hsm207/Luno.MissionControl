@@ -18,7 +18,7 @@
 .investment-sentence-wrapper {
     display: flex;
     align-items: center; /* Changed from baseline to center for better icon alignment */
-    gap: 12px;
+    gap: 8px; /* Tightened from 12px per user request */
     margin-bottom: 32px;
 }
 
@@ -46,6 +46,14 @@
     border: none !important;
     height: auto !important;
     padding: 0 !important;
+    transition: all 0.2s ease;
+}
+
+.investment-amount-input::part(control):hover,
+.investment-amount-input::part(control):focus {
+    transform: scale(1.05);
+    text-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+    outline: none !important;
 }
 
 /* 🚫 Kill the spinner and extras */
@@ -82,7 +90,7 @@
 .estimated-total-container {
     margin-top: -16px;
     margin-bottom: 24px;
-    padding-left: 42px;
+    padding-left: 32px; /* 24px icon + 8px gap alignment */
 }
 
 .estimated-total-label {
@@ -107,6 +115,11 @@
 
 .basket-grid {
     min-height: 200px;
+}
+
+::deep .fluent-data-grid-row:hover {
+    background-color: rgba(212, 175, 55, 0.05) !important;
+    transition: background-color 0.2s ease;
 }
 
 .asset-pair-label {
