@@ -1,0 +1,137 @@
+/* 📍 Scoped Styles for BasketArchitect */
+
+.basket-page-container {
+    padding-bottom: 60px;
+}
+
+.allocation-percent {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.investment-card {
+    overflow: visible;
+    contain: none;
+}
+
+/* 💎 Investment Sentence Architecture */
+.investment-sentence-wrapper {
+    display: flex;
+    align-items: center; /* Changed from baseline to center for better icon alignment */
+    gap: 12px;
+    margin-bottom: 32px;
+}
+
+.investment-label {
+    font-weight: 200;
+    opacity: 0.8;
+    letter-spacing: 1px;
+}
+
+.investment-amount-input {
+    width: 130px !important;
+    --colorNeutralBackground1: transparent !important;
+    --neutral-fill-rest: transparent !important;
+    --neutral-stroke-rest: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.investment-amount-input::part(control) {
+    font-size: 1.8rem !important;
+    font-weight: 800 !important;
+    color: var(--titan-gold) !important;
+    text-align: center !important; /* Center-aligned for the 'sentence' look */
+    background: transparent !important;
+    border: none !important;
+    height: auto !important;
+    padding: 0 !important;
+}
+
+/* 🚫 Kill the spinner and extras */
+.investment-amount-input::part(control)::-webkit-outer-spin-button,
+.investment-amount-input::part(control)::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+.investment-amount-input::after,
+.investment-amount-input::before {
+    display: none !important;
+}
+
+.currency-minimal-select {
+    width: 100px !important;
+    border: none !important;
+    --neutral-stroke-rest: transparent !important;
+}
+
+.hidden-indicator {
+    display: none !important;
+    width: 0;
+    padding: 0;
+}
+
+/* Force-kill leaking borders */
+.investment-sentence-wrapper fluent-select::part(control),
+.investment-sentence-wrapper fluent-text-field::part(control) {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.estimated-total-container {
+    margin-top: -16px;
+    margin-bottom: 24px;
+    padding-left: 42px;
+}
+
+.estimated-total-label {
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+
+.estimated-total-value {
+    font-weight: 700;
+    color: var(--titan-gold);
+}
+
+.estimated-total-note {
+    font-weight: 400;
+    opacity: 0.5;
+    margin-left: 8px;
+}
+
+.basket-divider {
+    margin: 20px 0;
+}
+
+.basket-grid {
+    min-height: 200px;
+}
+
+.asset-pair-label {
+    font-weight: bold;
+}
+
+.search-stack {
+    margin-top: 10px;
+}
+
+.search-input-wrapper {
+    flex-grow: 1;
+}
+
+.asset-search {
+    width: 100%;
+}
+
+.execution-container {
+    margin-top: 30px;
+}
+
+.execute-button {
+    font-weight: 800;
+    letter-spacing: 1px;
+    width: 320px;
+    height: 56px;
+}

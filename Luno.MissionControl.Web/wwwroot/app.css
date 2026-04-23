@@ -1,38 +1,181 @@
-h1:focus {
-    outline: none;
+:root {
+    /* Titan Heritage Palette (Base Definitions) */
+    --titan-gold: #D4AF37;
+    --titan-obsidian: #080808;
+    --titan-charcoal: #1a1a1a;
+    --titan-white: #f5f5f5;
+    
+    /* Fluent UI V5 Design Token Overrides (v9 System) */
+    --colorBrandBackground: var(--titan-gold) !important;
+    --colorBrandBackgroundHover: #C5A017 !important;
+    --colorBrandBackgroundPressed: #A3840E !important;
+    --colorCompoundBrandBackground: var(--titan-gold) !important;
+    --colorBrandForeground1: var(--titan-gold) !important;
+    --colorNeutralBackground1: var(--titan-obsidian) !important;
+    
+    /* 💎 High-Contrast Tactical Foreground Sweeps */
+    --colorNeutralForeground1: var(--titan-white) !important;
+    --colorNeutralForeground2: #e0e0e0 !important;
+    --colorNeutralForeground3: #bababa !important;
+    --colorNeutralForeground4: #8a8a8a !important;
+    --colorNeutralForegroundStatic: var(--titan-white) !important;
+    --colorNeutralForegroundOnBrand: var(--titan-obsidian) !important;
+    --colorNeutralForegroundInverted: var(--titan-obsidian) !important;
+    
+    --colorNeutralStroke1: var(--titan-charcoal) !important;
+    --colorNeutralStroke2: var(--titan-gold) !important;
+    --colorStrokeFocus2: transparent !important; /* Glow replaces hard ring */
+    
+    color-scheme: dark;
+    
+    /* Global Background Hook (Used by Layout) */
+    --accent-gold: var(--titan-gold);
 }
 
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+/* Global Layout & Reset */
+html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: radial-gradient(circle at center, var(--titan-charcoal) 0%, var(--titan-obsidian) 100%);
+    color: var(--titan-white);
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow-x: hidden;
+    color-scheme: dark;
 }
 
-.invalid {
-    outline: 1px solid #e50000;
+/* 💎 Global Liquid Motion & High-Contrast Sweeps */
+:root {
+    --liquid-transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.validation-message {
-    color: #e50000;
+* {
+    transition: var(--liquid-transition);
 }
 
-.blazor-error-boundary {
-    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
-    padding: 1rem 1rem 1rem 3.7rem;
-    color: white;
+fluent-label, .fluent-label, p, span, b, div {
+    color: var(--titan-white) !important;
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
-
-.darker-border-checkbox.form-check-input {
-    border-color: #929292;
+/* 🧪 Liquid Luxe Physics */
+.gilded-card {
+    background: rgba(26, 26, 26, 0.6) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    border: 1px solid rgba(212, 175, 55, 0.2) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+    transform: perspective(1000px) translate3d(0, 0, 0);
+    will-change: transform, box-shadow;
+    padding: 32px !important;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-    color: var(--bs-secondary-color);
-    text-align: end;
+.gilded-card:hover {
+    transform: perspective(1000px) translate3d(0, -6px, 15px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.1) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-    text-align: start;
+/* 🎇 Stealth Input & Plasma Glow Architecture */
+[appearance="underline"]::part(control), 
+[appearance="transparent"]::part(control) {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 0 !important;
+    color: var(--titan-white) !important;
+    padding-left: 0 !important;
+}
+
+[appearance="underline"]:focus-within::part(control),
+[appearance="transparent"]:focus-within::part(control) {
+    border-bottom: 1px solid var(--titan-gold) !important;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.1);
+}
+
+.liquid-glow-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.liquid-glow-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: -24px; /* Expanded for greater atmospheric spill */
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.4) 0%, transparent 75%);
+    filter: blur(25px);
+    z-index: 5; /* Positive index to clear the button background */
+    pointer-events: none; /* Essential for click-through */
+    opacity: 0;
+    transition: opacity 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes pulse-halo {
+    0% { transform: scale(0.95); opacity: 0.2; }
+    50% { transform: scale(1.05); opacity: 0.6; }
+    100% { transform: scale(0.95); opacity: 0.2; }
+}
+
+.liquid-glow-wrapper:hover::after {
+    opacity: 1;
+    animation: pulse-halo 3s infinite ease-in-out;
+}
+
+@keyframes breathing-glow {
+    0% { box-shadow: 0 0 10px rgba(212, 175, 55, 0.1); }
+    50% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.3); }
+    100% { box-shadow: 0 0 10px rgba(212, 175, 55, 0.1); }
+}
+
+.breathing-glow {
+    animation: breathing-glow 3s infinite ease-in-out;
+}
+
+/* Ensure Gold Text preserved */
+.gold-text, .gold-text *, .executive-header {
+    color: var(--titan-gold) !important;
+}
+
+.executive-header {
+    color: var(--titan-gold) !important;
+    letter-spacing: 5px !important;
+    font-weight: 900 !important;
+    text-transform: uppercase;
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+}
+
+/* 🎇 Atmospheric Gilded Glow (Kuznetsov Mandate) */
+fluent-text-field:focus-within, 
+fluent-number-field:focus-within, 
+fluent-select:focus-within, 
+fluent-checkbox:focus-within,
+fluent-text-area:focus-within {
+    box-shadow: 0 0 12px 3px rgba(212, 175, 55, 0.35) !important;
+    transition: box-shadow 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    border-radius: 4px;
+}
+
+/* Utility Classes */
+.gold-text { color: var(--titan-gold) !important; }
+.emerald-text { color: #50fa7b !important; }
+.right-align-text input { text-align: right !important; }
+
+
+/* 📉 DataGrid Engineering */
+.fluent-data-grid [role="columnheader"] {
+    background: rgba(212, 175, 55, 0.08) !important;
+    color: var(--titan-gold) !important;
+    font-weight: 800 !important;
+    border-bottom: 2px solid var(--titan-gold) !important;
+}
+
+.fluent-data-grid [role="gridcell"] {
+    color: var(--titan-white) !important;
+}
+
+/* Scrollbar Branding */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--titan-obsidian); }
+::-webkit-scrollbar-thumb { 
+    background: var(--titan-gold); 
+    border-radius: 10px;
 }
