@@ -1,0 +1,249 @@
+namespace Luno.MissionControl.Web.Client.Components.Dashboard;
+
+using Microsoft.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components;
+using Luno.MissionControl.Application;
+using Luno.MissionControl.Application.Models;
+using Luno.MissionControl.Web.Client.Services;
+using Luno.SDK;
+using System.Globalization;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Logging;
+
+public partial class BasketArchitect : IDisposable
+{
+    [Inject] private IBasketState State { get; set; } = default!;
+    [Inject] private IBasketService BasketService { get; set; } = default!;
+    [Inject] private IToastService ToastService { get; set; } = default!;
+    [Inject] private IDialogService DialogService { get; set; } = default!;
+    [Inject] private ILogger<BasketArchitect> Logger { get; set; } = default!;
+
+    private List<Allocation> _allocations = new();
+    private IEnumerable<MarketMetadata> _selectedSearchItems { get; set; } = [];
+    private ErrorBoundary? _errorBoundary;
+    private string _rawSpendInput = "";
+
+    private Task OnSearchAsync(OptionsSearchEventArgs<MarketMetadata> e)
+    {
+        e.Items = State.AvailableMarkets
+            .Where(m => m.CounterCurrency == GetLunoCounter(State.SelectedCurrency))
+            .Where(m => string.IsNullOrEmpty(e.Text) || 
+                        m.Pair.Contains(e.Text, StringComparison.OrdinalIgnoreCase) ||
+                        m.BaseCurrency.Contains(e.Text, StringComparison.OrdinalIgnoreCase) ||
+                        (e.Text.Equals("X", StringComparison.OrdinalIgnoreCase) && (m.BaseCurrency == "XBT" || m.BaseCurrency == "XRP")))
+            .Where(m => !_allocations.Any(a => a.Pair == m.Pair))
+            .OrderBy(m => m.BaseCurrency);
+            
+        return Task.CompletedTask;
+    }
+
+    private void AddAsset()
+    {
+        using var activity = ForensicTracing.StartActivity("Add Asset Button Clicked");
+        
+        var selected = _selectedSearchItems.FirstOrDefault();
+        if (selected == null)
+        {
+            _ = ToastService.ShowToastAsync(options => { options.Intent = ToastIntent.Warning; options.Title = "Please search and select an asset first!"; });
+            return;
+        }
+
+        activity?.SetTag("pair.id", selected.Pair);
+
+        if (_allocations.Any(a => a.Pair == selected.Pair))
+        {
+            _ = ToastService.ShowToastAsync(options => { options.Intent = ToastIntent.Warning; options.Title = $"{selected.Pair} is already in the basket!"; });
+            return;
+        }
+
+        _allocations = [.._allocations, new Allocation(selected.Pair, 0m)];
+        _selectedSearchItems = [];
+        
+        _ = ToastService.ShowToastAsync(options => { options.Intent = ToastIntent.Success; options.Title = $"Added {selected.Pair} to your basket."; });
+        StateHasChanged();
+    }
+
+    private string GetLunoCounter(string humanCurrency) => humanCurrency == "USD" ? "USDC" : humanCurrency;
+
+    private string _currencyState
+    {
+        get => State.SelectedCurrency;
+        set
+        {
+            if (State.SelectedCurrency != value)
+            {
+                TransitionCurrency(State.SelectedCurrency, value);
+                State.SelectedCurrency = value;
+            }
+        }
+    }
+
+    private decimal _totalWeight => _allocations.Sum(a => a.Weight);
+    private decimal _calculatedTotal => _allocations.Sum(a => GetAllocatedAmount(a));
+    private bool _isExecuting = false;
+
+    private decimal GetAllocatedAmount(Allocation alloc)
+    {
+        return Math.Round(State.TargetSpend * alloc.Weight, 2);
+    }
+
+    protected override void OnInitialized()
+    {
+        // Default starting state aligned with SelectedCurrency
+        bool isMyr = State.SelectedCurrency == "MYR";
+        
+        _allocations = new List<Allocation>
+        {
+            new Allocation(isMyr ? "XBTMYR" : "XBTUSDC", 0.6m),
+            new Allocation(isMyr ? "ETHMYR" : "ETHUSDC", 0.4m)
+        };
+
+        _rawSpendInput = State.TargetSpend.ToString("N0");
+
+        State.OnPriceUpdate += HandlePriceUpdate;
+        State.OnMarketsUpdate += HandleMarketsUpdate;
+    }
+
+    private void HandlePriceUpdate(TickerSnapshot snapshot) => InvokeAsync(StateHasChanged);
+    
+    private void HandleMarketsUpdate(IReadOnlyList<MarketMetadata> markets)
+    {
+        Logger.LogInformation("UI: Received {Count} markets from server.", markets.Count);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void TransitionCurrency(string oldCurrency, string newCurrency)
+    {
+        using var activity = ForensicTracing.StartActivity("Currency Transition");
+        
+        var newAllocations = new List<Allocation>();
+        foreach (var alloc in _allocations)
+        {
+            var oldMarket = State.AvailableMarkets.FirstOrDefault(m => m.Pair == alloc.Pair);
+            if (oldMarket != null)
+            {
+                var newMarket = State.AvailableMarkets.FirstOrDefault(m => m.BaseCurrency == oldMarket.BaseCurrency && m.CounterCurrency == GetLunoCounter(newCurrency));
+                if (newMarket != null)
+                {
+                    newAllocations.Add(alloc with { Pair = newMarket.Pair });
+                }
+            }
+        }
+        
+        _allocations = newAllocations;
+    }
+
+    private string GetCurrencySymbol() => State.SelectedCurrency switch
+    {
+        "MYR" => "RM",
+        "USDC" => "$",
+        _ => "$"
+    };
+
+    private string FormatPair(string pair)
+    {
+        var market = State.AvailableMarkets.FirstOrDefault(m => m.Pair == pair);
+        if (market == null) return pair;
+        return $"{market.BaseCurrency} / {market.CounterCurrency}";
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                Console.WriteLine("[DIAGNOSTIC] UI: OnAfterRenderAsync - Starting background state orchestration.");
+                await State.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DIAGNOSTIC] UI: State Initialization Error - {ex.GetType().Name}: {ex.Message}");
+                await ToastService.ShowToastAsync(options =>
+                {
+                    options.Intent = ToastIntent.Warning;
+                    options.Title = "Initialization Warning";
+                    options.Body = "Live data connectivity issue. Some features may be degraded.";
+                });
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        State.OnPriceUpdate -= HandlePriceUpdate;
+        State.OnMarketsUpdate -= HandleMarketsUpdate;
+    }
+
+    private void RemoveAsset(string pair)
+    {
+        _allocations = _allocations.Where(a => a.Pair != pair).ToList();
+    }
+
+    private void UpdateWeight(string pair, decimal newWeight)
+    {
+        _allocations = _allocations
+            .Select(a => a.Pair == pair ? a with { Weight = newWeight } : a)
+            .ToList();
+    }
+
+    private async Task ExecuteBasket()
+    {
+        Console.WriteLine("[DIAGNOSTIC] UI: ExecuteBasket - Initiated.");
+        using var forensic = Luno.MissionControl.Application.ForensicTracing.StartActivity("BasketExecution");
+        var request = new BasketExecutionRequest(State.TargetSpend, _allocations); 
+
+        var dialogResult = await DialogService.ShowDialogAsync<ReviewGate>(options =>
+        {
+            options.Header.Title = "Mission Critical: Confirm Your Combo";
+            options.Modal = true;
+            options.Parameters.Add(nameof(ReviewGate.Content), request);
+            options.Width = "450px";
+        });
+
+        if (dialogResult.Cancelled) 
+        {
+            Console.WriteLine("[DIAGNOSTIC] UI: ExecuteBasket - Cancelled by user.");
+            return;
+        }
+
+        Console.WriteLine("[DIAGNOSTIC] UI: ExecuteBasket - Confirmed. Starting execution.");
+        _isExecuting = true;
+        
+        // Show indeterminate progress toast for a premium feel
+        var progressToast = await ToastService.ShowToastInstanceAsync(options =>
+        {
+            options.Id = "basket-execution";
+            options.Title = "Orchestrating Basket...";
+            options.Intent = ToastIntent.Info;
+            options.Timeout = null; // Stays until dismissed
+        });
+
+        // 1. High-Fidelity Call via Protected Result Bridge
+        var basketResult = await BasketService.ExecuteAsync(request);
+
+        // 2. Teardown Feedback
+        await progressToast.CloseAsync(ToastCloseReason.Dismissed);
+        _isExecuting = false;
+
+        if (basketResult.Success)
+        {
+            await ToastService.ShowToastAsync(options =>
+            {
+                options.Intent = ToastIntent.Success;
+                options.Title = "Mission Accomplished";
+                options.Body = $"Successfully deployed {basketResult.Orders.Count} limit orders to the basket.";
+            });
+            _allocations.Clear();
+        }
+        else
+        {
+            await ToastService.ShowToastAsync(options =>
+            {
+                options.Intent = ToastIntent.Error;
+                options.Title = "Execution Halted";
+                options.Body = basketResult.ErrorMessage ?? "The mission bridge encountered an unknown failure.";
+            });
+        }
+    }
+}

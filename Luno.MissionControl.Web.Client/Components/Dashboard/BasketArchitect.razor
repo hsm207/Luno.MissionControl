@@ -1,209 +1,122 @@
 @page "/basket"
-@rendermode InteractiveAuto
-@using Microsoft.FluentUI.AspNetCore.Components
 @using Luno.MissionControl.Application
 @using Luno.MissionControl.Application.Models
 @using Luno.MissionControl.Web.Client.Services
-@using Microsoft.Extensions.Logging
-@inject IBasketService BasketService
-@inject IBasketState State
-@inject IDialogService DialogService
-@inject ILogger<BasketArchitect> Logger
-@inject IToastService ToastService
-@implements IDisposable
+@using System.Globalization
 
-<FluentStack Orientation="Orientation.Vertical" VerticalGap="20">
-    <FluentLabel Typo="Typography.Subject" Color="Color.Accent">BASKET ARCHITECT</FluentLabel>
-
-    <FluentCard Style="padding: 16px; overflow: visible;">
-            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="20" HorizontalAlignment="HorizontalAlignment.Left">
-                <FluentLabel Typo="Typography.Body">Total Allocation: <span style="font-weight: bold; color: var(--accent-fill-rest);">@_totalWeight.ToString("P0")</span></FluentLabel>
-                @if (_totalWeight != 1.0m)
-                {
-                    <FluentBadge Appearance="Appearance.Neutral" Fill="Fill.Highlight">
-                        @( (1.0m - _totalWeight).ToString("P0") ) Remaining
-                    </FluentBadge>
-                }
-            </FluentStack>
-
-            <FluentDivider />
-
-            <FluentDataGrid Items="@_allocations.AsQueryable()" TGridItem="Allocation">
-                <TemplateColumn Title="Asset Pair">
-                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="10">
-                        <FluentLabel Typo="Typography.Body">@context.Pair</FluentLabel>
-                        <PriceLabel Pair="@context.Pair" />
-                    </FluentStack>
-                </TemplateColumn>
-                <TemplateColumn Title="Weight (%)">
-                    <WeightInput Weight="@context.Weight" 
-                                  HideLabel="true"
-                                  WeightChanged="@(val => UpdateWeight(context.Pair, val))" />
-                </TemplateColumn>
-                <TemplateColumn Title="Remove" Align="Align.Center">
-                    <FluentButton IconEnd="@(new Icons.Regular.Size16.Delete())" 
-                                  OnClick="@(() => RemoveAsset(context.Pair))"
-                                  Appearance="Appearance.Stealth" />
-                </TemplateColumn>
-            </FluentDataGrid>
-
-            <FluentDivider />
-
-            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="10" VerticalAlignment="VerticalAlignment.Bottom">
-                <FluentSelect Items="@_filteredPairs"
-                               @bind-Value="@_selectedPair"
-                               TOption="string"
-                               Label="Select Asset">
-                    <FluentOption Value="">Select an asset...</FluentOption>
-                </FluentSelect>
+<ErrorBoundary @ref="_errorBoundary">
+    <ChildContent>
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="24" Style="padding-bottom: 60px;">
+            <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center">
+                <FluentLabel Typo="Typography.Subject" Class="gold-text" Style="font-family: var(--header-font); letter-spacing: 3px; font-weight: 900;">CUSTOM COIN COMBO</FluentLabel>
                 
-                <FluentButton IconStart="@(new Icons.Regular.Size16.Add())"
-                               OnClick="@AddAsset"
-                               Appearance="Appearance.Outline">
-                    Add Asset
-                </FluentButton>
+                <FluentSpacer />
+
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="16" VerticalAlignment="VerticalAlignment.Center">
+                    <FluentLabel Typo="Typography.Body">Model Allocation: <span class="emerald-text" style="font-size: 1.2rem;">@_totalWeight.ToString("P0")</span></FluentLabel>
+                    @if (_totalWeight != 1.0m)
+                    {
+                        <FluentBadge Appearance="BadgeAppearance.Outline">
+                            @( (1.0m - _totalWeight).ToString("P0") ) Remaining
+                        </FluentBadge>
+                    }
+                </FluentStack>
             </FluentStack>
-    </FluentCard>
 
-    <FluentButton Appearance="Appearance.Accent" 
-                  Disabled="@(_totalWeight != 1.0m || _isExecuting)"
-                  OnClick="@ExecuteBasket"
-                  Style="width: 200px; align-self: flex-end;">
-        @(_isExecuting ? "Executing..." : "EXECUTE BASKET")
-    </FluentButton>
-</FluentStack>
+            <FluentCard Class="gilded-card" Style="padding: 30px; overflow: visible; contain: none;">
+                    <div class="investment-sentence-wrapper" style="margin-bottom: 32px;">
+                        <FluentIcon Value="@(new Icons.Filled.Size24.Money())" Color="Color.Primary" Style="align-self: center;" />
+                        
+                        <FluentLabel Typo="Typography.H3" Style="font-weight: 200; opacity: 0.8; letter-spacing: 1px;">I want to invest</FluentLabel>
+                        
+                        <FluentTextInput @bind-Value="_rawSpendInput"
+                                         @bind-Value:after="@(async () => { if (decimal.TryParse(_rawSpendInput, NumberStyles.Any, CultureInfo.InvariantCulture, out var d)) { State.TargetSpend = d; _rawSpendInput = d.ToString("N0"); } })"
+                                         TextInputType="TextInputType.Text"
+                                         Class="investment-amount-input"
+                                         Style="font-size: 1.8rem; font-weight: 800; color: var(--titan-gold) !important; width: 130px;" />
 
-@code {
-    private List<Allocation> _allocations = new();
-    private List<string> _availablePairs = new() { "XBTZAR", "ETHZAR", "SOLZAR", "LTCZAR", "XRPZAR" };
-    private IEnumerable<string> _filteredPairs => _availablePairs.Where(p => !_allocations.Any(a => a.Pair == p));
-    private string? _selectedPairValue;
-    private string? _selectedPair
-    {
-        get => _selectedPairValue;
-        set
-        {
-            if (_selectedPairValue != value)
-            {
-                using var activity = ForensicTracing.StartActivity("Asset Selected in Dropdown");
-                activity?.SetTag("pair.id", value);
-                Logger.LogInformation("UI: Asset selected in dropdown: {Pair}", value);
-                _selectedPairValue = value;
-            }
-        }
-    }
-    private decimal _totalWeight => _allocations.Sum(a => a.Weight);
-    private bool _isExecuting = false;
-    private bool _hasLoggedRender = false;
+                        <FluentSelect Items="@(new[] { "MYR", "USDC" })"
+                                      @bind-Value="@_currencyState"
+                                      Class="currency-minimal-select"
+                                      Appearance="ListAppearance.Transparent">
+                            <span slot="indicator" style="display: none !important; width: 0; padding: 0;"></span>
+                        </FluentSelect>
 
-    protected override void OnInitialized()
-    {
-        // Default starting state
-        _allocations.Add(new Allocation("XBTZAR", 0.6m));
-        _allocations.Add(new Allocation("ETHZAR", 0.4m));
-    }
+                        <FluentLabel Typo="Typography.H3" Style="font-weight: 200; opacity: 0.8; letter-spacing: 1px;">across this combo.</FluentLabel>
+                    </div>
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            if (!_hasLoggedRender)
-            {
-                using var activity = ForensicTracing.StartActivity("Select Asset Dropdown Rendered");
-                Logger.LogInformation("UI: Select Asset dropdown has been rendered on the client.");
-                _hasLoggedRender = true;
-            }
+                    <div style="margin-top: -16px; margin-bottom: 24px; padding-left: 42px;">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 0.85rem; opacity: 0.7;">
+                            ESTIMATED TOTAL: <span class="gold-text" style="font-weight: 700;">@GetCurrencySymbol() @_calculatedTotal.ToString("N2")</span>
+                            <span style="font-weight: 400; opacity: 0.5; margin-left: 8px;">(Using limit orders to bypass Instant Buy spreads)</span>
+                        </FluentLabel>
+                    </div>
 
-            // Establish the SignalR connection only once the browser is interactive
-            // This prevents the "Frozen UI" during server-to-client handovers.
-            await State.StartAsync();
-        }
-    }
+                    <FluentDivider Style="margin: 20px 0;" />
 
-    public void Dispose()
-    {
-        // State connection is managed by the State container, 
-        // but we ensure we detach high-level lifecycle hooks.
-    }
+                    <FluentDataGrid Items="@_allocations.AsQueryable()" TGridItem="Allocation" Style="min-height: 200px;">
+                        <TemplateColumn Title="Asset Pair">
+                            <FluentLabel Typo="Typography.Body" Style="font-weight: bold;">@FormatPair(context.Pair)</FluentLabel>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Live Price" Align="DataGridCellAlignment.Center">
+                            <PriceLabel Pair="@context.Pair" />
+                        </TemplateColumn>
+                        <TemplateColumn Title="Weight (%)" Align="DataGridCellAlignment.End">
+                            <WeightInput Weight="@context.Weight" 
+                                          HideLabel="true"
+                                          WeightChanged="@(val => UpdateWeight(context.Pair, val))" />
+                        </TemplateColumn>
+                        <TemplateColumn Title="Planned Spend" Align="DataGridCellAlignment.End">
+                            <FluentLabel Typo="Typography.Body" Style="font-family: monospace;">@GetCurrencySymbol() @GetAllocatedAmount(context).ToString("N2")</FluentLabel>
+                        </TemplateColumn>
+                        <TemplateColumn Title="" Align="DataGridCellAlignment.Center">
+                            <FluentButton IconEnd="@(new Icons.Regular.Size20.Delete())" 
+                                          OnClick="@(() => RemoveAsset(context.Pair))"
+                                          Appearance="ButtonAppearance.Subtle"
+                                          Title="Remove Asset" />
+                        </TemplateColumn>
+                    </FluentDataGrid>
 
-    private void AddAsset()
-    {
-        using var activity = ForensicTracing.StartActivity("Add Asset Button Clicked");
-        activity?.SetTag("pair.id", _selectedPair);
-        Logger.LogInformation("UI: 'Add Asset' button clicked for Pair: {Pair}", _selectedPair);
+                    <FluentDivider Style="margin: 20px 0;" />
 
-        if (string.IsNullOrEmpty(_selectedPair))
-        {
-            ToastService.ShowWarning("Please select an asset first!");
-            return;
-        }
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12" VerticalAlignment="VerticalAlignment.Bottom">
+                        <div style="flex-grow: 1;">
+                            <FluentAutocomplete TOption="MarketMetadata"
+                                                TValue="string"
+                                                Label="Add a Coin"
+                                                Placeholder="Search for a coin to add (e.g. XBT, SOL)..."
+                                                OnOptionsSearch="@OnSearchAsync"
+                                                OptionText="@(m => $"{m.BaseCurrency} ({m.Pair})")"
+                                                @bind-SelectedItems="@_selectedSearchItems"
+                                                Multiple="false"
+                                                Width="100%"
+                                                InputAppearance="TextInputAppearance.Underline" />
+                        </div>
+                        <FluentButton IconStart="@(new Icons.Regular.Size16.Add())"
+                                       OnClick="@AddAsset"
+                                       Appearance="ButtonAppearance.Outline">
+                            Add to Combo
+                        </FluentButton>
+                    </FluentStack>
+            </FluentCard>
 
-        if (_allocations.Any(a => a.Pair == _selectedPair))
-        {
-            ToastService.ShowWarning($"{_selectedPair} is already in the basket!");
-            return;
-        }
-
-        // Produce a new list — never mutate while FluentDataGrid may be iterating.
-        var addedPair = _selectedPair;
-        _allocations = [.._allocations, new Allocation(addedPair, 0m)];
-        _selectedPair = null;
-        
-        ToastService.ShowSuccess($"Added {addedPair} to the design.");
-    }
-
-    private void RemoveAsset(string pair)
-    {
-        // Produce a new list — never mutate while FluentDataGrid may be iterating.
-        _allocations = _allocations.Where(a => a.Pair != pair).ToList();
-    }
-
-    private void UpdateWeight(string pair, decimal newWeight)
-    {
-        // Produce a new list with the updated record — never mutate while FluentDataGrid
-        // may be mid-iteration (e.g., concurrent price update triggering StateHasChanged).
-        _allocations = _allocations
-            .Select(a => a.Pair == pair ? a with { Weight = newWeight } : a)
-            .ToList();
-    }
-
-    private async Task ExecuteBasket()
-    {
-        using var forensic = Luno.MissionControl.Application.ForensicTracing.StartActivity("BasketExecution");
-        forensic?.SetTag("allocation.count", _allocations.Count);
-        forensic?.SetTag("total.weight", _totalWeight);
-
-        var request = new BasketExecutionRequest(1000m, _allocations); // Default test spend
-
-        var dialog = await DialogService.ShowDialogAsync<ReviewGate>(request, new DialogParameters
-        {
-            Title = "Mission Critical: Confirm Basket",
-            PreventDismissOnOverlayClick = true,
-            PreventScroll = true,
-            Width = "450px"
-        });
-
-        var result = await dialog.Result;
-        if (result.Cancelled)
-        {
-            forensic?.SetStatus(System.Diagnostics.ActivityStatusCode.Error, "User aborted mission.");
-            return;
-        }
-
-        _isExecuting = true;
-        try
-        {
-            await BasketService.ExecuteAsync(request);
-            forensic?.SetStatus(System.Diagnostics.ActivityStatusCode.Ok);
-        }
-        catch (Exception ex)
-        {
-            forensic?.SetStatus(System.Diagnostics.ActivityStatusCode.Error, ex.Message);
-            throw;
-        }
-        finally
-        {
-            _isExecuting = false;
-        }
-    }
-}
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.Right" Style="margin-top: 30px;">
+                <div class="liquid-glow-wrapper">
+                    <FluentButton Class="btn-gilded"
+                                  Appearance="ButtonAppearance.Primary"
+                                  Disabled="@(_totalWeight != 1.0m || _isExecuting)"
+                                  OnClick="@ExecuteBasket"
+                                  Style="width: 320px; height: 56px;">
+                        @(_isExecuting ? "PLACING ORDERS..." : "BUY COIN COMBO")
+                    </FluentButton>
+                </div>
+            </FluentStack>
+        </FluentStack>
+    </ChildContent>
+    <ErrorContent>
+        <div style="padding: 20px; border: 1px solid red; border-radius: 8px; background: #fff0f0;">
+            <FluentLabel Typo="Typography.Subject" Color="Color.Error">Something went wrong</FluentLabel>
+            <p>The basket interface has encountered an error. Please refresh the page.</p>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
