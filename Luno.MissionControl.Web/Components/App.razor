@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Luno.MissionControl.Web.Client
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -8,13 +10,16 @@
     <ResourcePreloader />
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["Luno.MissionControl.Web.styles.css"]" />
+    <link rel="stylesheet" href="@Assets["Luno.MissionControl.Web.Client.bundle.scp.css"]" />
     <ImportMap />
-    <HeadOutlet />
+    <HeadOutlet @rendermode="InteractiveAuto" />
+    <link href="@Assets["_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.bundle.scp.css"]" rel="stylesheet" />
 </head>
 
 <body>
-    <Routes />
+    <Routes @rendermode="InteractiveAuto" />
     <ReconnectModal />
+    <script src="@Assets["_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js"]" type="module"></script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 
