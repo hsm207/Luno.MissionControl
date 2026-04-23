@@ -6,19 +6,19 @@
 
 <ErrorBoundary @ref="_errorBoundary">
     <ChildContent>
-        <FluentStack Orientation="Orientation.Vertical" VerticalGap="24" Class="basket-page-container">
-            <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center">
-                <FluentText Typo="Typography.Subject" Class="executive-header">CUSTOM COIN COMBO</FluentText>
+        <FluentStack Class="basket-page-container">
+            <FluentStack Class="header-main-stack">
+                <FluentText Class="executive-header">CUSTOM COIN COMBO</FluentText>
                 
                 <FluentSpacer />
 
-                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="16" VerticalAlignment="VerticalAlignment.Center">
-                    <FluentText Typo="Typography.Body">
+                <FluentStack Class="header-allocation-stack">
+                    <FluentText>
                         Model Allocation: <span class="emerald-text allocation-percent">@_totalWeight.ToString("P0")</span>
                     </FluentText>
                     @if (_totalWeight != 1.0m)
                     {
-                        <FluentBadge Appearance="BadgeAppearance.Outline">
+                        <FluentBadge Class="remaining-badge">
                             @( (1.0m - _totalWeight).ToString("P0") ) Remaining
                         </FluentBadge>
                     }
@@ -27,27 +27,25 @@
 
             <FluentCard Class="gilded-card investment-card">
                     <div class="investment-sentence-wrapper">
-                        <FluentIcon Value="@(new Icons.Filled.Size24.Money())" Color="Color.Primary" />
+                        <FluentIcon Value="@(new Icons.Filled.Size24.Money())" Class="investment-icon" />
                         
-                        <FluentText Typo="Typography.H3" Class="investment-label">I want to invest</FluentText>
+                        <FluentText Class="investment-label">I want to invest</FluentText>
                         
                         <FluentTextInput @bind-Value="_rawSpendInput"
                                          @bind-Value:after="@(async () => { if (decimal.TryParse(_rawSpendInput, NumberStyles.Any, CultureInfo.InvariantCulture, out var d)) { State.TargetSpend = d; _rawSpendInput = d.ToString("N0"); } })"
-                                         TextInputType="TextInputType.Text"
                                          Class="investment-amount-input" />
 
                         <FluentSelect Items="@(new[] { "MYR", "USDC" })"
                                       @bind-Value="@_currencyState"
-                                      Class="currency-minimal-select"
-                                      Appearance="ListAppearance.Transparent">
+                                      Class="currency-minimal-select">
                             <span slot="indicator" class="hidden-indicator"></span>
                         </FluentSelect>
 
-                        <FluentText Typo="Typography.H3" Class="investment-label">across this combo.</FluentText>
+                        <FluentText Class="investment-label">across this combo.</FluentText>
                     </div>
 
                     <div class="estimated-total-container">
-                        <FluentText Typo="Typography.Body" Class="estimated-total-label">
+                        <FluentText Class="estimated-total-label">
                             ESTIMATED TOTAL: <span class="estimated-total-value">@GetCurrencySymbol() @_calculatedTotal.ToString("N2")</span>
                             <span class="estimated-total-note">(Using limit orders to bypass Instant Buy spreads)</span>
                         </FluentText>
@@ -57,30 +55,29 @@
 
                     <FluentDataGrid Items="@_allocations.AsQueryable()" TGridItem="Allocation" Class="basket-grid">
                         <TemplateColumn Title="Asset Pair">
-                            <FluentText Typo="Typography.Body" Class="asset-pair-label">@FormatPair(context.Pair)</FluentText>
+                            <FluentText Class="asset-pair-label">@FormatPair(context.Pair)</FluentText>
                         </TemplateColumn>
-                        <TemplateColumn Title="Live Price" Align="DataGridCellAlignment.Center">
+                        <TemplateColumn Title="Live Price" Class="price-column">
                             <PriceLabel Pair="@context.Pair" />
                         </TemplateColumn>
-                        <TemplateColumn Title="Weight (%)" Align="DataGridCellAlignment.End">
+                        <TemplateColumn Title="Weight (%)" Class="weight-column">
                             <WeightInput Weight="@context.Weight" 
                                           HideLabel="true"
                                           WeightChanged="@(val => UpdateWeight(context.Pair, val))" />
                         </TemplateColumn>
-                        <TemplateColumn Title="Planned Spend" Align="DataGridCellAlignment.End">
-                            <FluentText Typo="Typography.Body" Font="TextFont.Monospace">@GetCurrencySymbol() @GetAllocatedAmount(context).ToString("N2")</FluentText>
+                        <TemplateColumn Title="Planned Spend" Class="spend-column">
+                            <FluentText>@GetCurrencySymbol() @GetAllocatedAmount(context).ToString("N2")</FluentText>
                         </TemplateColumn>
-                        <TemplateColumn Title="" Align="DataGridCellAlignment.Center">
+                        <TemplateColumn Title="" Class="delete-column">
                             <FluentButton IconEnd="@(new Icons.Regular.Size20.Delete())" 
                                           OnClick="@(() => RemoveAsset(context.Pair))"
-                                          Appearance="ButtonAppearance.Subtle"
                                           Title="Remove Asset" />
                         </TemplateColumn>
                     </FluentDataGrid>
 
                     <FluentDivider Class="basket-divider" />
 
-                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12" VerticalAlignment="VerticalAlignment.Bottom" Class="search-stack">
+                    <FluentStack Class="search-stack">
                         <div class="search-input-wrapper">
                             <FluentAutocomplete TOption="MarketMetadata"
                                                 TValue="string"
@@ -90,22 +87,19 @@
                                                 OptionText="@(m => $"{m.BaseCurrency} ({m.Pair})")"
                                                 @bind-SelectedItems="@_selectedSearchItems"
                                                 Multiple="false"
-                                                InputAppearance="TextInputAppearance.Underline"
                                                 Class="asset-search" />
                         </div>
                         <FluentButton IconStart="@(new Icons.Regular.Size16.Add())"
                                        OnClick="@AddAsset"
-                                       Appearance="ButtonAppearance.Outline"
                                        Class="add-button">
                             Add to Combo
                         </FluentButton>
                     </FluentStack>
             </FluentCard>
 
-            <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.Right" Class="execution-container">
+            <FluentStack Class="execution-container">
                 <div class="liquid-glow-wrapper">
                     <FluentButton Class="btn-gilded execute-button"
-                                  Appearance="ButtonAppearance.Primary"
                                   Disabled="@(_totalWeight != 1.0m || _isExecuting)"
                                   OnClick="@ExecuteBasket">
                         @(_isExecuting ? "PLACING ORDERS..." : "BUY COIN COMBO")
@@ -115,9 +109,9 @@
         </FluentStack>
     </ChildContent>
     <ErrorContent>
-        <div style="padding: 20px; border: 1px solid red; border-radius: 8px; background: #fff0f0;">
-            <FluentLabel Typo="Typography.Subject" Color="Color.Error">Something went wrong</FluentLabel>
-            <p>The basket interface has encountered an error. Please refresh the page.</p>
+        <div class="error-container">
+            <FluentLabel Class="error-title">Something went wrong</FluentLabel>
+            <p class="error-text">The basket interface has encountered an error. Please refresh the page.</p>
         </div>
     </ErrorContent>
 </ErrorBoundary>

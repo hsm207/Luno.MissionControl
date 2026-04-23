@@ -2,6 +2,23 @@
 
 .basket-page-container {
     padding-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    --fluent-stack-vertical-gap: 24px;
+}
+
+.header-main-stack {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    --fluent-stack-horizontal-gap: 16px;
+}
+
+.header-allocation-stack {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    --fluent-stack-horizontal-gap: 16px;
 }
 
 .allocation-percent {
@@ -14,34 +31,46 @@
     contain: none;
 }
 
+.investment-sentence-stack {
+    display: flex;
+    flex-direction: column;
+    --fluent-stack-vertical-gap: 16px;
+}
+
 /* 💎 Investment Sentence Architecture */
 .investment-sentence-wrapper {
     display: flex;
-    align-items: center; /* Changed from baseline to center for better icon alignment */
-    gap: 8px; /* Tightened from 12px per user request */
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     margin-bottom: 32px;
+}
+
+.investment-icon {
+    fill: var(--titan-gold);
+    color: var(--titan-gold);
 }
 
 .investment-label {
     font-weight: 200;
     opacity: 0.8;
     letter-spacing: 1px;
+    font-size: 1.5rem; /* Equivalent to H3 */
 }
 
 .investment-amount-input {
-    width: 130px !important;
-    --colorNeutralBackground1: transparent !important;
-    --neutral-fill-rest: transparent !important;
-    --neutral-stroke-rest: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
+    width: 130px;
+    --colorNeutralBackground1: transparent;
+    --neutral-fill-rest: transparent;
+    --neutral-stroke-rest: transparent;
 }
 
 .investment-amount-input::part(control) {
     font-size: 1.8rem !important;
     font-weight: 800 !important;
     color: var(--titan-gold) !important;
-    text-align: center !important; /* Center-aligned for the 'sentence' look */
+    text-align: center !important;
     background: transparent !important;
     border: none !important;
     height: auto !important;
@@ -56,41 +85,20 @@
     outline: none !important;
 }
 
-/* 🚫 Kill the spinner and extras */
-.investment-amount-input::part(control)::-webkit-outer-spin-button,
-.investment-amount-input::part(control)::-webkit-inner-spin-button {
-    -webkit-appearance: none !important;
-    margin: 0 !important;
-}
-
-.investment-amount-input::after,
-.investment-amount-input::before {
-    display: none !important;
-}
-
 .currency-minimal-select {
-    width: 100px !important;
-    border: none !important;
-    --neutral-stroke-rest: transparent !important;
+    width: 80px;
+    --neutral-stroke-rest: transparent;
+    --colorNeutralBackground1: transparent;
 }
 
 .hidden-indicator {
     display: none !important;
-    width: 0;
-    padding: 0;
-}
-
-/* Force-kill leaking borders */
-.investment-sentence-wrapper fluent-select::part(control),
-.investment-sentence-wrapper fluent-text-field::part(control) {
-    border: none !important;
-    box-shadow: none !important;
 }
 
 .estimated-total-container {
     margin-top: -16px;
     margin-bottom: 24px;
-    padding-left: 32px; /* 24px icon + 8px gap alignment */
+    padding-left: 32px;
 }
 
 .estimated-total-label {
@@ -117,16 +125,35 @@
     min-height: 200px;
 }
 
+.price-column {
+    display: flex;
+    justify-content: center;
+}
+
+.weight-column, .spend-column, .delete-column {
+    display: flex;
+    justify-content: flex-end;
+}
+
 ::deep .fluent-data-grid-row:hover {
     background-color: rgba(212, 175, 55, 0.05) !important;
-    transition: background-color 0.2s ease;
 }
 
 .asset-pair-label {
     font-weight: bold;
 }
 
+.add-asset-stack {
+    display: flex;
+    flex-direction: column;
+    --fluent-stack-vertical-gap: 12px;
+}
+
 .search-stack {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    --fluent-stack-horizontal-gap: 12px;
     margin-top: 10px;
 }
 
@@ -140,6 +167,11 @@
 
 .execution-container {
     margin-top: 30px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    --fluent-stack-horizontal-alignment: flex-end;
 }
 
 .execute-button {
@@ -147,4 +179,28 @@
     letter-spacing: 1px;
     width: 320px;
     height: 56px;
+    --accent-fill-rest: var(--titan-gold);
+    --colorNeutralForegroundOnBrand: var(--titan-obsidian);
+}
+
+/* Error States */
+.error-container {
+    padding: 32px;
+    border: 1px solid rgba(255, 0, 0, 0.2);
+    border-radius: 16px;
+    background: rgba(255, 240, 240, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.error-title {
+    color: var(--colorErrorForeground1);
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.error-text {
+    opacity: 0.8;
 }
