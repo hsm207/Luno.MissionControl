@@ -8,8 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="5.0.0-rc.2-26098.1" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.14.1" />
     <ProjectReference Include="..\Luno.MissionControl.Web.Client\Luno.MissionControl.Web.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Luno.MissionControl.Application\Luno.MissionControl.Application.csproj" />
+    <ProjectReference Include="..\..\Luno.SDK\Luno.SDK.Application\Luno.SDK.Application.csproj" />
+    <ProjectReference Include="..\..\Luno.SDK\Luno.SDK.Infrastructure\Luno.SDK.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Luno.SDK\Luno.SDK.Infrastructure.Generated\Luno.SDK.Infrastructure.Generated.csproj" />
+    <ProjectReference Include="..\Luno.MissionControl.ServiceDefaults\Luno.MissionControl.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>
