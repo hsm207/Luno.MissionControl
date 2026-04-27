@@ -1,0 +1,40 @@
+@inherits LayoutComponentBase
+
+<FluentLayout Style="min-height: 100vh;">
+    <FluentLayoutItem Area="@LayoutArea.Header">
+        <FluentHeader Style="background: rgba(0,0,0,0.4); border-bottom: 2px solid var(--accent-gold); padding: 0 20px;">
+            <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" HorizontalGap="10">
+                <FluentIcon Value="@(new Icons.Filled.Size24.Rocket())" Color="Color.Accent" />
+                <FluentLabel Typo="Typography.H3" Class="executive-header">MISSION CONTROL</FluentLabel>
+            </FluentStack>
+        </FluentHeader>
+    </FluentLayoutItem>
+    
+    <FluentLayoutItem Area="@LayoutArea.Navigation" Width="250px">
+        <NavMenu />
+    </FluentLayoutItem>
+    
+    <FluentLayoutItem Area="@LayoutArea.Content" Style="display: flex; justify-content: center; padding: 40px; overflow-y: auto;">
+        <div style="width: 100%; max-width: 1200px;">
+            @Body
+        </div>
+    </FluentLayoutItem>
+
+    <FluentLayoutItem Area="@LayoutArea.Footer" Style="padding: 10px 20px; border-top: 1px solid var(--colorNeutralStroke1); background: rgba(0,0,0,0.2);">
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+            <FluentLabel Typo="Typography.Caption">© 2026 Luno Industries • Security Level: TITAN</FluentLabel>
+            <FluentLabel Typo="Typography.Caption" Color="Color.Accent">SYSTEM STATUS: NOMINAL</FluentLabel>
+        </FluentStack>
+    </FluentLayoutItem>
+</FluentLayout>
+
+<FluentProviders />
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+}

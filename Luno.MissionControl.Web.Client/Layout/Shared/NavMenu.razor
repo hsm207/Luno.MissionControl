@@ -1,0 +1,25 @@
+<FluentNav Padding="@Padding.All2" Style="height: 100%;">
+    <FluentNavItem Href="/" Match="NavLinkMatch.All" 
+                   IconRest="@(new Icons.Regular.Size20.Home())" 
+                   IconActive="@(new Icons.Filled.Size20.Home())">
+        Dashboard
+    </FluentNavItem>
+    
+    <FluentNavItem Href="/market" 
+                   IconRest="@(new Icons.Regular.Size20.ChartMultiple())" 
+                   IconActive="@(new Icons.Filled.Size20.ChartMultiple())">
+        Market Watch
+    </FluentNavItem>
+    
+    <FluentNavItem Href="/basket" 
+                   IconRest="@(new Icons.Regular.Size20.Cart())" 
+                   IconActive="@(new Icons.Filled.Size20.Cart())">
+        Execution Basket
+    </FluentNavItem>
+    
+    <FluentNavItem Href="/history" 
+                   IconRest="@(new Icons.Regular.Size20.History())" 
+                   IconActive="@(new Icons.Filled.Size20.History())">
+        Operation Log
+    </FluentNavItem>
+</FluentNav>
