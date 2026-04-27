@@ -483,3 +483,6 @@ $RECYCLE.BIN/
 
 # Antigravity's Lab Space
 labs/
+
+# Playwright MCP
+.playwright-mcp/

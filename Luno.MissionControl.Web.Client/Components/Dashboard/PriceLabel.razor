@@ -1,0 +1,6 @@
+@using Luno.MissionControl.Application
+@using Luno.MissionControl.Application.Models
+
+<FluentLabel Typo="Typography.Body" Style="font-family: monospace; font-weight: bold; min-width: 80px; display: inline-block;">
+    @(_price != null ? $"{_price:N2}" : "Loading...")
+</FluentLabel>

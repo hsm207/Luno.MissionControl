@@ -49,11 +49,13 @@ public static class Extensions
             {
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation();
+                    .AddRuntimeInstrumentation()
+                    .AddMeter("Luno.MissionControl.*");
             })
             .WithTracing(tracing =>
             {
-                tracing.AddAspNetCoreInstrumentation()
+                tracing.AddSource(Luno.MissionControl.Application.ForensicTracing.SourceName)
+                    .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation();
             });
 

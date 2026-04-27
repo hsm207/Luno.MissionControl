@@ -60,35 +60,43 @@
 }
 
 .investment-amount-input {
-    width: 130px;
+    width: 140px;
+    text-align: center;
+    /* 💎 v5 Design Token Overrides (Native Shadow DOM penetration) */
+    --colorBrandForeground1: var(--titan-gold);
+    --colorBrandForeground2: var(--titan-gold);
+    --colorNeutralForeground1: var(--titan-gold);
+    --colorNeutralForeground1Hover: var(--titan-gold);
+    --colorNeutralForeground1Active: var(--titan-gold);
+    --colorNeutralForeground1Selected: var(--titan-gold);
+    --colorNeutralStroke1: transparent;
+    --colorNeutralStroke1Hover: transparent;
+    --colorNeutralStroke1Active: transparent;
     --colorNeutralBackground1: transparent;
-    --neutral-fill-rest: transparent;
-    --neutral-stroke-rest: transparent;
+    --colorNeutralBackground1Hover: transparent;
+    --colorNeutralBackground1Active: transparent;
 }
 
 .investment-amount-input::part(control) {
-    font-size: 1.8rem !important;
+    font-size: 2.2rem !important;
     font-weight: 800 !important;
     color: var(--titan-gold) !important;
-    text-align: center !important;
     background: transparent !important;
     border: none !important;
-    height: auto !important;
-    padding: 0 !important;
+    height: auto;
+    padding: 0;
     transition: all 0.2s ease;
 }
 
 .investment-amount-input::part(control):hover,
 .investment-amount-input::part(control):focus {
     transform: scale(1.05);
-    text-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
-    outline: none !important;
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+    outline: none;
 }
 
 .currency-minimal-select {
     width: 80px;
-    --neutral-stroke-rest: transparent;
-    --colorNeutralBackground1: transparent;
 }
 
 .hidden-indicator {
@@ -176,11 +184,12 @@
 
 .execute-button {
     font-weight: 800;
-    letter-spacing: 1px;
-    width: 320px;
-    height: 56px;
-    --accent-fill-rest: var(--titan-gold);
-    --colorNeutralForegroundOnBrand: var(--titan-obsidian);
+    letter-spacing: 1.5px;
+    width: 340px;
+    height: 64px;
+    --colorBrandBackground: var(--titan-gold);
+    --colorBrandBackgroundHover: var(--titan-gold-bright);
+    --colorBrandForegroundOnBrand: var(--titan-obsidian);
 }
 
 /* Error States */

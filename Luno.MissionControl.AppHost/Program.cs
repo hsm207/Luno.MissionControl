@@ -2,8 +2,10 @@ using Aspire.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Register the Web Frontend
-builder.AddProject<Projects.Luno_MissionControl_Web>("webfrontend");
+// Register the Web Frontend (Server project which hosts the WASM client)
+// Service Discovery allows the MarketWatchService to be traced by the Dashboard.
+builder.AddProject<Projects.Luno_MissionControl_Web>("webfrontend")
+    .WithExternalHttpEndpoints()
+    .WithHttpHealthCheck("/health");
 
-// Enable the Dashboard with explicit unsecured transport to resolve environmental validation errors
 builder.Build().Run();

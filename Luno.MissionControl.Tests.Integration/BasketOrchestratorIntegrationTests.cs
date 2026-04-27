@@ -45,8 +45,8 @@ public class BasketOrchestratorIntegrationTests : IDisposable
         // Arrange
         var command = new ExecuteAllocationCommand(100m, new[]
         {
-            new BasketAllocation("XBTMYR", 0.6m),
-            new BasketAllocation("ETHMYR", 0.4m)
+            new Allocation("XBTMYR", 0.6m),
+            new Allocation("ETHMYR", 0.4m)
         });
 
         // 1. Mock Market Metadata (Realistic limits to satisfy SDK validation)
@@ -137,8 +137,8 @@ public class BasketOrchestratorIntegrationTests : IDisposable
         // Arrange
         var command = new ExecuteAllocationCommand(100m, new[]
         {
-            new BasketAllocation("XBTMYR", 0.5m),
-            new BasketAllocation("ETHMYR", 0.4m) // Sum is 0.9
+            new Allocation("XBTMYR", 0.5m),
+            new Allocation("ETHMYR", 0.4m) // Sum is 0.9
         });
 
         // Act & Assert
@@ -150,7 +150,7 @@ public class BasketOrchestratorIntegrationTests : IDisposable
     public async Task HandleAsync_MissingAccount_FailsFast()
     {
         // Arrange
-        var command = new ExecuteAllocationCommand(100m, new[] { new BasketAllocation("XBTMYR", 1.0m) });
+        var command = new ExecuteAllocationCommand(100m, new[] { new Allocation("XBTMYR", 1.0m) });
 
         // 1. Mock Markets
         _server.Given(Request.Create().WithPath("/api/exchange/1/markets").UsingGet())
@@ -178,7 +178,7 @@ public class BasketOrchestratorIntegrationTests : IDisposable
     public async Task HandleAsync_EmptyAllocations_Fail()
     {
         // Arrange
-        var command = new ExecuteAllocationCommand(100m, Array.Empty<BasketAllocation>());
+        var command = new ExecuteAllocationCommand(100m, Array.Empty<Allocation>());
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(() => _orchestrator.HandleAsync(command));

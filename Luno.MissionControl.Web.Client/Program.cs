@@ -12,7 +12,10 @@ using Microsoft.Extensions.Logging;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Services.AddFluentUIComponents();
+builder.Services.AddFluentUIComponents(config =>
+{
+    config.MarkupSanitized.SanitizeInlineStyle = (value) => value;
+});
 
 // 0. Base Connectivity
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });

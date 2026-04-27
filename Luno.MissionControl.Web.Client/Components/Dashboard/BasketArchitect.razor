@@ -31,11 +31,14 @@
                         
                         <FluentText Class="investment-label">I want to invest</FluentText>
                         
-                        <FluentTextInput @bind-Value="_rawSpendInput"
+                        <FluentTextInput @ref="_amountInput"
+                                         @bind-Value="_rawSpendInput"
                                          @bind-Value:after="@(async () => { if (decimal.TryParse(_rawSpendInput, NumberStyles.Any, CultureInfo.InvariantCulture, out var d)) { State.TargetSpend = d; _rawSpendInput = d.ToString("N0"); } })"
+                                         Appearance="TextInputAppearance.FilledDarker"
                                          Class="investment-amount-input" />
 
-                        <FluentSelect Items="@(new[] { "MYR", "USDC" })"
+                        <FluentSelect @ref="_currencySelect"
+                                      Items="@(new[] { "MYR", "USDC" })"
                                       @bind-Value="@_currencyState"
                                       Class="currency-minimal-select">
                             <span slot="indicator" class="hidden-indicator"></span>
@@ -99,7 +102,9 @@
 
             <FluentStack Class="execution-container">
                 <div class="liquid-glow-wrapper">
-                    <FluentButton Class="btn-gilded execute-button"
+                    <FluentButton @ref="_executeButton"
+                                  Appearance="ButtonAppearance.Primary"
+                                  Class="btn-gilded execute-button"
                                   Disabled="@(_totalWeight != 1.0m || _isExecuting)"
                                   OnClick="@ExecuteBasket">
                         @(_isExecuting ? "PLACING ORDERS..." : "BUY COIN COMBO")

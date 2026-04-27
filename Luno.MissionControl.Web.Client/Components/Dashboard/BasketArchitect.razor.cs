@@ -10,8 +10,12 @@ using System.Globalization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 
-public partial class BasketArchitect : IDisposable
+public partial class BasketArchitect : ComponentBase, IDisposable
 {
+    private FluentTextInput? _amountInput;
+    private FluentSelect<string, string>? _currencySelect;
+    private FluentButton? _executeButton;
+
     [Inject] private IBasketState State { get; set; } = default!;
     [Inject] private IBasketService BasketService { get; set; } = default!;
     [Inject] private IToastService ToastService { get; set; } = default!;
@@ -87,6 +91,28 @@ public partial class BasketArchitect : IDisposable
         return Math.Round(State.TargetSpend * alloc.Weight, 2);
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                Console.WriteLine("[DIAGNOSTIC] UI: OnAfterRenderAsync - Starting background state orchestration.");
+                await State.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DIAGNOSTIC] UI: State Initialization Error - {ex.GetType().Name}: {ex.Message}");
+                await ToastService.ShowToastAsync(options =>
+                {
+                    options.Intent = ToastIntent.Warning;
+                    options.Title = "Initialization Warning";
+                    options.Body = "Live data connectivity issue. Some features may be degraded.";
+                });
+            }
+        }
+    }
+
     protected override void OnInitialized()
     {
         // Default starting state aligned with SelectedCurrency
@@ -145,28 +171,6 @@ public partial class BasketArchitect : IDisposable
         var market = State.AvailableMarkets.FirstOrDefault(m => m.Pair == pair);
         if (market == null) return pair;
         return $"{market.BaseCurrency} / {market.CounterCurrency}";
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            try
-            {
-                Console.WriteLine("[DIAGNOSTIC] UI: OnAfterRenderAsync - Starting background state orchestration.");
-                await State.StartAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[DIAGNOSTIC] UI: State Initialization Error - {ex.GetType().Name}: {ex.Message}");
-                await ToastService.ShowToastAsync(options =>
-                {
-                    options.Intent = ToastIntent.Warning;
-                    options.Title = "Initialization Warning";
-                    options.Body = "Live data connectivity issue. Some features may be degraded.";
-                });
-            }
-        }
     }
 
     public void Dispose()
