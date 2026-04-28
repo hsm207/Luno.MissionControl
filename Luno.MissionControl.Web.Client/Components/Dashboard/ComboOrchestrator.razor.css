@@ -37,7 +37,7 @@
     --fluent-stack-vertical-gap: 16px;
 }
 
-/* 💎 Investment Sentence Architecture */
+/* 💎 Component Layout Structure */
 .investment-sentence-wrapper {
     display: flex;
     flex-direction: row;
@@ -62,7 +62,7 @@
 .investment-amount-input {
     width: 140px;
     text-align: center;
-    /* 💎 v5 Design Token Overrides (Native Shadow DOM penetration) */
+    /* 💎 Fluent UI V5 Design Token Overrides */
     --colorBrandForeground1: var(--titan-gold);
     --colorBrandForeground2: var(--titan-gold);
     --colorNeutralForeground1: var(--titan-gold);
