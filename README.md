@@ -1,12 +1,12 @@
 # 🌌 Luno Mission Control
 
-**The Gilded Titan of Quantitative Portfolio Orchestration.**
+**A High-Performance Dashboard for Quantitative Portfolio Management.**
 
 Mission Control is a high-performance, cloud-native dashboard built on **.NET 10** and **Aspire 13**, designed to empower retail investors with professional-grade execution capabilities—entirely for free.
 
-## ⚔️ The "Luno Killer" Positioning
+## ⚔️ Key Features & Platform Comparison
 
-Why pay for a "Coin Combo" when you can orchestrate a **Custom Combo** with zero platform fees?
+Mission Control provides advanced customization for digital asset portfolios with zero platform fees.
 
 | Feature | Luno "Coin Combo" | 🌌 Mission Control |
 | :--- | :--- | :--- |
@@ -14,7 +14,7 @@ Why pay for a "Coin Combo" when you can orchestrate a **Custom Combo** with zero
 | **Asset Selection** | ❌ Limited Bundles | ✅ **Unlimited Custom Combinations** |
 | **Execution Engine** | ❌ Retail "Instant Buy" (High Spread) | ✅ **Exchange-Direct Limit Orders** |
 | **Platform Fees** | ❌ Calculated as a Service Fee | ✅ **100% Free** |
-| **UI Aesthetic** | ❌ Standard Banking App | ✅ **Gleb Kuznetsov "Liquid Luxe"** |
+| **UI Aesthetic** | ❌ Standard Banking App | ✅ **Enhanced Visual Experience** |
 
 ## 🧪 Technological Pedigree
 
@@ -23,11 +23,11 @@ Why pay for a "Coin Combo" when you can orchestrate a **Custom Combo** with zero
 *   **Interface**: Fluent UI Blazor V5 (Liquid Motion / Shadow DOM Customization)
 *   **Observability**: Full OpenTelemetry integration via the Aspire Dashboard.
 
-## 🎨 Design Philosophy: "Liquid Luxe"
+## 🎨 Design Philosophy
 
-Mission Control utilizes a bespoke design system inspired by **Gleb Kuznetsov**. 
+Mission Control utilizes a modern design system optimized for clarity and performance. 🔍
 - **Obsidian Geometry**: A deep, atmospheric dark theme for maximum focus.
-- **Titan Accents**: Brushed Gold accents (#D4AF37) for a high-status interactive experience.
+- **Titan Accents**: Gold accents (#D4AF37) for a high-contrast interactive experience. ⚡️
 - **Atmospheric Depth**: Glassmorphism (backdrop-blur) and breathing animations signal mission-critical state changes.
 
 ---
