@@ -1,0 +1,36 @@
+@inherits LayoutComponentBase
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<FluentLayout>
+    <FluentLayoutItem Area="@LayoutArea.Header" Sticky="true" Style="background-color: var(--titan-obsidian); border-bottom: 1px solid rgba(212, 175, 55, 0.3); height: 60px;">
+        <FluentStack VerticalAlignment="VerticalAlignment.Center" Style="width: 100%; height: 100%; padding: 0 16px;">
+            <FluentIcon Value="@(new Icons.Filled.Size24.ShieldLock())" Color="Color.Primary" />
+            <FluentText Size="TextSize.Size500" Weight="TextWeight.Bold" Class="executive-header">
+                @ViewModel.AppTitle
+            </FluentText>
+            <FluentSpacer />
+            <FluentBadge Appearance="BadgeAppearance.Filled" BackgroundColor="var(--titan-gold)" Style="color: var(--titan-obsidian);">
+                @ViewModel.StatusText
+            </FluentBadge>
+        </FluentStack>
+    </FluentLayoutItem>
+
+    <FluentStack Class="main" Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Stretch" Style="height: calc(100vh - 60px); overflow: hidden;">
+        <FluentLayoutItem Area="@LayoutArea.Navigation" Width="280px" Style="background: rgba(8, 8, 8, 0.8); border-right: 1px solid var(--titan-charcoal);">
+            <FluentNav Width="100%">
+                <FluentNavSectionHeader Title="Navigation" />
+                <FluentNavItem Href="/" IconRest="@(new Icons.Regular.Size20.Board())">Dashboard</FluentNavItem>
+                <FluentNavItem Href="/combo" IconRest="@(new Icons.Regular.Size20.Cart())">Combo Orchestrator</FluentNavItem>
+            </FluentNav>
+        </FluentLayoutItem>
+
+        <FluentLayoutItem Area="@LayoutArea.Content" Style="flex-grow: 1; overflow-y: auto; padding: 24px;">
+            <div class="content-body">
+                @Body
+            </div>
+        </FluentLayoutItem>
+    </FluentStack>
+</FluentLayout>
+
+<FluentProviders />
+<ReconnectModal />
