@@ -17,28 +17,35 @@ namespace Luno.MissionControl.Tests.Integration;
 public class InteractionBehavioralTests : TestContext
 {
     private readonly Mock<IBasketService> _mockBasketService;
-    private readonly Mock<IDialogService> _mockDialogService;
+    private readonly Mock<IBasketState> _mockBasketState;
 
     public InteractionBehavioralTests()
     {
         _mockBasketService = new Mock<IBasketService>();
-        _mockDialogService = new Mock<IDialogService>();
+        _mockBasketState = new Mock<IBasketState>();
+
+        // Setup mock state to avoid SignalR dependencies in unit tests
+        _mockBasketState.Setup(s => s.AvailableMarkets).Returns(new List<MarketMetadata>
+        {
+            new MarketMetadata("XBTZAR", "XBT", "ZAR"),
+            new MarketMetadata("ETHZAR", "ETH", "ZAR")
+        });
+        _mockBasketState.Setup(s => s.Prices).Returns(new Dictionary<string, TickerSnapshot>());
 
         Services.AddFluentUIComponents();
+        Services.AddLogging();
         Services.AddScoped(_ => _mockBasketService.Object);
-        Services.AddScoped(_ => _mockDialogService.Object);
-        Services.AddScoped<ClientBasketState>();
-        Services.AddScoped<IBasketState>(sp => sp.GetRequiredService<ClientBasketState>());
+        Services.AddScoped(_ => _mockBasketState.Object);
         
         // Mock the JS Interop for Fluent UI
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
     [Fact]
-    public void BasketArchitect_InitialState_CalculatesCorrectSum()
+    public void ComboOrchestrator_InitialState_CalculatesCorrectSum()
     {
         // Act
-        var cut = RenderComponent<BasketArchitect>();
+        var cut = RenderComponent<ComboOrchestrator>();
 
         // Assert
         // We look for the label that displays the total allocation
@@ -51,7 +58,7 @@ public class InteractionBehavioralTests : TestContext
     public async Task ExecuteBasket_WhenWeightsDoNotSumTo100_ButtonIsDisabled()
     {
         // Arrange
-        var cut = RenderComponent<BasketArchitect>();
+        var cut = RenderComponent<ComboOrchestrator>();
 
         // Act: Update a weight to break the 100% sum (change XBT to 0.5)
         var weightInput = cut.FindComponent<WeightInput>();
@@ -64,18 +71,17 @@ public class InteractionBehavioralTests : TestContext
     }
 
     [Fact]
-    public async Task BasketArchitect_AddAsset_UpdatesAllocationList()
+    public async Task ComboOrchestrator_AddAsset_UpdatesAllocationList()
     {
         // Arrange
-        var cut = RenderComponent<BasketArchitect>();
+        var cut = RenderComponent<ComboOrchestrator>();
         var initialButtons = cut.FindAll("fluent-button[appearance='subtle']").Count;
         Assert.Equal(2, initialButtons);
         
         // Select SOLMYR from the autocomplete
-        var autocomplete = cut.FindComponent<FluentAutocomplete<MarketMetadata, string>>();
-        // We'll simulate a selection by setting SelectedItems directly
         var solMarket = new MarketMetadata("SOLMYR", "SOL", "MYR");
-        await cut.InvokeAsync(() => autocomplete.Instance.SelectedItems = new List<MarketMetadata> { solMarket });
+        var prop = cut.Instance.GetType().GetProperty("_selectedSearchItems", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        prop!.SetValue(cut.Instance, new List<MarketMetadata> { solMarket });
 
         // Click the Add Asset button
         var addButton = cut.Find("fluent-button[appearance='outline']");
@@ -87,10 +93,10 @@ public class InteractionBehavioralTests : TestContext
     }
 
     [Fact]
-    public void BasketArchitect_RemoveAsset_UpdatesAllocationList()
+    public void ComboOrchestrator_RemoveAsset_UpdatesAllocationList()
     {
         // Arrange
-        var cut = RenderComponent<BasketArchitect>();
+        var cut = RenderComponent<ComboOrchestrator>();
         var initialButtons = cut.FindAll("fluent-button[appearance='subtle']").Count;
         Assert.Equal(2, initialButtons);
 

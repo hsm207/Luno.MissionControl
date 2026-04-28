@@ -10,7 +10,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 
-public partial class BasketArchitect : ComponentBase, IDisposable
+public partial class ComboOrchestrator : ComponentBase, IDisposable
 {
     private FluentTextInput? _amountInput;
     private FluentSelect<string, string>? _currencySelect;
@@ -20,8 +20,10 @@ public partial class BasketArchitect : ComponentBase, IDisposable
     [Inject] private IBasketService BasketService { get; set; } = default!;
     [Inject] private IToastService ToastService { get; set; } = default!;
     [Inject] private IDialogService DialogService { get; set; } = default!;
-    [Inject] private ILogger<BasketArchitect> Logger { get; set; } = default!;
+    [Inject] private ILogger<ComboOrchestrator> Logger { get; set; } = default!;
+    [Inject] private PersistentComponentState ApplicationState { get; set; } = default!;
 
+    private PersistingComponentStateSubscription _subscription;
     private List<Allocation> _allocations = new();
     private IEnumerable<MarketMetadata> _selectedSearchItems { get; set; } = [];
     private ErrorBoundary? _errorBoundary;
@@ -115,6 +117,23 @@ public partial class BasketArchitect : ComponentBase, IDisposable
 
     protected override void OnInitialized()
     {
+        _subscription = ApplicationState.RegisterOnPersisting(() =>
+        {
+            ApplicationState.PersistAsJson("SelectedCurrency", State.SelectedCurrency);
+            ApplicationState.PersistAsJson("TargetSpend", State.TargetSpend);
+            return Task.CompletedTask;
+        });
+
+        if (ApplicationState.TryTakeFromJson<string>("SelectedCurrency", out var currency))
+        {
+            State.SelectedCurrency = currency!;
+        }
+
+        if (ApplicationState.TryTakeFromJson<decimal>("TargetSpend", out var spend))
+        {
+            State.TargetSpend = spend;
+        }
+
         // Default starting state aligned with SelectedCurrency
         bool isMyr = State.SelectedCurrency == "MYR";
         
@@ -175,6 +194,7 @@ public partial class BasketArchitect : ComponentBase, IDisposable
 
     public void Dispose()
     {
+        _subscription.Dispose();
         State.OnPriceUpdate -= HandlePriceUpdate;
         State.OnMarketsUpdate -= HandleMarketsUpdate;
     }

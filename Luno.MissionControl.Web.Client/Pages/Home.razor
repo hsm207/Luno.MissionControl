@@ -1,6 +1,51 @@
 @page "/"
-@using Luno.MissionControl.Web.Client.Components.Dashboard
+@rendermode InteractiveAuto
+@inject NavigationManager NavManager
 
 <PageTitle>Mission Control Dashboard</PageTitle>
 
-<BasketArchitect />
+<div class="construction-container">
+    <FluentStack Orientation="Orientation.Vertical" 
+                 HorizontalAlignment="HorizontalAlignment.Center" 
+                 VerticalAlignment="VerticalAlignment.Center" 
+                 VerticalGap="24" 
+                 Style="min-height: 60vh;">
+        
+        <div class="liquid-glow-wrapper">
+            <FluentIcon Value="@(new Icons.Filled.Size48.WindowWrench())" 
+                        Color="Color.Primary" 
+                        Style="width: 80px; height: 80px;" />
+        </div>
+
+        <FluentText Typo="Typography.H2" Class="executive-header gold-glow-text">
+            DASHBOARD UNDER CONSTRUCTION
+        </FluentText>
+
+        <FluentText Typo="Typography.Body" Style="color: var(--titan-silver); text-align: center; max-width: 400px;">
+            Our engineers are currently forging the high-fidelity mission overview. 
+            The Titan dashboard will soon feature real-time portfolio metrics, 
+            market sentiment analysis, and risk assessment vectors.
+        </FluentText>
+
+        <FluentDivider Style="width: 100px; margin: 10px 0;" />
+
+        <FluentButton Appearance="ButtonAppearance.Outline" 
+                      OnClick="@(() => NavManager.NavigateTo("/combo"))" 
+                      IconStart="@(new Icons.Regular.Size20.Cart())">
+            PROCEED TO COMBO ORCHESTRATOR
+        </FluentButton>
+
+    </FluentStack>
+</div>
+
+<style>
+    .construction-container {
+        background: radial-gradient(circle at center, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
+        padding: 40px;
+    }
+
+    .gold-glow-text {
+        text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        letter-spacing: 2px;
+    }
+</style>

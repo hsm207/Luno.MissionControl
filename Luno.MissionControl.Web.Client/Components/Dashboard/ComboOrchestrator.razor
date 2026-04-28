@@ -1,4 +1,3 @@
-@page "/basket"
 @using Luno.MissionControl.Application
 @using Luno.MissionControl.Application.Models
 @using Luno.MissionControl.Web.Client.Services
@@ -73,6 +72,7 @@
                         </TemplateColumn>
                         <TemplateColumn Title="" Class="delete-column">
                             <FluentButton IconEnd="@(new Icons.Regular.Size20.Delete())" 
+                                          Appearance="ButtonAppearance.Subtle"
                                           OnClick="@(() => RemoveAsset(context.Pair))"
                                           Title="Remove Asset" />
                         </TemplateColumn>
@@ -92,7 +92,8 @@
                                                 Multiple="false"
                                                 Class="asset-search" />
                         </div>
-                        <FluentButton IconStart="@(new Icons.Regular.Size16.Add())"
+                        <FluentButton Appearance="ButtonAppearance.Outline"
+                                       IconStart="@(new Icons.Regular.Size16.Add())"
                                        OnClick="@AddAsset"
                                        Class="add-button">
                             Add to Combo
