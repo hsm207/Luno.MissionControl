@@ -1,4 +1,5 @@
 @page "/Error"
+@rendermode InteractiveAuto
 @using System.Diagnostics
 
 <PageTitle>Error</PageTitle>
@@ -24,7 +25,7 @@
     and restarting the app.
 </p>
 
-@code {
+@code{
     private string? RequestId { get; set; }
     private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 
