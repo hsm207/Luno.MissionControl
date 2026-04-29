@@ -93,3 +93,4 @@ app.MapPost("/api/basket/execute", async (BasketExecutionRequest request, IBaske
 });
 
 app.Run();
+public partial class Program { }
