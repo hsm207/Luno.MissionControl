@@ -33,7 +33,15 @@ builder.Services.AddSingleton<IPriceBroadcaster, PriceBroadcaster>();
 builder.Services.AddScoped<ServerBasketState>();
 builder.Services.AddScoped<IBasketState>(sp => sp.GetRequiredService<ServerBasketState>());
 builder.Services.AddScoped<IPriceClient>(sp => sp.GetRequiredService<ServerBasketState>());
-builder.Services.AddScoped<IBasketService, BasketOrchestrator>();
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<IBasketService, SimulatedBasketOrchestrator>();
+}
+else
+{
+    builder.Services.AddScoped<IBasketService, BasketOrchestrator>();
+}
 
 // 3. Background Services
 builder.Services.AddHostedService<MarketWatchService>();
