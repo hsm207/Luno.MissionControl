@@ -11,4 +11,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Luno.MissionControl.Web\Luno.MissionControl.Web.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Docker" Version="13.2.4" />
+  </ItemGroup>
 </Project>
