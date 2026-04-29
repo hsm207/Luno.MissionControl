@@ -487,3 +487,7 @@ labs/
 
 # Playwright MCP
 .playwright-mcp/
+
+# Aspire Deployment & State
+**/aspire-output/
+.aspire/

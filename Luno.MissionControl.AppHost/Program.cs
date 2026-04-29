@@ -1,6 +1,11 @@
 using Aspire.Hosting;
+using Aspire.Hosting.Docker;
 
 var builder = DistributedApplication.CreateBuilder(args);
+
+// Enable Docker Compose deployment target and map the Dashboard for local production simulation.
+builder.AddDockerComposeEnvironment("env")
+    .WithDashboard(d => d.WithHostPort(18888));
 
 var apiKeyId = builder.AddParameter("luno-api-key-id");
 var apiKeySecret = builder.AddParameter("luno-api-key-secret", secret: true);
