@@ -13,7 +13,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents(options => options.DetailedErrors = builder.Environment.IsDevelopment())
     .AddInteractiveWebAssemblyComponents();
@@ -24,12 +23,10 @@ builder.Services.AddFluentUIComponents(config =>
     config.MarkupSanitized.SanitizeInlineStyle = (value) => value;
 });
 
-// 1. SDK & Core Infrastructure
 builder.Services.AddLunoClient();
 builder.Services.AddSingleton<MarketInventory>();
 builder.Services.AddSingleton<IPriceBroadcaster, PriceBroadcaster>();
 
-// 2. Application Policies
 builder.Services.AddScoped<ServerBasketState>();
 builder.Services.AddScoped<IBasketState>(sp => sp.GetRequiredService<ServerBasketState>());
 builder.Services.AddScoped<IPriceClient>(sp => sp.GetRequiredService<ServerBasketState>());
@@ -43,14 +40,14 @@ else
     builder.Services.AddScoped<IBasketService, BasketOrchestrator>();
 }
 
-// 3. Background Services
 builder.Services.AddHostedService<MarketWatchService>();
+
+builder.Services.AddScoped<Luno.MissionControl.Web.Client.Components.Layout.MainLayoutViewModel>();
 
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
@@ -58,7 +55,6 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -72,7 +68,6 @@ app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Luno.MissionControl.Web.Client._Imports).Assembly);
 
-// 4. BFF Hubs & Endpoints
 app.MapHub<PriceHub>("/hubs/price");
 
 app.MapPost("/api/basket/execute", async (BasketExecutionRequest request, IBasketService service, CancellationToken ct) =>
