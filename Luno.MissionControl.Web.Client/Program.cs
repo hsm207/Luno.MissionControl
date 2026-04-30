@@ -9,6 +9,7 @@ using OpenTelemetry.Trace;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Exporter;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -17,12 +18,11 @@ builder.Services.AddFluentUIComponents(config =>
     config.MarkupSanitized.SanitizeInlineStyle = (value) => value;
 });
 
-// 0. Base Connectivity
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+builder.Services.AddHostEnvironmentBridge(builder.HostEnvironment.Environment, "Luno.MissionControl.Web.Client");
 
-// 1. Economy Telemetry Mandate (WASM Browser Sandbox Configuration)
-// We isolate signals and use explicit exporters to ensure the 'Simple' processor is 
-// used everywhere. We avoid cross-cutting 'UseOtlpExporter' to prevent 'Batch' defaults.
+// We use the Simple Export Processor for OpenTelemetry in WASM to minimize memory 
+// and CPU overhead in the single-threaded browser sandbox environment.
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing =>
     {
@@ -35,14 +35,14 @@ builder.Services.AddOpenTelemetry()
         });
     })
     .WithMetrics(metrics => { }); // Metrics MUST be disabled/empty to prevent background threads.
-// Logging is handled by the default provider to minimize WASM boot complexity.
 
-// 3. Core State & Connectivity
 builder.Services.AddScoped<ClientBasketState>();
 builder.Services.AddScoped<IBasketState>(sp => sp.GetRequiredService<ClientBasketState>());
 builder.Services.AddScoped<IPriceClient>(sp => sp.GetRequiredService<ClientBasketState>());
 
-// 4. Hub-agnostic Orchestration Proxy
 builder.Services.AddScoped<IBasketService, BasketServiceProxy>();
+
+builder.Services.AddScoped<Luno.MissionControl.Web.Client.Components.Layout.MainLayoutViewModel>();
+
 
 await builder.Build().RunAsync();

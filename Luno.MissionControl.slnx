@@ -4,5 +4,6 @@
   <Project Path="Luno.MissionControl.Application/Luno.MissionControl.Application.csproj" />
   <Project Path="Luno.MissionControl.Web/Luno.MissionControl.Web.csproj" />
   <Project Path="Luno.MissionControl.Web.Client/Luno.MissionControl.Web.Client.csproj" />
+  <Project Path="Luno.MissionControl.Hosting/Luno.MissionControl.Hosting.csproj" />
   <Project Path="Luno.MissionControl.Tests.Integration/Luno.MissionControl.Tests.Integration.csproj" />
 </Solution>
