@@ -1,31 +1,42 @@
 .environment-badge-bridge {
     display: inline-flex;
-}
-
-/* Note: .gleb-glow and .danger-glow variables are defined in the component style block for resilience */
-
-::deep .environment-badge {
     position: relative;
-    font-weight: 800;
-    letter-spacing: 0.1em;
     padding: 4px 12px;
     border-radius: 4px;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 10px var(--glow-color);
-    animation: breathing 3s infinite ease-in-out;
+    backdrop-filter: blur(12px) saturate(180%);
+    background: color-mix(in srgb, var(--glow-color), transparent 96%);
+    border: 1px solid color-mix(in srgb, var(--glow-color), transparent 70%);
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: atmospheric-pulse 4s infinite ease-in-out;
 }
 
-@keyframes breathing {
-    0% {
-        box-shadow: 0 0 5px var(--glow-color);
-        opacity: 0.8;
+/* 
+   CCP: The inner badge is a humble container. 
+   We style it directly via class inheritance from the bridge.
+*/
+.environment-badge {
+    background: transparent !important;
+    border: none !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.15em !important;
+    text-transform: uppercase;
+    color: var(--glow-color) !important;
+    text-shadow: 0 0 10px color-mix(in srgb, var(--glow-color), transparent 50%);
+}
+
+@keyframes atmospheric-pulse {
+    0%, 100% {
+        box-shadow: 
+            0 0 12px color-mix(in srgb, var(--glow-color), transparent 70%),
+            0 0 24px color-mix(in srgb, var(--glow-color), transparent 90%),
+            inset 0 0 10px color-mix(in srgb, var(--glow-color), transparent 80%);
+        transform: scale(1);
     }
     50% {
-        box-shadow: 0 0 20px var(--glow-color);
-        opacity: 1;
-    }
-    100% {
-        box-shadow: 0 0 5px var(--glow-color);
-        opacity: 0.8;
+        box-shadow: 
+            0 0 20px color-mix(in srgb, var(--glow-color), transparent 50%),
+            0 0 45px color-mix(in srgb, var(--glow-color), transparent 80%),
+            inset 0 0 15px color-mix(in srgb, var(--glow-color), transparent 60%);
+        transform: scale(1.02);
     }
 }
