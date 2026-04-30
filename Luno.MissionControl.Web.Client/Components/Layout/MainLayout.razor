@@ -9,9 +9,15 @@
                 @ViewModel.AppTitle
             </FluentText>
             <FluentSpacer />
-            <FluentBadge Appearance="BadgeAppearance.Filled" BackgroundColor="var(--titan-gold)" Style="color: var(--titan-obsidian);">
-                @ViewModel.StatusText
-            </FluentBadge>
+            <style>
+                .environment-badge-bridge[data-status="gleb-glow"] { --glow-color: rgb(255, 215, 0); }
+                .environment-badge-bridge[data-status="danger-glow"] { --glow-color: rgb(255, 0, 0); }
+            </style>
+            <div class="environment-badge-bridge" data-status="@ViewModel.StatusClass">
+                <FluentBadge Appearance="BadgeAppearance.Filled" Class="environment-badge">
+                    <span class="status-text-target">@ViewModel.StatusText</span>
+                </FluentBadge>
+            </div>
         </FluentStack>
     </FluentLayoutItem>
 

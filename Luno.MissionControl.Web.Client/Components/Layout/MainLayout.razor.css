@@ -1,0 +1,31 @@
+.environment-badge-bridge {
+    display: inline-flex;
+}
+
+/* Note: .gleb-glow and .danger-glow variables are defined in the component style block for resilience */
+
+::deep .environment-badge {
+    position: relative;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    padding: 4px 12px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px var(--glow-color);
+    animation: breathing 3s infinite ease-in-out;
+}
+
+@keyframes breathing {
+    0% {
+        box-shadow: 0 0 5px var(--glow-color);
+        opacity: 0.8;
+    }
+    50% {
+        box-shadow: 0 0 20px var(--glow-color);
+        opacity: 1;
+    }
+    100% {
+        box-shadow: 0 0 5px var(--glow-color);
+        opacity: 0.8;
+    }
+}

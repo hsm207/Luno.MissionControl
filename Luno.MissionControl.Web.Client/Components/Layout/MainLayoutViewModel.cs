@@ -3,7 +3,8 @@ namespace Luno.MissionControl.Web.Client.Components.Layout;
 public class MainLayoutViewModel
 {
     public string AppTitle { get; set; } = "MISSION CONTROL";
-    public string StatusText { get; set; } = "NOMINAL";
+    public string StatusText { get; set; } = "DEVELOPMENT";
+    public string StatusClass { get; set; } = "gleb-glow";
     public bool IsNavigationCollapsed { get; set; } = false;
     
     public List<NavigationItem> NavItems { get; } = new()

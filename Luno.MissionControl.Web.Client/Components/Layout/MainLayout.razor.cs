@@ -1,42 +1,25 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Hosting;
 
 namespace Luno.MissionControl.Web.Client.Components.Layout;
 
-public partial class MainLayout : IDisposable
+public partial class MainLayout
 {
-    [Inject] private PersistentComponentState ApplicationState { get; set; } = default!;
-    private PersistingComponentStateSubscription _subscription;
+    [Inject] private IHostEnvironment HostEnvironment { get; set; } = default!;
 
-    private MainLayoutViewModel ViewModel { get; } = new();
+    [Inject] private MainLayoutViewModel ViewModel { get; set; } = default!;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        _subscription = ApplicationState.RegisterOnPersisting(PersistData);
-
-        if (!ApplicationState.TryTakeFromJson<string>("AppTitle", out var title))
+        if (HostEnvironment.IsProduction())
         {
-            // Initializing on Server or first time
-            ViewModel.AppTitle = "MISSION CONTROL";
-            ViewModel.StatusText = "NOMINAL";
+            ViewModel.StatusText = "PRODUCTION";
+            ViewModel.StatusClass = "danger-glow";
         }
         else
         {
-            // Restoring on Client
-            ViewModel.AppTitle = title!;
-            ApplicationState.TryTakeFromJson<string>("StatusText", out var status);
-            ViewModel.StatusText = status ?? "NOMINAL";
+            ViewModel.StatusText = "DEVELOPMENT";
+            ViewModel.StatusClass = "gleb-glow";
         }
-    }
-
-    private Task PersistData()
-    {
-        ApplicationState.PersistAsJson("AppTitle", ViewModel.AppTitle);
-        ApplicationState.PersistAsJson("StatusText", ViewModel.StatusText);
-        return Task.CompletedTask;
-    }
-
-    public void Dispose()
-    {
-        _subscription.Dispose();
     }
 }
