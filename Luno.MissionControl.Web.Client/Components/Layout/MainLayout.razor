@@ -14,8 +14,8 @@
                 .environment-badge-bridge[data-status="danger-glow"] { --glow-color: rgb(255, 0, 0); }
             </style>
             <div class="environment-badge-bridge" data-status="@ViewModel.StatusClass">
-                <div class="fluent-badge environment-badge">
-                    <span class="status-text-target">@ViewModel.StatusText</span>
+                <div class="environment-status-pill">
+                    <FluentText Class="status-text-target">@ViewModel.StatusText</FluentText>
                 </div>
             </div>
         </FluentStack>

@@ -10,26 +10,28 @@
     animation: atmospheric-pulse 4s infinite ease-in-out;
 }
 
-/* 
-   CCP: The inner badge is a humble container. 
-   We style it directly via class inheritance from the bridge.
-*/
-.environment-badge {
-    display: inline-flex;
+
+.environment-status-pill {
+    --badge-font-size: 0.65rem;
+    --badge-font-weight: 900;
+    --badge-letter-spacing: 0.15em;
+    --badge-text-transform: uppercase;
+    
+    display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent !important;
-    border: none !important;
-    font-weight: 900 !important;
-    letter-spacing: 0.15em !important;
-    text-transform: uppercase;
-    color: var(--glow-color) !important;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid color-mix(in srgb, var(--glow-color), transparent 80%);
+    border-radius: 4px;
+    padding: 2px 8px;
+    color: var(--glow-color);
     text-shadow: 0 0 10px color-mix(in srgb, var(--glow-color), transparent 50%);
-}
-
-.environment-badge::after, .environment-badge::before {
-    display: none !important;
-    content: none !important;
+    backdrop-filter: blur(8px);
+    
+    font-size: var(--badge-font-size);
+    font-weight: var(--badge-font-weight);
+    letter-spacing: var(--badge-letter-spacing);
+    text-transform: var(--badge-text-transform);
 }
 
 @keyframes atmospheric-pulse {
