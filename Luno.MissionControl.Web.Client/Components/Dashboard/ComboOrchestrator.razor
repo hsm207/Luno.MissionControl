@@ -99,6 +99,11 @@
             </div>
         </FluentCard>
 
+        <div class="data-freshness-footer">
+            <div class="status-indicator-dot @(_lastPriceUpdate == null ? "connecting" : "online")"></div>
+            <div class="status-value">@DataFreshnessText</div>
+        </div>
+
     </FluentStack>
 </main>
 

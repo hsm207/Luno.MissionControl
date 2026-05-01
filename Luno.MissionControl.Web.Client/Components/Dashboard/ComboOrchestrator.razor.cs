@@ -14,7 +14,6 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
 {
     private FluentTextInput? _amountInput;
     private FluentSelect<string, string>? _currencySelect;
-    private FluentButton? _executeButton;
 
     [Inject] private IBasketState State { get; set; } = default!;
     [Inject] private IBasketService BasketService { get; set; } = default!;
@@ -28,6 +27,18 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     private IEnumerable<MarketMetadata> _selectedSearchItems { get; set; } = [];
     private ErrorBoundary? _errorBoundary;
     private string _rawSpendInput = "";
+    private DateTimeOffset? _lastPriceUpdate;
+
+    private string DataFreshnessText
+    {
+        get
+        {
+            if (_lastPriceUpdate == null) return "CONNECTING TO LIVE STREAM...";
+            var seconds = (int)(DateTimeOffset.UtcNow - _lastPriceUpdate.Value).TotalSeconds;
+            return $"PRICES REFRESHED {seconds} SECONDS AGO";
+        }
+    }
+
 
     private Task OnSearchAsync(OptionsSearchEventArgs<MarketMetadata> e)
     {
@@ -149,7 +160,12 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
         State.OnMarketsUpdate += HandleMarketsUpdate;
     }
 
-    private void HandlePriceUpdate(TickerSnapshot snapshot) => InvokeAsync(StateHasChanged);
+    private void HandlePriceUpdate(TickerSnapshot snapshot)
+    {
+        _lastPriceUpdate = snapshot.Timestamp;
+        InvokeAsync(StateHasChanged);
+    }
+
     
     private void HandleMarketsUpdate(IReadOnlyList<MarketMetadata> markets)
     {
