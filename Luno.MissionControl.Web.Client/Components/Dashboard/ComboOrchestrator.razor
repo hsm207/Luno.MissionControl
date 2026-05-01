@@ -50,11 +50,13 @@
                 </TemplateColumn>
                 <TemplateColumn Title="Weight (%)">
                     <div class="asset-weight">
-                        <WeightInput Weight="@context.Weight" 
+                        <WeightInput Id="@($"weight-input-{context.Pair}")"
+                                      Weight="@context.Weight" 
                                       HideLabel="true"
                                       WeightChanged="@(val => UpdateWeight(context.Pair, val))" />
                     </div>
                 </TemplateColumn>
+
                 <TemplateColumn Title="Planned Spend">
                     <span class="asset-spend">@GetCurrencySymbol() @GetAllocatedAmount(context).ToString("N2")</span>
                 </TemplateColumn>
