@@ -139,6 +139,36 @@
     color: #ff5555;
 }
 
+/* Execution Strategy Section */
+.strategy-footer-section {
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 16px;
+    margin-bottom: 32px;
+    border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.strategy-title {
+    color: var(--titan-gold);
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+    margin: 0 0 8px 0;
+    opacity: 0.8;
+}
+
+.strategy-text {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--colorNeutralForeground2);
+    margin: 0;
+}
+
+.gold-text {
+    color: var(--titan-gold);
+    font-weight: 700;
+}
+
 /* Search & Execution Actions */
 .actions-footer {
     display: flex;
