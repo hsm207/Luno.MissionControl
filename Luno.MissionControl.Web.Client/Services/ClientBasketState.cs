@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Luno.MissionControl.Application;
 using Microsoft.AspNetCore.Components;
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 
 namespace Luno.MissionControl.Web.Client.Services;
 
@@ -12,6 +13,7 @@ namespace Luno.MissionControl.Web.Client.Services;
 public class ClientBasketState : IBasketState, IAsyncDisposable
 {
     private readonly HubConnection _hubConnection;
+    private readonly ILogger<ClientBasketState> _logger;
     private readonly ConcurrentDictionary<string, TickerSnapshot> _prices = new();
     private readonly List<MarketMetadata> _markets = new();
     
@@ -24,8 +26,9 @@ public class ClientBasketState : IBasketState, IAsyncDisposable
     public string SelectedCurrency { get; set; } = "MYR";
     public decimal TargetSpend { get; set; } = 1000m;
 
-    public ClientBasketState(NavigationManager navigationManager)
+    public ClientBasketState(NavigationManager navigationManager, ILogger<ClientBasketState> logger)
     {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _hubConnection = new HubConnectionBuilder()
             .WithUrl(navigationManager.ToAbsoluteUri("/hubs/price"))
             .WithAutomaticReconnect()
@@ -42,7 +45,7 @@ public class ClientBasketState : IBasketState, IAsyncDisposable
     /// </summary>
     public Task ReceivePriceUpdate(TickerSnapshot snapshot)
     {
-        Console.WriteLine($"[CLIENT] Price Received: {snapshot.Pair} = {snapshot.Price}");
+        _logger.LogTrace("Price Received: {Pair} = {Price}", snapshot.Pair, snapshot.Price);
         _prices[snapshot.Pair] = snapshot;
         OnPriceUpdate?.Invoke(snapshot);
         return Task.CompletedTask;
@@ -53,7 +56,7 @@ public class ClientBasketState : IBasketState, IAsyncDisposable
     /// </summary>
     public Task ReceiveMarketMetadata(IReadOnlyList<MarketMetadata> markets)
     {
-        Console.WriteLine($"[CLIENT] Metadata Received: {markets.Count} markets");
+        _logger.LogInformation("Received metadata for {Count} trading pairs.", markets.Count);
         _markets.Clear();
         _markets.AddRange(markets);
         OnMarketsUpdate?.Invoke(_markets);
@@ -72,7 +75,7 @@ public class ClientBasketState : IBasketState, IAsyncDisposable
             {
                 // We log it, but we don't re-throw to the lifecycle caller.
                 // The consumer (UI) should check state or rely on our events.
-                Console.WriteLine($"[CLIENT] Hub Connection Failed: {ex.Message}");
+                _logger.LogError(ex, "Hub connection failed: {Message}", ex.Message);
             }
         }
     }
