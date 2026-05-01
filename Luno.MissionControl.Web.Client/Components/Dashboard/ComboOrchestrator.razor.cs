@@ -13,7 +13,6 @@ using Microsoft.Extensions.Logging;
 public partial class ComboOrchestrator : ComponentBase, IDisposable
 {
     private FluentTextInput? _amountInput;
-    private FluentSelect<string, string>? _currencySelect;
 
     [Inject] private IBasketState State { get; set; } = default!;
     [Inject] private IBasketService BasketService { get; set; } = default!;
