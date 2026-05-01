@@ -5,8 +5,8 @@ using Luno.MissionControl.Web.Services;
 namespace Luno.MissionControl.Web.Hubs;
 
 /// <summary>
-/// A high-fidelity SignalR Hub for broadcasting real-time price snapshots to the dashboard.
-/// Leverages a strongly-typed IPriceClient interface to eliminate magic strings and enforce architectural purity.
+/// Manages real-time price snapshot broadcasting using SignalR.
+/// Utilizes a strongly-typed <see cref="IPriceClient"/> to maintain architectural decoupling and type safety.
 /// </summary>
 public class PriceHub : Hub<IPriceClient>
 {
