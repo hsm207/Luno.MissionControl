@@ -154,6 +154,12 @@
     gap: 12px;
 }
 
+.add-coin-button {
+    --fluent-color-neutral-foreground-rest: var(--titan-gold);
+    --fluent-color-neutral-fill-stealth-hover: rgba(212, 175, 55, 0.1);
+    transition: var(--liquid-transition);
+}
+
 .buy-button {
     --fluent-control-corner-radius: 12px;
     padding: 8px 32px;

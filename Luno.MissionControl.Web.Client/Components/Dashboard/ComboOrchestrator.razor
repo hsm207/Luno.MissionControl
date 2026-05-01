@@ -73,12 +73,11 @@
                                         @bind-SelectedItems="@_selectedSearchItems"
                                         Multiple="false"
                                         Class="search-box" />
-                    <FluentButton Appearance="ButtonAppearance.Outline"
-                                   IconStart="@(new Icons.Regular.Size16.Add())"
-                                   OnClick="@AddAsset"
-                                   Class="add-button">
-                        Add to Combo
-                    </FluentButton>
+                    <FluentButton IconStart="@(new Icons.Regular.Size20.AddCircle())"
+                                  OnClick="@AddAsset"
+                                  Appearance="ButtonAppearance.Subtle"
+                                  Class="add-coin-button"
+                                  Title="Add to Combo" />
                 </div>
                 <div class="liquid-glow-wrapper">
                     <FluentButton Appearance="ButtonAppearance.Primary"
