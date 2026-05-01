@@ -1,215 +1,162 @@
-/* 📍 Scoped Styles for ComboOrchestrator */
+/* Combo Orchestrator: Centered Layout Architecture */
 
 .basket-page-container {
-    padding-bottom: 60px;
+    width: 100%;
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 24px;
+}
+
+/* Title Section & Metrics */
+.title-row {
+    width: 100%;
     display: flex;
-    flex-direction: column;
-    --fluent-stack-vertical-gap: 24px;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    padding-bottom: 16px;
 }
 
-.header-main-stack {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    --fluent-stack-horizontal-gap: 16px;
-}
-
-.header-allocation-stack {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    --fluent-stack-horizontal-gap: 16px;
-}
-
-.allocation-percent {
-    font-size: 1.2rem;
-    font-weight: 700;
-}
-
-.investment-card {
-    overflow: visible;
-    contain: none;
-}
-
-.investment-sentence-stack {
-    display: flex;
-    flex-direction: column;
-    --fluent-stack-vertical-gap: 16px;
-}
-
-/* 💎 Component Layout Structure */
-.investment-sentence-wrapper {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 32px;
-}
-
-.investment-icon {
-    fill: var(--titan-gold);
+.page-title {
+    font-size: 2rem;
+    font-weight: 900;
     color: var(--titan-gold);
+    letter-spacing: 6px;
+    margin: 0;
+    text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
 }
 
-.investment-label {
-    font-weight: 200;
-    opacity: 0.8;
-    letter-spacing: 1px;
-    font-size: 1.5rem; /* Equivalent to H3 */
+.allocation-summary {
+    text-align: right;
 }
 
-.investment-amount-input {
-    width: 140px;
-    text-align: center;
-    /* 💎 Fluent UI V5 Design Token Overrides */
-    --colorBrandForeground1: var(--titan-gold);
-    --colorBrandForeground2: var(--titan-gold);
-    --colorNeutralForeground1: var(--titan-gold);
-    --colorNeutralForeground1Hover: var(--titan-gold);
-    --colorNeutralForeground1Active: var(--titan-gold);
-    --colorNeutralForeground1Selected: var(--titan-gold);
-    --colorNeutralStroke1: transparent;
-    --colorNeutralStroke1Hover: transparent;
-    --colorNeutralStroke1Active: transparent;
-    --colorNeutralBackground1: transparent;
-    --colorNeutralBackground1Hover: transparent;
-    --colorNeutralBackground1Active: transparent;
+.allocation-label {
+    font-size: 0.7rem;
+    color: var(--colorNeutralForeground3);
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
-.investment-amount-input::part(control) {
-    font-size: 2.2rem !important;
-    font-weight: 800 !important;
-    color: var(--titan-gold) !important;
+.allocation-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    transition: var(--liquid-transition);
+}
+
+.emerald-glow {
+    color: #50fa7b;
+    text-shadow: 0 0 15px rgba(80, 250, 123, 0.4);
+}
+
+.warning-glow {
+    color: #ffb86c;
+}
+
+/* Allocation Row */
+.investment-hero {
+    padding: 20px 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.sentence {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    font-size: 1.8rem;
+    font-weight: 300;
+}
+
+.sentence-text {
+    color: var(--titan-white);
+}
+
+.editable-wrapper {
+    position: relative;
+    border-bottom: 2px dashed rgba(212, 175, 55, 0.5);
+    transition: var(--liquid-transition);
+}
+
+.editable-wrapper:focus-within {
+    border-bottom-color: var(--titan-gold);
+    box-shadow: 0 10px 20px -10px rgba(212, 175, 55, 0.3);
+}
+
+/* HUD Element Overrides */
+.hero-input, .hero-select {
+    --fluent-font-size-base: 1.8rem;
+    --fluent-font-weight-base: 800;
+    --fluent-color-neutral-foreground-rest: var(--titan-gold);
     background: transparent !important;
     border: none !important;
-    height: auto;
-    padding: 0;
-    transition: all 0.2s ease;
+    width: auto !important;
+    min-width: 60px !important;
 }
 
-.investment-amount-input::part(control):hover,
-.investment-amount-input::part(control):focus {
-    transform: scale(1.05);
-    text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
-    outline: none;
-}
-
-.currency-minimal-select {
-    width: 80px;
-}
-
-.hidden-indicator {
-    display: none !important;
-}
-
-.estimated-total-container {
-    margin-top: -16px;
-    margin-bottom: 24px;
-    padding-left: 32px;
-}
-
-.estimated-total-label {
-    font-size: 0.85rem;
-    opacity: 0.7;
-}
-
-.estimated-total-value {
-    font-weight: 700;
-    color: var(--titan-gold);
-}
-
-.estimated-total-note {
-    font-weight: 400;
-    opacity: 0.5;
-    margin-left: 8px;
-}
-
-.basket-divider {
-    margin: 20px 0;
-}
-
-.basket-grid {
-    min-height: 200px;
-}
-
-.price-column {
-    display: flex;
-    justify-content: center;
-}
-
-.weight-column, .spend-column, .delete-column {
-    display: flex;
-    justify-content: flex-end;
-}
-
-::deep .fluent-data-grid-row:hover {
-    background-color: rgba(212, 175, 55, 0.05) !important;
-}
-
-.asset-pair-label {
-    font-weight: bold;
-}
-
-.add-asset-stack {
-    display: flex;
-    flex-direction: column;
-    --fluent-stack-vertical-gap: 12px;
-}
-
-.search-stack {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-end;
-    --fluent-stack-horizontal-gap: 12px;
-    margin-top: 10px;
-}
-
-.search-input-wrapper {
-    flex-grow: 1;
-}
-
-.asset-search {
+/* Gilded Card Styles */
+.gilded-card {
     width: 100%;
-}
-
-.execution-container {
-    margin-top: 30px;
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    --fluent-stack-horizontal-alignment: flex-end;
-}
-
-.execute-button {
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    width: 340px;
-    height: 64px;
-    --colorBrandBackground: var(--titan-gold);
-    --colorBrandBackgroundHover: var(--titan-gold-bright);
-    --colorBrandForegroundOnBrand: var(--titan-obsidian);
-}
-
-/* Error States */
-.error-container {
     padding: 32px;
-    border: 1px solid rgba(255, 0, 0, 0.2);
-    border-radius: 16px;
-    background: rgba(255, 240, 240, 0.05);
+    background: rgba(20, 20, 20, 0.7) !important;
+    backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid rgba(212, 175, 55, 0.2) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 
+                inset 0 0 0 1px rgba(212, 175, 55, 0.1);
+    animation: breathing 8s ease-in-out infinite;
+}
+
+@keyframes breathing {
+    0% { box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6); border-color: rgba(212, 175, 55, 0.2); }
+    50% { box-shadow: 0 30px 80px rgba(212, 175, 55, 0.1); border-color: rgba(212, 175, 55, 0.4); }
+    100% { box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6); border-color: rgba(212, 175, 55, 0.2); }
+}
+
+/* Grid Table Styles */
+.basket-grid {
+    width: 100%;
+    margin-bottom: 24px;
+    background: transparent !important;
+}
+
+.asset-price { font-family: 'JetBrains Mono', monospace; font-size: 1rem; color: var(--titan-white); }
+.asset-weight { font-weight: 800; color: var(--titan-white); }
+.asset-spend { font-weight: 600; color: var(--titan-gold); }
+
+.btn-delete {
+    background: transparent;
+    border: none;
+    color: var(--colorNeutralForeground4);
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.btn-delete:hover {
+    color: #ff5555;
+}
+
+/* Search & Execution Actions */
+.actions-footer {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    gap: 16px;
+    gap: 24px;
 }
 
-.error-title {
-    color: var(--colorErrorForeground1);
-    font-weight: 700;
-    font-size: 1.2rem;
+.search-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.error-text {
-    opacity: 0.8;
+.buy-button {
+    --fluent-control-corner-radius: 12px;
+    padding: 8px 32px;
+    font-weight: 900 !important;
+    letter-spacing: 2px;
 }
