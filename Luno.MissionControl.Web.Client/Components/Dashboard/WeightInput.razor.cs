@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Components;
 public partial class WeightInput : ComponentBase
 {
     [Parameter]
+    public string? Id { get; set; }
+
+    [Parameter]
     public decimal Weight { get; set; }
 
     [Parameter]
@@ -13,17 +16,20 @@ public partial class WeightInput : ComponentBase
     [Parameter]
     public EventCallback<decimal> WeightChanged { get; set; }
 
-    private decimal? WeightValue
+    protected string? _rawValue;
+
+    protected override void OnParametersSet()
     {
-        get => Weight * 100;
-        set
+        _rawValue = (Weight * 100).ToString("F2");
+    }
+
+
+    protected async Task OnInputChanged(string? value)
+    {
+        _rawValue = value;
+        if (decimal.TryParse(value, out var result))
         {
-            var newVal = (value ?? 0) / 100m;
-            if (newVal != Weight)
-            {
-                Weight = newVal;
-                WeightChanged.InvokeAsync(newVal);
-            }
+            await WeightChanged.InvokeAsync(result / 100m);
         }
     }
 }
