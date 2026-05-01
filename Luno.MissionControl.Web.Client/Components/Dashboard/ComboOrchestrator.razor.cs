@@ -109,12 +109,12 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
         {
             try
             {
-                Console.WriteLine("[DIAGNOSTIC] UI: OnAfterRenderAsync - Starting background state orchestration.");
+                Logger.LogDebug("Starting background state orchestration.");
                 await State.StartAsync();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[DIAGNOSTIC] UI: State Initialization Error - {ex.GetType().Name}: {ex.Message}");
+                Logger.LogError(ex, "State initialization failed.");
                 await ToastService.ShowToastAsync(options =>
                 {
                     options.Intent = ToastIntent.Warning;
@@ -168,7 +168,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     
     private void HandleMarketsUpdate(IReadOnlyList<MarketMetadata> markets)
     {
-        Logger.LogInformation("UI: Received {Count} markets from server.", markets.Count);
+        Logger.LogInformation("Received {Count} markets from server.", markets.Count);
         InvokeAsync(StateHasChanged);
     }
 
@@ -228,7 +228,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
 
     private async Task ExecuteBasket()
     {
-        Console.WriteLine("[DIAGNOSTIC] UI: ExecuteBasket - Initiated.");
+        Logger.LogInformation("Execution flow started for {Amount} {Currency}.", State.TargetSpend, State.SelectedCurrency);
         using var forensic = Luno.MissionControl.Application.ForensicTracing.StartActivity("BasketExecution");
         var request = new BasketExecutionRequest(State.TargetSpend, _allocations); 
 
@@ -242,11 +242,11 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
 
         if (dialogResult.Cancelled) 
         {
-            Console.WriteLine("[DIAGNOSTIC] UI: ExecuteBasket - Cancelled by user.");
+            Logger.LogDebug("Basket execution cancelled by user.");
             return;
         }
 
-        Console.WriteLine("[DIAGNOSTIC] UI: ExecuteBasket - Confirmed. Starting execution.");
+        Logger.LogInformation("Orders confirmed. Dispatching {Count} allocation(s) to the bridge.", _allocations.Count);
         _isExecuting = true;
         
         // Show indeterminate progress toast for a premium feel
