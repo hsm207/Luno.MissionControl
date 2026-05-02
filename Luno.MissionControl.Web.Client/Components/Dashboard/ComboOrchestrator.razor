@@ -26,7 +26,7 @@
                 <div class="editable-wrapper">
                     <FluentTextInput @ref="_amountInput"
                                      @bind-Value="_rawSpendInput"
-                                     @bind-Value:after="@(async () => { if (decimal.TryParse(_rawSpendInput, NumberStyles.Any, CultureInfo.InvariantCulture, out var d)) { State.TargetSpend = d; _rawSpendInput = d.ToString("N0"); } })"
+                                     @bind-Value:after="OnAmountEntered"
                                      Appearance="TextInputAppearance.FilledDarker"
                                      Class="hero-input" />
                 </div>

@@ -88,6 +88,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
         {
             if (State.SelectedCurrency != value)
             {
+                Logger.LogDebug("Currency selection changing: {Old} -> {New}", State.SelectedCurrency, value);
                 TransitionCurrency(State.SelectedCurrency, value);
                 State.SelectedCurrency = value;
             }
@@ -161,6 +162,10 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
 
     private void HandlePriceUpdate(TickerSnapshot snapshot)
     {
+        if (_allocations.Any(a => a.Pair == snapshot.Pair))
+        {
+            Logger.LogTrace("Price updated for basket member: {Pair} = {Price}", snapshot.Pair, snapshot.Price);
+        }
         _lastPriceUpdate = snapshot.Timestamp;
         InvokeAsync(StateHasChanged);
     }
@@ -191,6 +196,20 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
         }
         
         _allocations = newAllocations;
+    }
+
+    private void OnAmountEntered()
+    {
+        if (decimal.TryParse(_rawSpendInput, NumberStyles.Any, CultureInfo.InvariantCulture, out var d)) 
+        { 
+            Logger.LogInformation("Investment amount updated: {Amount} {Currency}", d, State.SelectedCurrency);
+            State.TargetSpend = d; 
+            _rawSpendInput = d.ToString("N0"); 
+        }
+        else
+        {
+            Logger.LogWarning("Invalid amount entered: {Input}", _rawSpendInput);
+        }
     }
 
     private string GetCurrencySymbol() => State.SelectedCurrency switch
