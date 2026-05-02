@@ -13,6 +13,8 @@ using Microsoft.Extensions.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
+builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
+
 builder.Services.AddFluentUIComponents(config =>
 {
     config.MarkupSanitized.SanitizeInlineStyle = (value) => value;
