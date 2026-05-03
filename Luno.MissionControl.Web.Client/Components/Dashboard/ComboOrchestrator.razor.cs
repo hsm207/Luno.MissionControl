@@ -173,7 +173,6 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     
     private void HandleMarketsUpdate(IReadOnlyList<MarketMetadata> markets)
     {
-        Logger.LogInformation("Received {Count} markets from server.", markets.Count);
         InvokeAsync(StateHasChanged);
     }
 

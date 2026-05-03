@@ -56,13 +56,40 @@ public static class Extensions
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation()
+                    .AddMeter("Microsoft.AspNetCore.Components")
+                    .AddMeter("Microsoft.AspNetCore.Components.Lifecycle")
+                    .AddMeter("Microsoft.AspNetCore.Components.Server.Circuits")
                     .AddMeter("Luno.MissionControl.*");
             })
             .WithTracing(tracing =>
             {
                 tracing.AddSource(Luno.MissionControl.Application.ForensicTracing.SourceName)
-                    .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation();
+                    .AddSource("Microsoft.AspNetCore.Components")
+                    .AddSource("Microsoft.AspNetCore.Components.Server.Circuits")
+                    .AddSource("Microsoft.AspNetCore.SignalR.Server")
+                    .AddAspNetCoreInstrumentation(options =>
+                    {
+                        // Filter out noise from health checks and SignalR hub heartbeats
+                        options.Filter = (httpContext) =>
+                        {
+                            var path = httpContext.Request.Path.Value ?? string.Empty;
+                            return path != "/health" && path != "/alive" && !path.StartsWith("/pricehub");
+                        };
+                    })
+                    .AddHttpClientInstrumentation(options =>
+                    {
+                        // Filter out outgoing telemetry traffic to the dashboard to avoid recursive tracing
+                        options.FilterHttpRequestMessage = (req) =>
+                        {
+                            return !req.RequestUri?.PathAndQuery.Contains("/_otlp") ?? true;
+                        };
+
+                        // Enrich spans with Method + Path for better observability in the dashboard
+                        options.EnrichWithHttpRequestMessage = (activity, request) =>
+                        {
+                            activity.DisplayName = $"{request.Method} {request.RequestUri?.AbsolutePath}";
+                        };
+                    });
             });
 
         builder.AddOpenTelemetryExporters();
@@ -114,11 +141,11 @@ public static class Extensions
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
         // Adding health checks routes to matching the Aspire dashboard expected endpoints
-        app.MapHealthChecks("/health");
+        app.MapHealthChecks("/health").DisableHttpMetrics();
         app.MapHealthChecks("/alive", new HealthCheckOptions
         {
             Predicate = r => r.Tags.Contains("live")
-        });
+        }).DisableHttpMetrics();
 
         return app;
     }
