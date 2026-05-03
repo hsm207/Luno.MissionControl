@@ -3,6 +3,7 @@ using System.Net.Http;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Luno.MissionControl.Application;
 using Luno.MissionControl.Web.Client.Services;
+using Luno.MissionControl.Web.Client.Infrastructure;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -37,6 +38,7 @@ builder.Services.AddOpenTelemetry()
     .WithTracing(tracing =>
     {
         tracing.AddSource(ForensicTracing.SourceName);
+        tracing.AddSource("Microsoft.AspNetCore.SignalR.Client");
         tracing.AddOtlpExporter(opt =>
         {
             opt.Protocol = OtlpExportProtocol.HttpProtobuf;
@@ -54,6 +56,8 @@ builder.Services.AddOpenTelemetry()
         });
     })
     .WithMetrics(metrics => { }); // Metrics MUST be disabled/empty to prevent background threads.
+
+builder.Services.AddPriceHubClient();
 
 builder.Services.AddScoped<ClientBasketState>();
 builder.Services.AddScoped<IBasketState>(sp => sp.GetRequiredService<ClientBasketState>());
