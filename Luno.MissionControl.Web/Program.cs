@@ -7,6 +7,8 @@ using Luno.MissionControl.Web.Client.Services;
 using Luno.SDK;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,8 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents(options => options.DetailedErrors = builder.Environment.IsDevelopment())
     .AddInteractiveWebAssemblyComponents();
+
+builder.Services.AddScoped<CircuitHandler, CircuitLifecycleLogger>();
 
 builder.Services.AddSignalR();
 builder.Services.AddFluentUIComponents(config =>
