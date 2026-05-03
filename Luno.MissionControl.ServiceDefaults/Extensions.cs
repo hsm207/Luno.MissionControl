@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -7,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -32,6 +35,9 @@ public static class Extensions
             // Turn on service discovery by default
             http.AddServiceDiscovery();
         });
+
+        // Add the OTLP forwarder for WASM telemetry
+        builder.AddOtlpForwarder();
 
         return builder;
     }
@@ -85,6 +91,26 @@ public static class Extensions
         return builder;
     }
 
+    /// <summary>
+    /// Registers the OTLP forwarder service and its dependencies.
+    /// </summary>
+    public static IHostApplicationBuilder AddOtlpForwarder(this IHostApplicationBuilder builder)
+    {
+        var endpoint = builder.Configuration["ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL"];
+        if (!string.IsNullOrWhiteSpace(endpoint))
+        {
+            var rawHeaders = builder.Configuration["OTEL_EXPORTER_OTLP_HEADERS"];
+
+            builder.Services.AddHttpClient("OtlpForwarder");
+            builder.Services.AddSingleton(sp => new OtlpForwarder(
+                sp.GetRequiredService<IHttpClientFactory>().CreateClient("OtlpForwarder"),
+                sp.GetRequiredService<ILogger<OtlpForwarder>>(),
+                endpoint,
+                rawHeaders));
+        }
+        return builder;
+    }
+
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
         // Adding health checks routes to matching the Aspire dashboard expected endpoints
@@ -93,6 +119,21 @@ public static class Extensions
         {
             Predicate = r => r.Tags.Contains("live")
         });
+
+        return app;
+    }
+
+    /// <summary>
+    /// Maps a transparent proxy for OTLP HTTP traffic from client-side (WASM) applications.
+    /// Uses the OtlpForwarder service to handle the actual proxying logic.
+    /// </summary>
+    public static WebApplication MapOtlpForwarder(this WebApplication app)
+    {
+        if (app.Services.GetService<OtlpForwarder>() is not null)
+        {
+            app.MapPost("/_otlp/{**path}", async (HttpContext context, string path, OtlpForwarder forwarder) =>
+                await forwarder.ForwardAsync(path, context));
+        }
 
         return app;
     }

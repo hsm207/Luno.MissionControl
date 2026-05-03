@@ -47,6 +47,7 @@ builder.Services.AddScoped<Luno.MissionControl.Web.Client.Components.Layout.Main
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
+app.MapOtlpForwarder();
 
 if (app.Environment.IsDevelopment())
 {
