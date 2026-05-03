@@ -19,4 +19,28 @@
       </DataCollector>
     </DataCollectors>
   </DataCollectionRunSettings>
+
+  <!-- Automation defaults to reduce CLI noise and ensure Aspire resource logs are visible without manual flags -->
+  <RunConfiguration>
+    <NoLogo>true</NoLogo>
+  </RunConfiguration>
+
+  <LoggerRunSettings>
+    <Loggers>
+      <Logger friendlyName="console" enabled="True">
+        <Configuration>
+          <Verbosity>normal</Verbosity>
+        </Configuration>
+      </Logger>
+    </Loggers>
+  </LoggerRunSettings>
+
+  <!-- Enable headed mode and slow-mo for local UI debugging sessions -->
+  <Playwright>
+    <BrowserName>chromium</BrowserName>
+    <LaunchOptions>
+      <Headless>false</Headless>
+      <SlowMo>500</SlowMo>
+    </LaunchOptions>
+  </Playwright>
 </RunSettings>
