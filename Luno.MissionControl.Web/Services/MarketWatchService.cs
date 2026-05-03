@@ -3,6 +3,7 @@ using Luno.MissionControl.Web.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using Luno.SDK;
 using Luno.SDK.Application.Market;
+using System.Diagnostics.Metrics;
 
 namespace Luno.MissionControl.Web.Services;
 
@@ -12,12 +13,14 @@ namespace Luno.MissionControl.Web.Services;
 /// </summary>
 public class MarketWatchService : BackgroundService
 {
+    private static readonly Meter s_meter = new("Luno.MissionControl.Web.MarketWatch");
     private readonly ILunoClient _lunoClient;
     private readonly IPriceBroadcaster _broadcaster;
     private readonly MarketInventory _inventory;
     private readonly IHubContext<PriceHub, IPriceClient> _hubContext;
     private readonly ILogger<MarketWatchService> _logger;
     private readonly PeriodicTimer _timer = new(TimeSpan.FromSeconds(30));
+    private int _heartbeatValue = 1;
 
     public MarketWatchService(
         ILunoClient lunoClient,
@@ -31,6 +34,9 @@ public class MarketWatchService : BackgroundService
         _inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
         _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        // Register a heartbeat gauge to replace the noisy "I'm alive" log spam
+        s_meter.CreateObservableGauge("market_watch_heartbeat", () => _heartbeatValue);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -63,7 +69,7 @@ public class MarketWatchService : BackgroundService
             int tickCount = 0;
             while (await _timer.WaitForNextTickAsync(stoppingToken))
             {
-                _logger.LogInformation("Streaming market snapshots at {Time}", DateTimeOffset.UtcNow);
+                _logger.LogDebug("Streaming market snapshots at {Time}", DateTimeOffset.UtcNow);
                 
                 // Refresh metadata every 10 ticks (approx every 5 minutes)
                 if (++tickCount % 10 == 0)
