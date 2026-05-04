@@ -1,22 +1,31 @@
 using Aspire.Hosting;
 using Aspire.Hosting.Docker;
+using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Enable Docker Compose deployment target and map the Dashboard for local production simulation.
+// We use port 0 to let the OS assign a random free port, avoiding sticky port conflicts.
 builder.AddDockerComposeEnvironment("env")
-    .WithDashboard(d => d.WithHostPort(18888));
+    .WithDashboard(d => d.WithHostPort(0));
 
-var apiKeyId = builder.AddParameter("luno-api-key-id");
-var apiKeySecret = builder.AddParameter("luno-api-key-secret", secret: true);
+var apiKeyId = builder.AddParameter("luno-api-key-id", 
+    builder.Configuration["Luno:ApiKeyId"] ?? builder.Configuration["Parameters:luno-api-key-id"] ?? "MISSING_ID");
 
-// Register the Web Frontend (Server project which hosts the WASM client)
-// Service Discovery allows the MarketWatchService to be traced by the Dashboard.
-builder.AddProject<Projects.Luno_MissionControl_Web>("webfrontend")
+var apiKeySecret = builder.AddParameter("luno-api-key-secret", 
+    builder.Configuration["Luno:ApiKeySecret"] ?? builder.Configuration["Parameters:luno-api-key-secret"] ?? "MISSING_SECRET", 
+    secret: true);
+
+var webfrontend = builder.AddProject<Projects.Luno_MissionControl_Web>("webfrontend")
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health")
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", builder.Environment.EnvironmentName)
     .WithEnvironment("Luno__ApiKeyId", apiKeyId)
     .WithEnvironment("Luno__ApiKeySecret", apiKeySecret);
+
+if (!builder.Environment.IsDevelopment())
+{
+    var endpoint = builder.Configuration["ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL"] ?? "http://env-dashboard:18890";
+    webfrontend.WithEnvironment("ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL", endpoint);
+}
 
 builder.Build().Run();

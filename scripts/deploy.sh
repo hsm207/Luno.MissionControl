@@ -8,11 +8,9 @@ PROJECT_NAME="Luno.MissionControl"
 OUTPUT_DIR="./aspire-output"
 COMPOSE_FILE="$OUTPUT_DIR/docker-compose.yaml"
 
-# Container Internal Ports
 WEB_INTERNAL_PORT=8080
 DASHBOARD_INTERNAL_PORT=18888
 
-# ANSI Colors
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
 YELLOW='\033[0;33m'
@@ -49,27 +47,12 @@ parse_arguments() {
 purge_existing_deployments() {
     echo -e "${YELLOW}🧹 Purging existing environment...${NC}"
 
-    # Identify existing projects by label to ensure targeted cleanup
-    local existing_projects=$(docker ps --filter "label=com.docker.compose.project" --format '{{.Label "com.docker.compose.project"}}' | sort -u)
-
-    if [ -n "$existing_projects" ]; then
-        for project in $existing_projects; do
-            echo -e "   🛑 Shutting down project: ${BOLD}$project${NC}"
-            # If the output dir matches the project, use its compose file for a cleaner down
-            if [ -f "$COMPOSE_FILE" ] && grep -q "$project" "$COMPOSE_FILE" 2>/dev/null; then
-                docker compose -f "$COMPOSE_FILE" down -v --remove-orphans || true
-            else
-                docker compose -p "$project" down -v --remove-orphans || true
-            fi
-        done
-    fi
-
-    # Deep scour for any lingering orphans by label
-    echo -e "   🧹 Scouring orphaned containers and networks...${NC}"
-    docker ps -aq --filter "label=com.docker.compose.project" | xargs -r docker rm -f
+    # Absolute Scour: Kill ANY container that belongs to a compose project or has our service names
+    docker ps -aq --filter "label=com.docker.compose.project" | xargs -r docker rm -f || true
     docker network prune -f --filter "label=com.docker.compose.project" 2>/dev/null || true
+    
+    sleep 1
 
-    # Clean up the output directory
     rm -rf "$OUTPUT_DIR"
     mkdir -p "$OUTPUT_DIR"
 }
@@ -77,14 +60,24 @@ purge_existing_deployments() {
 trigger_aspire_deployment() {
     echo -e "${YELLOW}🏗️  Deploying Aspire Resources (Detached)...${NC}"
     
-    # Map Luno credentials to Aspire Parameter convention
-    export Parameters__luno_api_key_id="$LUNO_ID"
-    export Parameters__luno_api_key_secret="$LUNO_SECRET"
+    export Luno__ApiKeyId="$LUNO_ID"
+    export Luno__ApiKeySecret="$LUNO_SECRET"
+    export ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL="http://env-dashboard:18890"
     
     aspire deploy --non-interactive --environment Production --output-path "$OUTPUT_DIR" || {
         local ret=$?
         [ $ret -eq 6 ] && echo -e "${YELLOW}⚠️  Note: RPC disconnected (Code 6), but deployment triggered.${NC}" || exit $ret
     }
+
+    cat <<EOF > "$OUTPUT_DIR/.env"
+LUNO_API_KEY_ID=$LUNO_ID
+LUNO_API_KEY_SECRET=$LUNO_SECRET
+WEBFRONTEND_IMAGE=webfrontend:latest
+WEBFRONTEND_PORT=8080
+ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL=http://env-dashboard:18890
+EOF
+
+    docker compose --file "$COMPOSE_FILE" up -d
 }
 
 # --- 2. Orchestration Helpers ---
@@ -122,6 +115,35 @@ discover_service_url() {
     echo "$url"
 }
 
+discover_dashboard_token() {
+    local service="env-dashboard"
+    local container_id=$(docker ps --filter "label=com.docker.compose.service=$service" --filter "status=running" --quiet | head -n 1)
+    
+    if [ -n "$container_id" ]; then
+        local token=$(docker logs "$container_id" 2>&1 | grep "login?t=" | tail -n 1 | grep -oE "t=[a-zA-Z0-9]+" | cut -d'=' -f2)
+        echo "$token"
+    fi
+}
+
+wait_for_dashboard_token() {
+    local timeout=300 # 5 minutes
+    local elapsed=0
+    
+    echo -ne "   ⏳ Waiting for dashboard token... " >&2
+    while [ $elapsed -lt $timeout ]; do
+        local token=$(discover_dashboard_token)
+        if [ -n "$token" ]; then
+            echo -e "${GREEN}Discovered!${NC}" >&2
+            echo "$token"
+            return 0
+        fi
+        sleep 5
+        ((elapsed+=5))
+    done
+    echo -e "${RED}Timeout!${NC}" >&2
+    return 1
+}
+
 dump_diagnostic_logs() {
     echo -e "${RED}${BOLD}❌ MISSION CONTROL DEPLOYMENT FAILED HEALTH CHECKS!${NC}"
     echo -e "${YELLOW}📜 DUMPING LOGS FOR DIAGNOSTICS:${NC}"
@@ -148,7 +170,14 @@ main() {
 
     echo -e "${YELLOW}🔑 Discovering Service Endpoints (Docker Native)...${NC}"
     local frontend_url=$(discover_service_url "webfrontend" "$WEB_INTERNAL_PORT")
-    local dashboard_url=$(discover_service_url "env-dashboard" "$DASHBOARD_INTERNAL_PORT")
+    local dashboard_base=$(discover_service_url "env-dashboard" "$DASHBOARD_INTERNAL_PORT")
+    
+    local dashboard_token=$(wait_for_dashboard_token | tail -n 1)
+
+    if [ -z "$dashboard_token" ]; then
+        echo -e "${RED}❌ Dashboard token discovery failed or timed out! Observability is required for deployment.${NC}"
+        exit 1
+    fi
 
     if [ -z "$frontend_url" ]; then
         echo -e "${RED}❌ Could not discover Web Frontend URL!${NC}"
@@ -159,7 +188,11 @@ main() {
     if node scripts/verify_deploy.js "$frontend_url"; then
         echo "------------------------------------------------------------"
         echo -e "${GREEN}${BOLD}✨ MISSION CONTROL DEPLOYMENT SUCCESSFUL!${NC}"
-        [ -n "$dashboard_url" ] && echo -e "   🌐 Dashboard: ${BOLD}$dashboard_url${NC}"
+        if [ -n "$dashboard_base" ] && [ -n "$dashboard_token" ]; then
+            echo -e "   🌐 Dashboard: ${BOLD}$dashboard_base/login?t=$dashboard_token${NC}"
+        elif [ -n "$dashboard_base" ]; then
+            echo -e "   🌐 Dashboard: ${BOLD}$dashboard_base${NC}"
+        fi
         echo -e "   🚀 Frontend:  ${BOLD}$frontend_url${NC}"
     else
         dump_diagnostic_logs
@@ -167,5 +200,4 @@ main() {
     fi
 }
 
-# Ignition!
 main "$@"

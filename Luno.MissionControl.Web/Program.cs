@@ -12,7 +12,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
 
 builder.Services.AddRazorComponents()
@@ -27,7 +26,12 @@ builder.Services.AddFluentUIComponents(config =>
     config.MarkupSanitized.SanitizeInlineStyle = (value) => value;
 });
 
-builder.Services.AddLunoClient();
+builder.Services.AddLunoClient(options =>
+{
+    options.WithCredentials(
+        builder.Configuration["Luno:ApiKeyId"] ?? string.Empty,
+        builder.Configuration["Luno:ApiKeySecret"] ?? string.Empty);
+});
 builder.Services.AddSingleton<MarketInventory>();
 builder.Services.AddSingleton<IPriceBroadcaster, PriceBroadcaster>();
 

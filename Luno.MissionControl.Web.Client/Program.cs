@@ -68,4 +68,9 @@ builder.Services.AddScoped<IBasketService, BasketServiceProxy>();
 builder.Services.AddScoped<Luno.MissionControl.Web.Client.Components.Layout.MainLayoutViewModel>();
 
 
-await builder.Build().RunAsync();
+var app = builder.Build();
+
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("Luno Mission Control WASM initialized. Environment: {Env}", builder.HostEnvironment.Environment);
+
+await app.RunAsync();
