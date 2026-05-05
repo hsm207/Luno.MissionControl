@@ -290,6 +290,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
                 options.Intent = ToastIntent.Success;
                 options.Title = "Mission Accomplished";
                 options.Body = $"Successfully deployed {basketResult.Orders.Count} limit orders to the basket.";
+                options.Timeout = 2000;
             });
             _allocations.Clear();
         }
