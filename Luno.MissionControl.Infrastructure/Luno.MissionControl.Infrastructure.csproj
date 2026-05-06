@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../Luno.SDK/Luno.SDK.Core/Luno.SDK.Core.csproj" />
+    <ProjectReference Include="../../Luno.SDK/Luno.SDK.Application/Luno.SDK.Application.csproj" />
+    <ProjectReference Include="../../Luno.SDK/Luno.SDK.Infrastructure/Luno.SDK.Infrastructure.csproj" />
+    <ProjectReference Include="../Luno.MissionControl.Core/Luno.MissionControl.Core.csproj" />
+    <ProjectReference Include="../Luno.MissionControl.Application/Luno.MissionControl.Application.csproj" />
+  </ItemGroup>
+
+</Project>

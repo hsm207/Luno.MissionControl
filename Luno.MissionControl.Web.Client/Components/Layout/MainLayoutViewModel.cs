@@ -4,7 +4,7 @@ public class MainLayoutViewModel
 {
     public string AppTitle { get; set; } = "MISSION CONTROL";
     public string StatusText { get; set; } = "DEVELOPMENT";
-    public string StatusClass { get; set; } = "gleb-glow";
+    public string StatusClass { get; set; } = "gold-glow";
     public bool IsNavigationCollapsed { get; set; } = false;
     
     public List<NavigationItem> NavItems { get; } = new()

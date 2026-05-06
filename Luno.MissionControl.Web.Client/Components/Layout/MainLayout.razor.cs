@@ -19,7 +19,7 @@ public partial class MainLayout
         else
         {
             ViewModel.StatusText = "DEVELOPMENT";
-            ViewModel.StatusClass = "gleb-glow";
+            ViewModel.StatusClass = "gold-glow";
         }
     }
 }

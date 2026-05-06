@@ -1,6 +1,7 @@
+using Luno.MissionControl.Application.Models;
 using Luno.MissionControl.Application;
 
-namespace Luno.MissionControl.Application;
+namespace Luno.MissionControl.Application.Ports;
 
 /// <summary>
 /// An internal singleton service for broadcasting live price snapshots within the server process.

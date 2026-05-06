@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Luno.MissionControl.Application;
+namespace Luno.MissionControl.Application.Diagnostics;
 
 /// <summary>
 /// Provides a unified, high-stakes forensic tracing source for the entire Mission Control ecosystem.

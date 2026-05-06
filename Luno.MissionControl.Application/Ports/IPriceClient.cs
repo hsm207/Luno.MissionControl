@@ -1,4 +1,5 @@
-namespace Luno.MissionControl.Application;
+using Luno.MissionControl.Application.Models;
+namespace Luno.MissionControl.Application.Ports;
 
 /// <summary>
 /// Defines the SignalR client contract for receiving real-time price updates.
@@ -17,23 +18,3 @@ public interface IPriceClient
     /// </summary>
     Task ReceiveMarketMetadata(IReadOnlyList<MarketMetadata> markets);
 }
-
-/// <summary>
-/// A lightweight representation of market metadata for UI filtering.
-/// </summary>
-public record MarketMetadata(
-    string Pair,
-    string BaseCurrency,
-    string CounterCurrency
-);
-
-/// <summary>
-/// A lightweight snapshot for UI consumption.
-/// </summary>
-public record TickerSnapshot(
-    string Pair,
-    decimal Price,
-    decimal Ask,
-    decimal Bid,
-    DateTimeOffset Timestamp
-);

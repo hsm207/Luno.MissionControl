@@ -1,6 +1,8 @@
 @using Luno.MissionControl.Application
+@using Luno.MissionControl.Application.Ports
+@using Luno.MissionControl.Application.Commands
 @using Luno.MissionControl.Application.Models
-@using Luno.MissionControl.Web.Client.Services
+@using Luno.MissionControl.Web.Client.Adapters
 @using System.Globalization
 
 <ErrorBoundary @ref="_errorBoundary">
@@ -28,6 +30,7 @@
                                      @bind-Value="_rawSpendInput"
                                      @bind-Value:after="OnAmountEntered"
                                      Appearance="TextInputAppearance.FilledDarker"
+                                     Id="hero-investment-input"
                                      Class="hero-input" />
                 </div>
                 <div class="editable-wrapper">
@@ -41,7 +44,7 @@
             </div>
         </div>
         <FluentCard Class="gilded-card">
-            <FluentDataGrid Items="@_allocations.AsQueryable()" TGridItem="Allocation" Class="basket-grid">
+            <FluentDataGrid Items="@_allocations.AsQueryable()" TGridItem="AllocationRequest" Class="basket-grid">
                 <TemplateColumn Title="Asset Pair">
                     <span class="asset-name">@FormatPair(context.Pair)</span>
                 </TemplateColumn>

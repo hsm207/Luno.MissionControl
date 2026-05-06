@@ -1,3 +1,4 @@
+using Luno.MissionControl.Application.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -63,7 +64,7 @@ public static class Extensions
             })
             .WithTracing(tracing =>
             {
-                tracing.AddSource(Luno.MissionControl.Application.ForensicTracing.SourceName)
+                tracing.AddSource(ForensicTracing.SourceName)
                     .AddSource("Microsoft.AspNetCore.Components")
                     .AddSource("Microsoft.AspNetCore.Components.Server.Circuits")
                     .AddSource("Microsoft.AspNetCore.SignalR.Server")
