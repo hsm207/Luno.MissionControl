@@ -12,7 +12,7 @@
     <PackageReference Include="Yarp.ReverseProxy" Version="2.3.0" />
     <ProjectReference Include="..\Luno.MissionControl.ServiceDefaults\Luno.MissionControl.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Luno.MissionControl.Web.Client\Luno.MissionControl.Web.Client.csproj" />
-    <ProjectReference Include="../../Luno.SDK/Luno.SDK.Infrastructure/Luno.SDK.Infrastructure.csproj" />
+    <ProjectReference Include="..\Luno.MissionControl.Infrastructure\Luno.MissionControl.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.4" />

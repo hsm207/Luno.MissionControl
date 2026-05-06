@@ -9,7 +9,7 @@ using Luno.MissionControl.Application.Commands;
 using Luno.MissionControl.Application.Models;
 using Luno.MissionControl.Web.Client.Adapters;
 using Luno.MissionControl.Web.Controllers;
-using Luno.SDK;
+using Luno.MissionControl.Infrastructure;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Components.Server.Circuits;
@@ -31,15 +31,11 @@ builder.Services.AddFluentUIComponents(config =>
     config.MarkupSanitized.SanitizeInlineStyle = (value) => value;
 });
 
-builder.Services.AddLunoClient(options =>
-{
-    options.WithCredentials(
-        builder.Configuration["Luno:ApiKeyId"] ?? string.Empty,
-        builder.Configuration["Luno:ApiKeySecret"] ?? string.Empty);
-});
-builder.Services.AddSingleton<MarketInventory>();
-builder.Services.AddSingleton<IPriceBroadcaster, PriceBroadcaster>();
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
+builder.Services.AddSingleton<PriceBroadcaster>();
+builder.Services.AddSingleton<IPriceBroadcaster>(sp => sp.GetRequiredService<PriceBroadcaster>());
+builder.Services.AddSingleton<MarketInventory>();
 builder.Services.AddScoped<ServerBasketState>();
 builder.Services.AddScoped<IBasketState>(sp => sp.GetRequiredService<ServerBasketState>());
 builder.Services.AddScoped<IPriceClient>(sp => sp.GetRequiredService<ServerBasketState>());
