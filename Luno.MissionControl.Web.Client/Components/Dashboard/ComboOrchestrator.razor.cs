@@ -8,7 +8,6 @@ using Luno.MissionControl.Application.Commands;
 using Luno.MissionControl.Application.Models;
 using Luno.MissionControl.Application.Diagnostics;
 using Luno.MissionControl.Web.Client.Adapters;
-using Luno.SDK;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
@@ -252,9 +251,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     {
         using var forensic = ForensicTracing.StartActivity("BasketExecution");
         
-        // Resolve Account IDs (UI Adapter Responsibility)
-        // [PHASE 2 FALLBACK] If not set, we use placeholders to avoid breaking the build, 
-        // but in Phase 3 these will be user-selected.
+        // [ARCHITECTURE] Temporary placeholders until User-Selected accounts are implemented.
         var baseAccId = State.BaseAccountId != 0 ? State.BaseAccountId : 12345L;
         var counterAccId = State.CounterAccountId != 0 ? State.CounterAccountId : 67890L;
 
@@ -281,7 +278,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
         Logger.LogInformation("Orders confirmed. Dispatching {Count} allocation(s) to the bridge.", _allocations.Count);
         _isExecuting = true;
         
-        // Show indeterminate progress toast for a premium feel
+
         var progressToast = await ToastService.ShowToastInstanceAsync(options =>
         {
             options.Id = "basket-execution";
@@ -290,10 +287,10 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
             options.Timeout = null; // Stays until dismissed
         });
 
-        // 1. High-Fidelity Call via Protected Result Bridge
+
         var basketResult = await BasketService.ExecuteAsync(command);
 
-        // 2. Teardown Feedback
+
         await progressToast.CloseAsync(ToastCloseReason.Dismissed);
         _isExecuting = false;
 
