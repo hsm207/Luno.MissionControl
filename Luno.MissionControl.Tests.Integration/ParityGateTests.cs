@@ -12,7 +12,7 @@ namespace Luno.MissionControl.Tests.Integration;
 /// opens the Review Gate dialog, and dispatches orders via the simulated orchestrator.
 /// </summary>
 public class ParityGateTests(MissionControlTestingApplicationFactory factory) 
-    : PageTest, IClassFixture<MissionControlTestingApplicationFactory>
+    : LunoBrowserTestBase, IClassFixture<MissionControlTestingApplicationFactory>
 {
 
     [Theory(DisplayName = "Parity Gate: Full Basket Execution Flow (Triple Verification)")]
@@ -23,6 +23,9 @@ public class ParityGateTests(MissionControlTestingApplicationFactory factory)
     {
         try
         {
+            // 0. Reset: Clear logs from previous runs to maintain forensic isolation
+            factory.LogCollector.Clear();
+
             // 1. Arrange: Start Aspire Orchestration
             var app = await factory.CreateAndStartAsync();
             var frontendUri = app.GetEndpoint("webfrontend");
@@ -76,20 +79,20 @@ public class ParityGateTests(MissionControlTestingApplicationFactory factory)
             // We wait for the success text to appear anywhere (pierces shadow DOM by default)
             var toastMessage = Page.GetByText("Mission Accomplished");
             await toastMessage.WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = 30000 });
-
-            // [VICTORY] Take a final screenshot of the successful state!
-            var victoryPath = Path.Combine(Directory.GetCurrentDirectory(), $"parity-gate-victory-run-{run}.png");
-            await Page.ScreenshotAsync(new() { Path = victoryPath, FullPage = true });
-            Console.WriteLine($"[SUCCESS] Victory screenshot for run {run} saved to: {victoryPath}");
-
             await Assertions.Expect(toastMessage).ToBeVisibleAsync();
+
+            // [VICTORY] Capture total forensics for audit parity
+            await CaptureForensicsAsync(factory, $"run-{run}");
+
+            // [STABILITY MANDATE] Verify that the core business logic received the correct signal.
+            // We use the LogCollector directly here to perform the final business-layer assertion.
+            var logs = factory.LogCollector.GetLogs("webfrontend");
+            Assert.Contains(logs, log => log.Contains("[SIMULATION] Execution request received"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            // [DIAGNOSTIC] Take a screenshot on failure so we can see the UI state!
-            var screenshotPath = Path.Combine(Directory.GetCurrentDirectory(), $"parity-gate-failure-run-{run}.png");
-            await Page.ScreenshotAsync(new() { Path = screenshotPath, FullPage = true });
-            Console.WriteLine($"[FAILURE] Run {run} failed. Screenshot saved to: {screenshotPath}");
+            // [DIAGNOSTIC] Capture failure forensics for total transparency
+            await CaptureForensicsAsync(factory, $"run-{run}", isFailure: true);
             throw;
         }
     }
