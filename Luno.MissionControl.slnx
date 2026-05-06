@@ -1,10 +1,13 @@
 <Solution>
   <Project Path="Luno.MissionControl.AppHost/Luno.MissionControl.AppHost.csproj" />
+  <Project Path="Luno.MissionControl.Infrastructure.Tests/Luno.MissionControl.Infrastructure.Tests.csproj" />
+  <Project Path="Luno.MissionControl.Infrastructure/Luno.MissionControl.Infrastructure.csproj" />
   <Project Path="Luno.MissionControl.ServiceDefaults/Luno.MissionControl.ServiceDefaults.csproj" />
   <Project Path="Luno.MissionControl.Application/Luno.MissionControl.Application.csproj" />
   <Project Path="Luno.MissionControl.Web/Luno.MissionControl.Web.csproj" />
   <Project Path="Luno.MissionControl.Web.Client.Tests/Luno.MissionControl.Web.Client.Tests.csproj" />
   <Project Path="Luno.MissionControl.Web.Client/Luno.MissionControl.Web.Client.csproj" />
+  <Project Path="Luno.MissionControl.Architecture.Tests/Luno.MissionControl.Architecture.Tests.csproj" />
   <Project Path="Luno.MissionControl.Core.Tests/Luno.MissionControl.Core.Tests.csproj" />
   <Project Path="Luno.MissionControl.Core/Luno.MissionControl.Core.csproj" />
   <Project Path="Luno.MissionControl.Hosting/Luno.MissionControl.Hosting.csproj" />
