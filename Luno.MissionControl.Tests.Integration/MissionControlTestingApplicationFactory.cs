@@ -1,6 +1,5 @@
 using Aspire.Hosting;
 using Aspire.Hosting.Testing;
-using Aspire.Hosting.ApplicationModel;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,35 +27,31 @@ public class MissionControlTestingApplicationFactory : DistributedApplicationFac
         if (Args is { Length: > 0 })
         {
             applicationOptions.Args = Args;
+
+            // Explicitly sync the environment name from Args to ensure the AppHost builder reflects the intended test environment.
+            for (int i = 0; i < Args.Length - 1; i++)
+            {
+                if (Args[i] == "--environment" || Args[i] == "-e")
+                {
+                    hostOptions.EnvironmentName = Args[i + 1];
+                    break;
+                }
+            }
         }
 
-        // Disables ANSI color output for the AppHost process to ensure clean log capture during integration tests.
+        // Disable ANSI color output to ensure clean log capture for forensic analysis.
         Environment.SetEnvironmentVariable("Logging__Console__FormatterOptions__ColorBehavior", "Disabled");
         Environment.SetEnvironmentVariable("Logging__Console__DisableColors", "true");
         Environment.SetEnvironmentVariable("NO_COLOR", "true");
+        Environment.SetEnvironmentVariable("DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION", "false");
 
         base.OnBuilderCreating(applicationOptions, hostOptions);
     }
 
     protected override void OnBuilderCreated(DistributedApplicationBuilder applicationBuilder)
     {
-        // Injects environment variables into all orchestrated resources to disable console color formatting
-        // and prevent ANSI escape sequences from polluting the captured log stream.
-        foreach (var resource in applicationBuilder.Resources.OfType<IResourceWithEnvironment>())
-        {
-            resource.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
-            {
-                context.EnvironmentVariables["Logging__Console__FormatterOptions__ColorBehavior"] = "Disabled";
-                context.EnvironmentVariables["Logging__Console__DisableColors"] = "true";
-                context.EnvironmentVariables["NO_COLOR"] = "true";
-                context.EnvironmentVariables["DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION"] = "false";
-                context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Development";
-                context.EnvironmentVariables["DOTNET_ENVIRONMENT"] = "Development";
-            }));
-        }
         base.OnBuilderCreated(applicationBuilder);
 
-        // Register the LogCollector as a logging provider for the AppHost
         applicationBuilder.Services.AddLogging(logging =>
         {
             logging.SetMinimumLevel(LogLevel.Debug);
@@ -72,7 +67,6 @@ public class MissionControlTestingApplicationFactory : DistributedApplicationFac
 
     public async Task<DistributedApplication> CreateAndStartAsync(CancellationToken ct = default)
     {
-        // StartAsync returns Task, not Task<DistributedApplication>!
         await StartAsync(ct);
         
         if (App == null)

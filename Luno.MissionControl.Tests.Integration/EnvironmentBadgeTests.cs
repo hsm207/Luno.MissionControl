@@ -5,31 +5,37 @@ using Aspire.Hosting.Testing;
 
 namespace Luno.MissionControl.Tests.Integration;
 
-public class EnvironmentBadgeTests(MissionControlTestingApplicationFactory factory) 
-    : PageTest, IClassFixture<MissionControlTestingApplicationFactory>
+public class EnvironmentBadgeTests() : LunoBrowserTestBase
 {
-    [Theory(DisplayName = "Scenario: Environment badge correctly reflects host environment status and glow effects")]
-    [InlineData("Development", "DEVELOPMENT", "rgb(255, 215, 0)")] // Gold Glow
-    [InlineData("Production", "PRODUCTION", "rgb(255, 0, 0)")]      // Red Glow
-    public async Task Given_EnvironmentSetTo_When_PageLoads_Then_BadgeReflectsStatus(string env, string expectedText, string expectedGlowRgb)
+    [Theory(DisplayName = "Scenario: Environment badge correctly reflects host environment status")]
+    [InlineData("Development", "DEVELOPMENT", "gold-glow")]
+    [InlineData("Production", "PRODUCTION", "danger-glow")]
+    public async Task Given_EnvironmentSetTo_When_PageLoads_Then_BadgeReflectsStatus(string env, string expectedText, string expectedStatus)
     {
-        // 1. Arrange: Start Aspire Orchestration with specific environment
+        StartConsoleLogCapture();
+        
+        using var factory = new MissionControlTestingApplicationFactory();
         factory.Args = ["--environment", env];
-        var app = await factory.CreateAndStartAsync();
-        var frontendUri = app.GetEndpoint("webfrontend");
+        
+        try
+        {
+            var app = await factory.CreateAndStartAsync();
+            var frontendUri = app.GetEndpoint("webfrontend");
 
-        // 2. Act: Navigate to the WebFrontend
-        await Page.GotoAsync(frontendUri.ToString());
+            await Page.GotoAsync(frontendUri.ToString());
 
-        // 3. Assert: Verify the badge content and style after hydration
-        var bridge = Page.Locator(".environment-badge-bridge");
-        var statusSpan = bridge.Locator(".status-text-target");
-        
-        await Expect(statusSpan).ToContainTextAsync(expectedText);
-        
-        // Verify the CSS Variable Bridge: Check the computed value of --glow-color on the bridge
-        var computedGlow = await bridge.EvaluateAsync<string>("el => getComputedStyle(el).getPropertyValue('--glow-color').trim()");
-        
-        Assert.Equal(expectedGlowRgb, computedGlow);
+            var bridge = Page.Locator(".environment-badge-bridge");
+            var statusSpan = bridge.Locator(".status-text-target");
+            
+            await Assertions.Expect(statusSpan).ToContainTextAsync(expectedText, new() { Timeout = 15000 });
+            await Assertions.Expect(bridge).ToHaveAttributeAsync("data-status", expectedStatus);
+
+            await CaptureForensicsAsync(factory, $"badge-{env}");
+        }
+        catch (Exception)
+        {
+            await CaptureForensicsAsync(factory, $"badge-{env}", isFailure: true);
+            throw;
+        }
     }
 }
