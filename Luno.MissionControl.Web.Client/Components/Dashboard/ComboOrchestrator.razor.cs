@@ -3,12 +3,16 @@ namespace Luno.MissionControl.Web.Client.Components.Dashboard;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Luno.MissionControl.Application;
+using Luno.MissionControl.Application.Ports;
+using Luno.MissionControl.Application.Commands;
 using Luno.MissionControl.Application.Models;
-using Luno.MissionControl.Web.Client.Services;
+using Luno.MissionControl.Application.Diagnostics;
+using Luno.MissionControl.Web.Client.Adapters;
 using Luno.SDK;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
+using AllocationRequest = Luno.MissionControl.Application.Commands.AllocationRequest;
 
 public partial class ComboOrchestrator : ComponentBase, IDisposable
 {
@@ -22,7 +26,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     [Inject] private PersistentComponentState ApplicationState { get; set; } = default!;
 
     private PersistingComponentStateSubscription _subscription;
-    private List<Allocation> _allocations = new();
+    private List<AllocationRequest> _allocations = new();
     private IEnumerable<MarketMetadata> _selectedSearchItems { get; set; } = [];
     private ErrorBoundary? _errorBoundary;
     private string _rawSpendInput = "";
@@ -72,7 +76,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
             return;
         }
 
-        _allocations = [.._allocations, new Allocation(selected.Pair, 0m)];
+        _allocations = [.._allocations, new AllocationRequest(selected.Pair, 0m)];
         _selectedSearchItems = [];
         
         _ = ToastService.ShowToastAsync(options => { options.Intent = ToastIntent.Success; options.Title = $"Added {selected.Pair} to your basket."; });
@@ -99,7 +103,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     private decimal _calculatedTotal => _allocations.Sum(a => GetAllocatedAmount(a));
     private bool _isExecuting = false;
 
-    private decimal GetAllocatedAmount(Allocation alloc)
+    private decimal GetAllocatedAmount(AllocationRequest alloc)
     {
         return Math.Round(State.TargetSpend * alloc.Weight, 2);
     }
@@ -148,10 +152,10 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
         // Default starting state aligned with SelectedCurrency
         bool isMyr = State.SelectedCurrency == "MYR";
         
-        _allocations = new List<Allocation>
+        _allocations = new List<AllocationRequest>
         {
-            new Allocation(isMyr ? "XBTMYR" : "XBTUSDC", 0.6m),
-            new Allocation(isMyr ? "ETHMYR" : "ETHUSDC", 0.4m)
+            new AllocationRequest(isMyr ? "XBTMYR" : "XBTUSDC", 0.6m),
+            new AllocationRequest(isMyr ? "ETHMYR" : "ETHUSDC", 0.4m)
         };
 
         _rawSpendInput = State.TargetSpend.ToString("N0");
@@ -180,7 +184,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     {
         using var activity = ForensicTracing.StartActivity("Currency Transition");
         
-        var newAllocations = new List<Allocation>();
+        var newAllocationRequests = new List<AllocationRequest>();
         foreach (var alloc in _allocations)
         {
             var oldMarket = State.AvailableMarkets.FirstOrDefault(m => m.Pair == alloc.Pair);
@@ -189,12 +193,12 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
                 var newMarket = State.AvailableMarkets.FirstOrDefault(m => m.BaseCurrency == oldMarket.BaseCurrency && m.CounterCurrency == GetLunoCounter(newCurrency));
                 if (newMarket != null)
                 {
-                    newAllocations.Add(alloc with { Pair = newMarket.Pair });
+                    newAllocationRequests.Add(alloc with { Pair = newMarket.Pair });
                 }
             }
         }
         
-        _allocations = newAllocations;
+        _allocations = newAllocationRequests;
     }
 
     private void OnAmountEntered()
@@ -246,15 +250,25 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
 
     private async Task ExecuteBasket()
     {
-        Logger.LogInformation("Execution flow started for {Amount} {Currency}.", State.TargetSpend, State.SelectedCurrency);
-        using var forensic = Luno.MissionControl.Application.ForensicTracing.StartActivity("BasketExecution");
-        var request = new BasketExecutionRequest(State.TargetSpend, _allocations); 
+        using var forensic = ForensicTracing.StartActivity("BasketExecution");
+        
+        // Resolve Account IDs (UI Adapter Responsibility)
+        // [PHASE 2 FALLBACK] If not set, we use placeholders to avoid breaking the build, 
+        // but in Phase 3 these will be user-selected.
+        var baseAccId = State.BaseAccountId != 0 ? State.BaseAccountId : 12345L;
+        var counterAccId = State.CounterAccountId != 0 ? State.CounterAccountId : 67890L;
+
+        var command = new ExecuteAllocationCommand(
+            State.TargetSpend, 
+            baseAccId, 
+            counterAccId, 
+            _allocations); 
 
         var dialogResult = await DialogService.ShowDialogAsync<ReviewGate>(options =>
         {
             options.Header.Title = "Mission Critical: Confirm Your Combo";
             options.Modal = true;
-            options.Parameters.Add(nameof(ReviewGate.Content), request);
+            options.Parameters.Add(nameof(ReviewGate.Content), command);
             options.Width = "450px";
         });
 
@@ -277,7 +291,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
         });
 
         // 1. High-Fidelity Call via Protected Result Bridge
-        var basketResult = await BasketService.ExecuteAsync(request);
+        var basketResult = await BasketService.ExecuteAsync(command);
 
         // 2. Teardown Feedback
         await progressToast.CloseAsync(ToastCloseReason.Dismissed);

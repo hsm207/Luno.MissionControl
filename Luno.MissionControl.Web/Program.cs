@@ -2,8 +2,13 @@ using Luno.MissionControl.Web.Components;
 using Luno.MissionControl.Web.Hubs;
 using Luno.MissionControl.Web.Services;
 using Luno.MissionControl.Application;
+using Luno.MissionControl.Application.Ports;
+using Luno.MissionControl.Application.Diagnostics;
+using Luno.MissionControl.Application.UseCases;
+using Luno.MissionControl.Application.Commands;
 using Luno.MissionControl.Application.Models;
-using Luno.MissionControl.Web.Client.Services;
+using Luno.MissionControl.Web.Client.Adapters;
+using Luno.MissionControl.Web.Controllers;
 using Luno.SDK;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.Extensions.Hosting;
@@ -78,23 +83,7 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(Luno.MissionControl.Web.Client._Imports).Assembly);
 
 app.MapHub<PriceHub>("/hubs/price");
-
-app.MapPost("/api/basket/execute", async (BasketExecutionRequest request, IBasketService service, CancellationToken ct) =>
-{
-    try
-    {
-        var result = await service.ExecuteAsync(request, ct);
-        return Results.Ok(result);
-    }
-    catch (Exception)
-    {
-        // Absolute panic fallback for system-level errors (DI, network stack, etc.)
-        return Results.Problem(
-            detail: "A critical system error occurred at the gateway.",
-            statusCode: StatusCodes.Status500InternalServerError,
-            title: "Internal Server Error");
-    }
-});
+app.MapBasketActions();
 
 app.Run();
 public partial class Program { }

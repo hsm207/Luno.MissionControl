@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.SignalR.Client;
+using Luno.MissionControl.Application.Models;
 using Luno.MissionControl.Application;
+using Luno.MissionControl.Application.Ports;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +27,8 @@ public class ClientBasketState : IBasketState
 
     public string SelectedCurrency { get; set; } = "MYR";
     public decimal TargetSpend { get; set; } = 1000m;
+    public long BaseAccountId { get; set; }
+    public long CounterAccountId { get; set; }
 
     public ClientBasketState(
         [FromKeyedServices("PriceHub")] HubConnection hubConnection, 

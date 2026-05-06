@@ -34,10 +34,11 @@ public class InvariantTests
         };
 
         // Act & Assert
-        Assert.Throws<LunoDomainException>(() => new OrderBasket(invalidAllocations));
+        Assert.Throws<LunoDomainException>(() => new OrderBasket(1000m, invalidAllocations));
         
-        var basket = new OrderBasket(validAllocations);
+        var basket = new OrderBasket(1000m, validAllocations);
         Assert.Equal(2, basket.Allocations.Count);
+        Assert.Equal(500m, basket.Allocations[0].TargetSpend);
     }
 
     [Fact(DisplayName = "An Order Basket must prohibit duplicate asset pairs.")]
@@ -46,11 +47,11 @@ public class InvariantTests
         // Arrange
         var duplicateAllocations = new List<Allocation>
         {
-            new("BTC", new AllocationWeight(50.0m)),
-            new("BTC", new AllocationWeight(50.0m))
+            new("XBTUSDC", new AllocationWeight(50.0m)),
+            new("XBTUSDC", new AllocationWeight(50.0m))
         };
 
         // Act & Assert
-        Assert.Throws<LunoDomainException>(() => new OrderBasket(duplicateAllocations));
+        Assert.Throws<LunoDomainException>(() => new OrderBasket(1000m, duplicateAllocations));
     }
 }

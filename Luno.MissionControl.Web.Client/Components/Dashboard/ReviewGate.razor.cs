@@ -2,6 +2,7 @@ namespace Luno.MissionControl.Web.Client.Components.Dashboard;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
+using Luno.MissionControl.Application.Commands;
 using Luno.MissionControl.Application.Models;
 
 public partial class ReviewGate : ComponentBase
@@ -9,7 +10,7 @@ public partial class ReviewGate : ComponentBase
     private bool _isConfirmed = false;
 
     [Parameter]
-    public BasketExecutionRequest Content { get; set; } = default!;
+    public ExecuteAllocationCommand Content { get; set; } = default!;
 
     [CascadingParameter]
     public IDialogInstance Dialog { get; set; } = default!;

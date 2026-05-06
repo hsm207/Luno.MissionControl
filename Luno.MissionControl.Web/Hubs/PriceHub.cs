@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
 using Luno.MissionControl.Application;
+using Luno.MissionControl.Application.Ports;
+using Luno.MissionControl.Application.Models;
 using Luno.MissionControl.Web.Services;
 
 namespace Luno.MissionControl.Web.Hubs;

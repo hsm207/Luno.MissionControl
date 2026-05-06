@@ -1,7 +1,8 @@
 namespace Luno.MissionControl.Web.Client.Components.Dashboard;
 
-using Microsoft.AspNetCore.Components;
 using Luno.MissionControl.Application;
+using Luno.MissionControl.Application.Ports;
+using Microsoft.AspNetCore.Components;
 using Luno.MissionControl.Application.Models;
 
 public partial class PriceLabel : ComponentBase, IDisposable

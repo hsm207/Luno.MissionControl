@@ -87,7 +87,7 @@ public class ParityGateTests(MissionControlTestingApplicationFactory factory)
             // [STABILITY MANDATE] Verify that the core business logic received the correct signal.
             // We use the LogCollector directly here to perform the final business-layer assertion.
             var logs = factory.LogCollector.GetLogs("webfrontend");
-            Assert.Contains(logs, log => log.Contains("[SIMULATION] Execution request received"));
+            Assert.Contains(logs, log => log.Contains("Order request received"));
         }
         catch (Exception)
         {

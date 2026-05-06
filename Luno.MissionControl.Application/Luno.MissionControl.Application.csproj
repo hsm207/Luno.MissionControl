@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="../../Luno.SDK/Luno.SDK.Core/Luno.SDK.Core.csproj" />
     <ProjectReference Include="../../Luno.SDK/Luno.SDK.Application/Luno.SDK.Application.csproj" />
+    <ProjectReference Include="../Luno.MissionControl.Core/Luno.MissionControl.Core.csproj" />
   </ItemGroup>
 
 </Project>

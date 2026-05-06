@@ -34,6 +34,10 @@
     text-transform: var(--badge-text-transform);
 }
 
+
+.environment-badge-bridge[data-status="gold-glow"] { --glow-color: rgb(255, 215, 0); }
+.environment-badge-bridge[data-status="danger-glow"] { --glow-color: rgb(255, 0, 0); }
+
 @keyframes atmospheric-pulse {
     0%, 100% {
         box-shadow: 

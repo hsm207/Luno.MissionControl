@@ -1,4 +1,7 @@
+using Luno.MissionControl.Application.Models;
 using Luno.MissionControl.Application;
+using Luno.MissionControl.Application.Ports;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 
 namespace Luno.MissionControl.Web.Services;
@@ -18,8 +21,10 @@ public class ServerBasketState : IBasketState, IDisposable
     public IReadOnlyDictionary<string, TickerSnapshot> Prices => _prices;
     public IReadOnlyList<MarketMetadata> AvailableMarkets => Array.Empty<MarketMetadata>();
 
-    public string SelectedCurrency { get; set; } = "USDC";
+    public string SelectedCurrency { get; set; } = "MYR";
     public decimal TargetSpend { get; set; } = 1000m;
+    public long BaseAccountId { get; set; }
+    public long CounterAccountId { get; set; }
 
     public ServerBasketState(IPriceBroadcaster broadcaster)
     {
