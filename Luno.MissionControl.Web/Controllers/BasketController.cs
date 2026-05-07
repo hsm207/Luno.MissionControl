@@ -13,7 +13,7 @@ public static class BasketController
     {
         var group = app.MapGroup("/api/basket");
 
-        group.MapPost("/execute", async (ExecuteAllocationCommand command, IBasketService service, CancellationToken ct) =>
+        group.MapPost("/execute", async (ExecuteAllocationCommand command, IBasketService service, ILogger<Program> logger, CancellationToken ct) =>
         {
             try
             {
@@ -22,11 +22,11 @@ public static class BasketController
             }
             catch (Exception ex)
             {
-                // [FORENSIC SIGNAL] Critical gateway failure would be logged here
+                logger.LogError(ex, "Unhandled exception in /api/basket/execute. Type: {ExceptionType}, Command: {@Command}", ex.GetType().Name, command);
                 return Results.Problem(
-                    detail: "A critical system error occurred at the gateway.",
+                    detail: "An internal system error occurred. Our engineers have been notified.",
                     statusCode: StatusCodes.Status500InternalServerError,
-                    title: "Internal Server Error");
+                    title: "Execution Error");
             }
         });
     }

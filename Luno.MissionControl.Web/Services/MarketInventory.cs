@@ -1,5 +1,4 @@
 using Luno.MissionControl.Application;
-using Luno.MissionControl.Application;
 using Luno.MissionControl.Application.Models;
 using System.Collections.Generic;
 
@@ -11,7 +10,15 @@ namespace Luno.MissionControl.Web.Services;
 /// </summary>
 public class MarketInventory
 {
-    private readonly List<MarketMetadata> _markets = new();
+    private static readonly IReadOnlyList<MarketMetadata> BootstrapMarkets = 
+    [
+        new("XBTMYR", "XBT", "MYR"),
+        new("ETHMYR", "ETH", "MYR"),
+        new("XBTUSDC", "XBT", "USDC"),
+        new("ETHUSDC", "ETH", "USDC")
+    ];
+
+    private readonly List<MarketMetadata> _markets = [.. BootstrapMarkets];
     private readonly object _lock = new();
 
     public void UpdateMarkets(IEnumerable<MarketMetadata> markets)

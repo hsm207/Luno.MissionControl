@@ -15,7 +15,7 @@ using AllocationRequest = Luno.MissionControl.Application.Commands.AllocationReq
 
 public partial class ComboOrchestrator : ComponentBase, IDisposable
 {
-    private FluentTextInput? _amountInput;
+    private string _amountInputString = "50";
 
     [Inject] private IBasketState State { get; set; } = default!;
     [Inject] private IBasketService BasketService { get; set; } = default!;
@@ -28,7 +28,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     private List<AllocationRequest> _allocations = new();
     private IEnumerable<MarketMetadata> _selectedSearchItems { get; set; } = [];
     private ErrorBoundary? _errorBoundary;
-    private string _rawSpendInput = "";
+    private decimal _rawSpendInput = 0m;
     private DateTimeOffset? _lastPriceUpdate;
 
     private string DataFreshnessText
@@ -151,13 +151,13 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
         // Default starting state aligned with SelectedCurrency
         bool isMyr = State.SelectedCurrency == "MYR";
         
-        _allocations = new List<AllocationRequest>
-        {
+        _allocations = 
+        [
             new AllocationRequest(isMyr ? "XBTMYR" : "XBTUSDC", 0.6m),
             new AllocationRequest(isMyr ? "ETHMYR" : "ETHUSDC", 0.4m)
-        };
+        ];
 
-        _rawSpendInput = State.TargetSpend.ToString("N0");
+        _rawSpendInput = State.TargetSpend; 
 
         State.OnPriceUpdate += HandlePriceUpdate;
         State.OnMarketsUpdate += HandleMarketsUpdate;
@@ -183,7 +183,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     {
         using var activity = ForensicTracing.StartActivity("Currency Transition");
         
-        var newAllocationRequests = new List<AllocationRequest>();
+        List<AllocationRequest> newAllocationRequests = [];
         foreach (var alloc in _allocations)
         {
             var oldMarket = State.AvailableMarkets.FirstOrDefault(m => m.Pair == alloc.Pair);
@@ -200,18 +200,18 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
         _allocations = newAllocationRequests;
     }
 
-    private void OnAmountEntered()
+    private void OnAmountInputChanged()
     {
-        if (decimal.TryParse(_rawSpendInput, NumberStyles.Any, CultureInfo.InvariantCulture, out var d)) 
-        { 
-            Logger.LogInformation("Investment amount updated: {Amount} {Currency}", d, State.SelectedCurrency);
-            State.TargetSpend = d; 
-            _rawSpendInput = d.ToString("N0"); 
-        }
-        else
+        if (decimal.TryParse(_amountInputString, NumberStyles.Any, CultureInfo.InvariantCulture, out var spend))
         {
-            Logger.LogWarning("Invalid amount entered: {Input}", _rawSpendInput);
+            State.TargetSpend = spend;
+            StateHasChanged();
         }
+    }
+
+    private void OnWeightChanged(AllocationRequest allocation, decimal newWeight)
+    {
+        UpdateWeight(allocation.Pair, newWeight);
     }
 
     private string GetCurrencySymbol() => State.SelectedCurrency switch

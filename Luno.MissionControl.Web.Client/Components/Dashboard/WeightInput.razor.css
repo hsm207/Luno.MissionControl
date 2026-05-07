@@ -1,0 +1,17 @@
+.weight-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.weight-input-field {
+    text-align: right;
+    width: 80px;
+}
+
+.weight-unit {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--colorNeutralForeground3);
+    opacity: 0.8;
+}
