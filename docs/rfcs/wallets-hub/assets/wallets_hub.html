@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luno Mission Control - Wallets Hub Mockup</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --titan-gold: #D4AF37;
+            --titan-obsidian: #080808;
+            --titan-charcoal: #1a1a1a;
+            --titan-white: #f5f5f5;
+            --liquid-transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        body {
+            background: radial-gradient(circle at center, var(--titan-charcoal) 0%, var(--titan-obsidian) 100%);
+            color: var(--titan-white);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .executive-header {
+            color: var(--titan-gold);
+            letter-spacing: 5px;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+            font-size: 2.5rem;
+            margin: 0;
+        }
+
+        .subtitle {
+            color: #8a8a8a;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+
+        .wallet-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .gilded-card {
+            background: rgba(26, 26, 26, 0.6);
+            backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            padding: 24px;
+            transition: var(--liquid-transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gilded-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.1);
+        }
+
+        .asset-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .asset-name {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--titan-gold);
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .badge-verified { background: rgba(80, 250, 123, 0.1); color: #50fa7b; border: 1px solid rgba(80, 250, 123, 0.3); }
+        .badge-ambiguous { background: rgba(255, 184, 108, 0.1); color: #ffb86c; border: 1px solid rgba(255, 184, 108, 0.3); }
+        .badge-pinned { background: rgba(212, 175, 55, 0.1); color: var(--titan-gold); border: 1px solid rgba(212, 175, 55, 0.3); }
+        .badge-deterministic { background: rgba(80, 250, 123, 0.1); color: #50fa7b; border: 1px solid rgba(80, 250, 123, 0.3); }
+
+        .wallet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .wallet-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 16px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .wallet-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(212, 175, 55, 0.2);
+        }
+
+        .wallet-item.selected {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: var(--titan-gold);
+        }
+
+        .wallet-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wallet-id {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #8a8a8a;
+        }
+
+        .wallet-balance {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .wallet-reserved {
+            font-size: 0.8rem;
+            color: #ffb86c;
+        }
+
+        .pin-icon {
+            font-size: 1.2rem;
+            color: #444;
+        }
+
+        .selected .pin-icon {
+            color: var(--titan-gold);
+            filter: drop-shadow(0 0 5px var(--titan-gold));
+        }
+
+        .crisis-banner {
+            background: rgba(255, 85, 85, 0.1);
+            color: #ff5555;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 85, 85, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-pin {
+            background: transparent;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: var(--titan-gold);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: var(--liquid-transition);
+        }
+
+        .btn-pin:hover {
+            background: var(--titan-gold);
+            color: var(--titan-obsidian);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 class="executive-header">WALLET INVENTORY</h1>
+        <div class="subtitle">Resolve account ambiguity for deterministic execution</div>
+    </div>
+
+    <div class="wallet-container">
+        <!-- AMBIGUOUS CASE: SOL (Real Data) -->
+        <div class="gilded-card">
+            <div class="asset-header">
+                <span class="asset-name">SOL</span>
+                <span class="badge badge-ambiguous">Ambiguous</span>
+            </div>
+            <div class="crisis-banner">
+                <span>⚠️</span>
+                <span>Multiple accounts detected. Select a primary trading wallet.</span>
+            </div>
+            <div class="wallet-list">
+                <div class="wallet-item">
+                    <div class="wallet-info">
+                        <span class="wallet-id">7431669423775147830</span>
+                        <span class="wallet-balance">1.0422964 SOL</span>
+                    </div>
+                    <button class="btn-pin">PIN PRIMARY</button>
+                </div>
+                <div class="wallet-item">
+                    <div class="wallet-info">
+                        <span class="wallet-id">4078499081933439467</span>
+                        <span class="wallet-balance">9.39877299 SOL</span>
+                    </div>
+                    <button class="btn-pin">PIN PRIMARY</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- DETERMINISTIC CASE: XRP (Real Data) -->
+        <div class="gilded-card">
+            <div class="asset-header">
+                <span class="asset-name">XRP</span>
+                <span class="badge badge-deterministic">Deterministic</span>
+            </div>
+            <div class="wallet-list">
+                <div class="wallet-item selected">
+                    <div class="wallet-info">
+                        <span class="wallet-id">8315550379512304830</span>
+                        <span class="wallet-balance">4,229.228256 XRP</span>
+                    </div>
+                    <span class="pin-icon">★</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- DETERMINISTIC CASE: MYR (Real Data) -->
+        <div class="gilded-card">
+            <div class="asset-header">
+                <span class="asset-name">MYR</span>
+                <span class="badge badge-deterministic">Deterministic</span>
+            </div>
+            <div class="wallet-list">
+                <div class="wallet-item selected">
+                    <div class="wallet-info">
+                        <span class="wallet-id">6707960831992715149</span>
+                        <span class="wallet-balance">364.12 MYR</span>
+                        <span class="wallet-reserved">Reserved: 55.11 MYR</span>
+                    </div>
+                    <span class="pin-icon">★</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- DETERMINISTIC CASE: UNI (Real Data) -->
+        <div class="gilded-card">
+            <div class="asset-header">
+                <span class="asset-name">UNI</span>
+                <span class="badge badge-deterministic">Deterministic</span>
+            </div>
+            <div class="wallet-list">
+                <div class="wallet-item selected">
+                    <div class="wallet-info">
+                        <span class="wallet-id">420489818302207587</span>
+                        <span class="wallet-balance">85.767995 UNI</span>
+                    </div>
+                    <span class="pin-icon">★</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
