@@ -4,7 +4,7 @@ namespace Luno.MissionControl.Core.Models;
 /// Represents a validated estimation for an order execution.
 /// </summary>
 public record OrderEstimation(
-    string Pair, 
-    decimal Volume, 
-    decimal Price, 
+    string Pair,
+    decimal Volume,
+    decimal Price,
     decimal TotalSpend);

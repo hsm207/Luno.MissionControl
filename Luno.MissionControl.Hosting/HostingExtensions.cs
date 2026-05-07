@@ -17,8 +17,8 @@ public static class HostingExtensions
     /// <param name="applicationName">The name of the application.</param>
     /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddHostEnvironmentBridge(
-        this IServiceCollection services, 
-        string environment, 
+        this IServiceCollection services,
+        string environment,
         string applicationName)
     {
         services.AddSingleton<IHostEnvironment>(new HostEnvironmentBridge(environment, applicationName));

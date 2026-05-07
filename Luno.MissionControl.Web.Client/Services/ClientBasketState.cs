@@ -18,7 +18,7 @@ public class ClientBasketState : IBasketState
     private readonly ILogger<ClientBasketState> _logger;
     private readonly ConcurrentDictionary<string, TickerSnapshot> _prices = new();
     private readonly List<MarketMetadata> _markets = new();
-    
+
     public event Action<TickerSnapshot>? OnPriceUpdate;
     public event Action<IReadOnlyList<MarketMetadata>>? OnMarketsUpdate;
 
@@ -31,7 +31,7 @@ public class ClientBasketState : IBasketState
     public long CounterAccountId { get; set; }
 
     public ClientBasketState(
-        [FromKeyedServices("PriceHub")] HubConnection hubConnection, 
+        [FromKeyedServices("PriceHub")] HubConnection hubConnection,
         ILogger<ClientBasketState> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));

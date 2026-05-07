@@ -19,10 +19,10 @@ public sealed class OtlpForwarder
     {
         _httpClient = httpClient;
         _logger = logger;
-        
+
         // Ensure the base address is set correctly for relative path forwarding.
         _httpClient.BaseAddress = new Uri(endpoint.TrimEnd('/') + "/");
-        
+
         _otlpHeaders = ParseOtlpHeaders(rawHeaders);
     }
 

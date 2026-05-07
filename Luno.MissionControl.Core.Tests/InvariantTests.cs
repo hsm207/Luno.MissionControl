@@ -12,7 +12,7 @@ public class InvariantTests
         // Act & Assert
         Assert.Throws<LunoDomainException>(() => new AllocationWeight(-1.0m));
         Assert.Throws<LunoDomainException>(() => new AllocationWeight(100.0001m));
-        
+
         var validWeight = new AllocationWeight(50.0m);
         Assert.Equal(50.0m, (decimal)validWeight);
     }
@@ -35,7 +35,7 @@ public class InvariantTests
 
         // Act & Assert
         Assert.Throws<LunoDomainException>(() => new OrderBasket(1000m, invalidAllocations));
-        
+
         var basket = new OrderBasket(1000m, validAllocations);
         Assert.Equal(2, basket.Allocations.Count);
         Assert.Equal(500m, basket.Allocations[0].TargetSpend);

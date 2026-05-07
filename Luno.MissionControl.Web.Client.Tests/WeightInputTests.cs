@@ -14,10 +14,10 @@ public class WeightInputTests : BunitContext
     {
         // Register Fluent UI services
         Services.AddFluentUIComponents();
-        
+
         // Configure loose JSInterop for headless rendering
         JSInterop.Mode = JSRuntimeMode.Loose;
-        
+
         // Register PersistentComponentState to satisfy component dependencies
         this.AddBunitPersistentComponentState();
     }

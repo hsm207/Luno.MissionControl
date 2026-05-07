@@ -10,7 +10,7 @@ namespace Luno.MissionControl.Web.Services;
 /// </summary>
 public class MarketInventory
 {
-    private static readonly IReadOnlyList<MarketMetadata> BootstrapMarkets = 
+    private static readonly IReadOnlyList<MarketMetadata> BootstrapMarkets =
     [
         new("XBTMYR", "XBT", "MYR"),
         new("ETHMYR", "ETH", "MYR"),

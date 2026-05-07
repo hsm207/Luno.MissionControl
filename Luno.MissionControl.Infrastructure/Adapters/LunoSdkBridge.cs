@@ -29,12 +29,12 @@ public sealed class LunoSdkBridge(ILunoClient lunoClient) : ILunoTrader, ILunoMa
     {
         var markets = await lunoClient.Market.GetMarketsAsync(new GetMarketsQuery { Pairs = pairs.ToArray() }, ct);
         return markets?.Select(m => new CoreModels.MarketMetadata(
-            m.Pair, 
-            m.BaseCurrency, 
-            m.CounterCurrency, 
-            m.PriceScale, 
-            m.VolumeScale, 
-            m.MinVolume, 
+            m.Pair,
+            m.BaseCurrency,
+            m.CounterCurrency,
+            m.PriceScale,
+            m.VolumeScale,
+            m.MinVolume,
             m.MinPrice)).ToList() ?? [];
     }
 
@@ -42,7 +42,7 @@ public sealed class LunoSdkBridge(ILunoClient lunoClient) : ILunoTrader, ILunoMa
     {
         var quote = await lunoClient.Trading.CalculateOrderSizeAsync(
             new CalculateOrderSizeQuery(pair, OrderSide.Buy, TradingAmount.InQuote(spend)), ct);
-        
+
         return new CoreModels.OrderEstimation(pair, quote.Volume, quote.Price, spend);
     }
 

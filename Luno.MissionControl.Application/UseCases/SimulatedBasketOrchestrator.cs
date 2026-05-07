@@ -22,7 +22,7 @@ public sealed class SimulatedBasketOrchestrator(ILogger<SimulatedBasketOrchestra
     public async Task<BasketExecutionResponse> ExecuteAsync(ExecuteAllocationCommand command, CancellationToken ct = default)
     {
         // [FORENSIC SIGNAL] Log the incoming request for audit and test verification
-        logger.LogInformation("[SIMULATION] Order request received for {TotalSpend} units. Assets: {Count}", 
+        logger.LogInformation("[SIMULATION] Order request received for {TotalSpend} units. Assets: {Count}",
             command.TotalSpend, command.Allocations.Count);
 
         // 1. Validation using Core Domain Models (Valid-by-Construction)
@@ -42,7 +42,7 @@ public sealed class SimulatedBasketOrchestrator(ILogger<SimulatedBasketOrchestra
 
             foreach (var allocation in basket.Allocations)
             {
-                logger.LogInformation("[SIMULATION] Processing allocation: {Pair} with target spend {Spend}", 
+                logger.LogInformation("[SIMULATION] Processing allocation: {Pair} with target spend {Spend}",
                     allocation.Pair, allocation.TargetSpend);
 
                 // Simulate network latency for each order placement

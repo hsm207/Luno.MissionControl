@@ -9,7 +9,7 @@ namespace Luno.MissionControl.Application.Diagnostics;
 public static class ForensicTracing
 {
     public const string SourceName = "Luno.MissionControl.Forensics";
-    
+
     // The activity source for the application.
     public static readonly ActivitySource ActivitySource = new(SourceName);
 
