@@ -18,16 +18,16 @@ namespace Luno.MissionControl.Application.UseCases;
 /// Handles validation and sequential order placement via decoupled domain abstractions.
 /// </summary>
 public sealed class BasketOrchestrator(
-    ILunoTrader trader, 
-    ILunoMarketData marketData, 
-    ILogger<BasketOrchestrator> logger) 
+    ILunoTrader trader,
+    ILunoMarketData marketData,
+    ILogger<BasketOrchestrator> logger)
     : IBasketService
 {
     public async Task<BasketExecutionResponse> ExecuteAsync(ExecuteAllocationCommand command, CancellationToken ct = default)
     {
         using var activity = ForensicTracing.StartActivity("BasketExecution");
         activity?.SetTag("spend.total", command.TotalSpend);
-        
+
         logger.LogInformation("Order request received for {Total} counter currency across {Count} pairs.", command.TotalSpend, command.Allocations.Count);
 
         // 1. Domain Validation (Valid-by-Construction)
@@ -77,18 +77,18 @@ public sealed class BasketOrchestrator(
                 foreach (var baseAcc in baseAccounts)
                 {
                     var baseAccountId = long.Parse(baseAcc.AccountId);
-                    
+
                     // 5. Obtain a domain-aligned estimation
                     var estimation = await trader.EstimateOrderAsync(allocation.Pair, allocation.TargetSpend, ct);
 
-                    try 
+                    try
                     {
-                        logger.LogInformation("Executing order to buy {Volume} {BaseAsset} for {Price} {CounterAsset} (Spend: {PortionSpend}, BaseAcc: {BaseAccountId}, CounterAcc: {CounterAccountId})", 
+                        logger.LogInformation("Executing order to buy {Volume} {BaseAsset} for {Price} {CounterAsset} (Spend: {PortionSpend}, BaseAcc: {BaseAccountId}, CounterAcc: {CounterAccountId})",
                             estimation.Volume, market.BaseCurrency, estimation.Price, market.CounterCurrency, allocation.TargetSpend, baseAccountId, counterAccountId);
 
                         // 6. Execute the order via the trader abstraction
                         var orderId = await trader.PostOrderAsync(estimation, baseAccountId, counterAccountId, ct);
-                        
+
                         orderSummaries.Add(new OrderSummary(orderId, allocation.Pair));
                         orderPlaced = true;
                         break;

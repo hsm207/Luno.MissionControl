@@ -29,11 +29,11 @@ public class LunoSDKAdapterTests
 
         var resultId = await adapter.PostOrderAsync(estimation, baseAccountId, counterAccountId);
 
-        await mockClient.Trading.Requests.Received(1).SendAsync<OrderResponse>(Arg.Is<PostLimitOrderCommand>(c => 
+        await mockClient.Trading.Requests.Received(1).SendAsync<OrderResponse>(Arg.Is<PostLimitOrderCommand>(c =>
             c.Pair == "XBTUSDC" &&
             c.BaseAccountId == baseAccountId &&
             c.CounterAccountId == counterAccountId &&
-            c.Options.AuthorizeWriteOperation == true 
+            c.Options.AuthorizeWriteOperation == true
         ));
 
         Assert.Equal(fakeOrderId, resultId);

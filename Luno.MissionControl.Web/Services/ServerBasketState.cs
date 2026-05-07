@@ -15,7 +15,7 @@ public class ServerBasketState : IBasketState, IDisposable
     private readonly IPriceBroadcaster _broadcaster;
     private readonly MarketInventory _marketInventory;
     private readonly ConcurrentDictionary<string, TickerSnapshot> _prices = [];
-    
+
     public event Action<TickerSnapshot>? OnPriceUpdate;
     public event Action<IReadOnlyList<MarketMetadata>>? OnMarketsUpdate;
 

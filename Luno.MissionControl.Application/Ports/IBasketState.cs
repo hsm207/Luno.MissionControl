@@ -38,7 +38,7 @@ public interface IBasketState : IPriceClient
     /// The total amount of currency intended to be spent on the basket.
     /// </summary>
     decimal TargetSpend { get; set; }
-    
+
     /// <summary>
     /// The ID of the base account (e.g., the wallet receiving the assets).
     /// </summary>

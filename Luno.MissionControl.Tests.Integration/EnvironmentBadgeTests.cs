@@ -13,10 +13,10 @@ public class EnvironmentBadgeTests() : LunoBrowserTestBase
     public async Task Given_EnvironmentSetTo_When_PageLoads_Then_BadgeReflectsStatus(string env, string expectedText, string expectedStatus)
     {
         StartConsoleLogCapture();
-        
+
         using var factory = new MissionControlTestingApplicationFactory();
         factory.Args = ["--environment", env];
-        
+
         try
         {
             var app = await factory.CreateAndStartAsync();
@@ -26,7 +26,7 @@ public class EnvironmentBadgeTests() : LunoBrowserTestBase
 
             var bridge = Page.Locator(".environment-badge-bridge");
             var statusSpan = bridge.Locator(".status-text-target");
-            
+
             await Assertions.Expect(statusSpan).ToContainTextAsync(expectedText, new() { Timeout = 15000 });
             await Assertions.Expect(bridge).ToHaveAttributeAsync("data-status", expectedStatus);
 

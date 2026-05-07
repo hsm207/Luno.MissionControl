@@ -35,7 +35,7 @@ public class ComboOrchestratorTests : BunitContext
         Services.AddSingleton(mockState);
         Services.AddSingleton(mockBasketService);
         Services.AddSingleton(mockLogger);
-        
+
         // Register Fluent UI services for component rendering
         Services.AddFluentUIComponents();
 
@@ -50,7 +50,7 @@ public class ComboOrchestratorTests : BunitContext
 
         // Wait for the FluentDataGrid to finish its async binding/virtualization lifecycle
         var weightInputs = cut.WaitForComponents<WeightInput>();
-        
+
         // Assert: Each WeightInput should have a unique, deterministic ID
         var xbtInput = weightInputs.FirstOrDefault(c => c.Instance.Id == "weight-input-XBTMYR");
         var ethInput = weightInputs.FirstOrDefault(c => c.Instance.Id == "weight-input-ETHMYR");

@@ -72,7 +72,7 @@ public class MarketWatchService : BackgroundService
             while (await _timer.WaitForNextTickAsync(stoppingToken))
             {
                 _logger.LogDebug("Streaming market snapshots at {Time}", DateTimeOffset.UtcNow);
-                
+
                 // Refresh metadata every 10 ticks (approx every 5 minutes)
                 if (++tickCount % 10 == 0)
                 {
@@ -96,7 +96,7 @@ public class MarketWatchService : BackgroundService
     {
         _logger.LogInformation("Updating market metadata inventory...");
         var markets = await _lunoClient.Market.GetMarketsAsync(new GetMarketsQuery(), ct);
-        
+
         var metadata = markets.Select(m => new MarketMetadata(
             Pair: m.Pair,
             BaseCurrency: m.BaseCurrency,

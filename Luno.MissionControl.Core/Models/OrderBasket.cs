@@ -23,13 +23,13 @@ public record OrderBasket
     private const decimal Tolerance = 0.0001m;
 
     // --- Performance Policy Constraints ---
-    private const int LunoRateLimitPerMin = 300; 
+    private const int LunoRateLimitPerMin = 300;
     private const int HttpRequestTimeoutSeconds = 120;
     private const int PacingDelayMs = 500;
     private const int OverheadMs = 100; // Estimated latency/processing per order.
 
     private const int MaxBasketSize = HttpRequestTimeoutSeconds * 1000 / (PacingDelayMs + OverheadMs);
-    
+
     public decimal TotalSpend { get; }
     public IReadOnlyList<Allocation> Allocations { get; }
 

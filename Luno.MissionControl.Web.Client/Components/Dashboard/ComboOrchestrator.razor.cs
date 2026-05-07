@@ -46,20 +46,20 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     {
         e.Items = State.AvailableMarkets
             .Where(m => m.CounterCurrency == GetLunoCounter(State.SelectedCurrency))
-            .Where(m => string.IsNullOrEmpty(e.Text) || 
+            .Where(m => string.IsNullOrEmpty(e.Text) ||
                         m.Pair.Contains(e.Text, StringComparison.OrdinalIgnoreCase) ||
                         m.BaseCurrency.Contains(e.Text, StringComparison.OrdinalIgnoreCase) ||
                         (e.Text.Equals("X", StringComparison.OrdinalIgnoreCase) && (m.BaseCurrency == "XBT" || m.BaseCurrency == "XRP")))
             .Where(m => !_allocations.Any(a => a.Pair == m.Pair))
             .OrderBy(m => m.BaseCurrency);
-            
+
         return Task.CompletedTask;
     }
 
     private void AddAsset()
     {
         using var activity = ForensicTracing.StartActivity("Add Asset Button Clicked");
-        
+
         var selected = _selectedSearchItems.FirstOrDefault();
         if (selected == null)
         {
@@ -75,9 +75,9 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
             return;
         }
 
-        _allocations = [.._allocations, new AllocationRequest(selected.Pair, 0m)];
+        _allocations = [.. _allocations, new AllocationRequest(selected.Pair, 0m)];
         _selectedSearchItems = [];
-        
+
         _ = ToastService.ShowToastAsync(options => { options.Intent = ToastIntent.Success; options.Title = $"Added {selected.Pair} to your basket."; });
         StateHasChanged();
     }
@@ -150,14 +150,14 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
 
         // Default starting state aligned with SelectedCurrency
         bool isMyr = State.SelectedCurrency == "MYR";
-        
-        _allocations = 
+
+        _allocations =
         [
             new AllocationRequest(isMyr ? "XBTMYR" : "XBTUSDC", 0.6m),
             new AllocationRequest(isMyr ? "ETHMYR" : "ETHUSDC", 0.4m)
         ];
 
-        _rawSpendInput = State.TargetSpend; 
+        _rawSpendInput = State.TargetSpend;
 
         State.OnPriceUpdate += HandlePriceUpdate;
         State.OnMarketsUpdate += HandleMarketsUpdate;
@@ -173,7 +173,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
         InvokeAsync(StateHasChanged);
     }
 
-    
+
     private void HandleMarketsUpdate(IReadOnlyList<MarketMetadata> markets)
     {
         InvokeAsync(StateHasChanged);
@@ -182,7 +182,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     private void TransitionCurrency(string oldCurrency, string newCurrency)
     {
         using var activity = ForensicTracing.StartActivity("Currency Transition");
-        
+
         List<AllocationRequest> newAllocationRequests = [];
         foreach (var alloc in _allocations)
         {
@@ -196,7 +196,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
                 }
             }
         }
-        
+
         _allocations = newAllocationRequests;
     }
 
@@ -250,16 +250,16 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     private async Task ExecuteBasket()
     {
         using var forensic = ForensicTracing.StartActivity("BasketExecution");
-        
+
         // [ARCHITECTURE] Temporary placeholders until User-Selected accounts are implemented.
         var baseAccId = State.BaseAccountId != 0 ? State.BaseAccountId : 12345L;
         var counterAccId = State.CounterAccountId != 0 ? State.CounterAccountId : 67890L;
 
         var command = new ExecuteAllocationCommand(
-            State.TargetSpend, 
-            baseAccId, 
-            counterAccId, 
-            _allocations); 
+            State.TargetSpend,
+            baseAccId,
+            counterAccId,
+            _allocations);
 
         var dialogResult = await DialogService.ShowDialogAsync<ReviewGate>(options =>
         {
@@ -269,7 +269,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
             options.Width = "450px";
         });
 
-        if (dialogResult.Cancelled) 
+        if (dialogResult.Cancelled)
         {
             Logger.LogDebug("Basket execution cancelled by user.");
             return;
@@ -277,7 +277,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
 
         Logger.LogInformation("Orders confirmed. Dispatching {Count} allocation(s) to the bridge.", _allocations.Count);
         _isExecuting = true;
-        
+
 
         var progressToast = await ToastService.ShowToastInstanceAsync(options =>
         {

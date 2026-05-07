@@ -68,15 +68,15 @@ public class MissionControlTestingApplicationFactory : DistributedApplicationFac
     public async Task<DistributedApplication> CreateAndStartAsync(CancellationToken ct = default)
     {
         await StartAsync(ct);
-        
+
         if (App == null)
         {
             throw new InvalidOperationException("DistributedApplication was not initialized during StartAsync.");
         }
-        
+
         await App.ResourceNotifications.WaitForResourceHealthyAsync("webfrontend")
             .WaitAsync(TimeSpan.FromSeconds(60), ct);
-            
+
         return App;
     }
 }

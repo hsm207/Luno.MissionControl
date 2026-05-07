@@ -25,10 +25,10 @@ builder.Services.AddFluentUIComponents(config =>
     config.MarkupSanitized.SanitizeInlineStyle = (value) => value;
 });
 
-builder.Services.AddScoped(sp => new HttpClient 
-{ 
+builder.Services.AddScoped(sp => new HttpClient
+{
     BaseAddress = new Uri(builder.HostEnvironment.BaseAddress),
-    Timeout = TimeSpan.FromMinutes(2) 
+    Timeout = TimeSpan.FromMinutes(2)
 });
 builder.Services.AddHostEnvironmentBridge(builder.HostEnvironment.Environment, "Luno.MissionControl.Web.Client");
 

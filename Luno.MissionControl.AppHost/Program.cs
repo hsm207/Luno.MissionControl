@@ -8,11 +8,11 @@ var builder = DistributedApplication.CreateBuilder(args);
 builder.AddDockerComposeEnvironment("env")
     .WithDashboard(d => d.WithHostPort(0));
 
-var apiKeyId = builder.AddParameter("luno-api-key-id", 
+var apiKeyId = builder.AddParameter("luno-api-key-id",
     builder.Configuration["Luno:ApiKeyId"] ?? builder.Configuration["Parameters:luno-api-key-id"] ?? "MISSING_ID");
 
-var apiKeySecret = builder.AddParameter("luno-api-key-secret", 
-    builder.Configuration["Luno:ApiKeySecret"] ?? builder.Configuration["Parameters:luno-api-key-secret"] ?? "MISSING_SECRET", 
+var apiKeySecret = builder.AddParameter("luno-api-key-secret",
+    builder.Configuration["Luno:ApiKeySecret"] ?? builder.Configuration["Parameters:luno-api-key-secret"] ?? "MISSING_SECRET",
     secret: true);
 
 var webfrontend = builder.AddProject<Projects.Luno_MissionControl_Web>("webfrontend")

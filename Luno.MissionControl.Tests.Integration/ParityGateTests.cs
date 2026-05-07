@@ -8,7 +8,7 @@ namespace Luno.MissionControl.Tests.Integration;
 /// <summary>
 /// Verifies the end-to-end "Basket Execution" workflow to establish a functional baseline.
 /// </summary>
-public class ParityGateTests(MissionControlTestingApplicationFactory factory) 
+public class ParityGateTests(MissionControlTestingApplicationFactory factory)
     : LunoBrowserTestBase, IClassFixture<MissionControlTestingApplicationFactory>
 {
 
@@ -65,7 +65,7 @@ public class ParityGateTests(MissionControlTestingApplicationFactory factory)
             await currencySelect.ClickAsync();
             await Page.Locator("fluent-option").GetByText("USDC").ClickAsync();
             await Task.Delay(2000); // Wait for transition and inventory lookup
-            
+
             await Assertions.Expect(currencySelect).ToContainTextAsync("USDC");
             await Assertions.Expect(assetRows).ToHaveCountAsync(2);
             await Assertions.Expect(assetRows.Nth(0)).ToContainTextAsync("XBT / USDC");
