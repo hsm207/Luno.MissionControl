@@ -26,12 +26,13 @@
             <div class="sentence">
                 <span class="sentence-text">I want to invest</span>
                 <div class="editable-wrapper">
-                    <FluentTextInput @ref="_amountInput"
-                                     @bind-Value="_rawSpendInput"
-                                     @bind-Value:after="OnAmountEntered"
-                                     Appearance="TextInputAppearance.FilledDarker"
+                    <FluentTextInput @bind-Value="@_amountInputString" 
+                                     @bind-Value:after="OnAmountInputChanged"
+                                     Appearance="TextInputAppearance.FilledLighter"
                                      Id="hero-investment-input"
-                                     Class="hero-input" />
+                                     Class="hero-input"
+                                     TextInputType="TextInputType.Text"
+                                     InputMode="TextInputMode.Decimal" />
                 </div>
                 <div class="editable-wrapper">
                     <FluentSelect Items="@(new[] { "MYR", "USDC" })"
@@ -55,8 +56,7 @@
                     <div class="asset-weight">
                         <WeightInput Id="@($"weight-input-{context.Pair}")"
                                       Weight="@context.Weight" 
-                                      HideLabel="true"
-                                      WeightChanged="@(val => UpdateWeight(context.Pair, val))" />
+                                      WeightChanged="@(val => OnWeightChanged(context, val))" />
                     </div>
                 </TemplateColumn>
 
