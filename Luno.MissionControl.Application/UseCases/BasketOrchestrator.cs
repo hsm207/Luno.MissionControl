@@ -32,11 +32,11 @@ public sealed class BasketOrchestrator(
 
         // 1. Domain Validation (Valid-by-Construction)
         var domainAllocations = command.Allocations
-            .Select(a => new Allocation(a.Pair, new AllocationWeight((int)(a.Weight * 100))))
+            .Select(a => new Allocation(a.Pair, new AllocationWeight(a.Weight * 100.0m)))
             .ToList();
 
         var basket = new OrderBasket(command.TotalSpend, domainAllocations);
-        var orderSummaries = new List<OrderSummary>();
+        List<OrderSummary> orderSummaries = [];
 
         try
         {
@@ -109,8 +109,8 @@ public sealed class BasketOrchestrator(
                 // Polite Pacing
                 if (allocation != basket.Allocations.Last())
                 {
-                    logger.LogDebug("Waiting 30 seconds before next allocation to ensure API stability...");
-                    await Task.Delay(TimeSpan.FromSeconds(30), ct);
+                    logger.LogDebug("Waiting 500ms before next allocation to ensure API stability...");
+                    await Task.Delay(500, CancellationToken.None);
                 }
             }
 
