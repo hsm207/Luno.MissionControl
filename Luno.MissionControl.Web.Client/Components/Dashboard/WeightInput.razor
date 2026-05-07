@@ -1,12 +1,23 @@
 @using Microsoft.FluentUI.AspNetCore.Components
 
-<FluentField Label="@(HideLabel ? null : "Weight (%)")" Style="width: 100px;" Class="right-align-text">
-    <FluentTextInput Id="@Id"
-                     Appearance="TextInputAppearance.Outline" 
-                     Placeholder="0"
-                     Value="@_rawValue"
-                     ValueChanged="@OnInputChanged"
-                     TextInputType="TextInputType.Number" />
-</FluentField>
-
-
+<div class="weight-input-wrapper">
+    <FluentTextInput Value="@_weightInputString" 
+                     ValueChanged="@((string val) => { _weightInputString = val; OnWeightInputChanged(); })"
+                     Appearance="TextInputAppearance.Outline"
+                     TextInputType="TextInputType.Text"
+                     InputMode="TextInputMode.Decimal"
+                     Id="@Id"
+                     Class="weight-input-field"
+                     Placeholder="0.00">
+        <EndTemplate>
+            <span class="weight-unit">%</span>
+        </EndTemplate>
+    </FluentTextInput>
+    
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="validation-error" style="color: var(--error); font-size: 0.75rem; margin-top: 2px;">
+            @_errorMessage
+        </div>
+    }
+</div>

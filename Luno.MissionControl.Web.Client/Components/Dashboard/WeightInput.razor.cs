@@ -1,5 +1,6 @@
 namespace Luno.MissionControl.Web.Client.Components.Dashboard;
 
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 
 public partial class WeightInput : ComponentBase
@@ -16,20 +17,41 @@ public partial class WeightInput : ComponentBase
     [Parameter]
     public EventCallback<decimal> WeightChanged { get; set; }
 
-    protected string? _rawValue;
+    private string _weightInputString = string.Empty;
+    private string? _errorMessage;
 
     protected override void OnParametersSet()
     {
-        _rawValue = (Weight * 100).ToString("F2");
+        // Only overwrite the local string if it has drifted from the actual Weight value.
+        // This prevents re-renders from stripping the decimal separator ('.') while the user is typing.
+        if (decimal.TryParse(_weightInputString, NumberStyles.Any, CultureInfo.InvariantCulture, out var current) && current / 100m == Weight)
+        {
+            return;
+        }
+
+        _weightInputString = (Weight * 100m).ToString("0.##", CultureInfo.InvariantCulture);
     }
 
-
-    protected async Task OnInputChanged(string? value)
+    private void OnWeightInputChanged()
     {
-        _rawValue = value;
-        if (decimal.TryParse(value, out var result))
+        _errorMessage = null;
+
+        // Skip validation if empty
+        if (string.IsNullOrWhiteSpace(_weightInputString)) return;
+
+        if (decimal.TryParse(_weightInputString, NumberStyles.Any, CultureInfo.InvariantCulture, out var percent))
         {
-            await WeightChanged.InvokeAsync(result / 100m);
+            if ((percent * 100m) % 1m != 0m)
+            {
+                _errorMessage = "Only 2 decimal places allowed!";
+                return;
+            }
+
+            WeightChanged.InvokeAsync(percent / 100m);
+        }
+        else
+        {
+            _errorMessage = "Invalid number format!";
         }
     }
 }

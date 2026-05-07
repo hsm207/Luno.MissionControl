@@ -54,4 +54,18 @@ public class InvariantTests
         // Act & Assert
         Assert.Throws<LunoDomainException>(() => new OrderBasket(1000m, duplicateAllocations));
     }
+
+    [Fact(DisplayName = "An Order Basket must respect the Current policy constraints limit on asset count.")]
+    public void Basket_Should_Enforce_Capacity_Limit()
+    {
+        // Arrange
+        // Generating 201 unique assets to exceed the 200 limit.
+        var overstuffedAllocations = Enumerable.Range(1, 201)
+            .Select(i => new Allocation($"PAIR_{i}", new AllocationWeight(100.0m / 201.0m)))
+            .ToList();
+
+        // Act & Assert
+        var ex = Assert.Throws<LunoDomainException>(() => new OrderBasket(1000m, overstuffedAllocations));
+        Assert.Contains("Current policy constraints limit order basket size to 200 assets", ex.Message);
+    }
 }

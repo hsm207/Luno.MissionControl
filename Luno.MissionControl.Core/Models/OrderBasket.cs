@@ -21,6 +21,14 @@ public record Allocation(string Pair, AllocationWeight Weight)
 public record OrderBasket
 {
     private const decimal Tolerance = 0.0001m;
+
+    // --- Performance Policy Constraints ---
+    private const int LunoRateLimitPerMin = 300; 
+    private const int HttpRequestTimeoutSeconds = 120;
+    private const int PacingDelayMs = 500;
+    private const int OverheadMs = 100; // Estimated latency/processing per order.
+
+    private const int MaxBasketSize = HttpRequestTimeoutSeconds * 1000 / (PacingDelayMs + OverheadMs);
     
     public decimal TotalSpend { get; }
     public IReadOnlyList<Allocation> Allocations { get; }
@@ -44,7 +52,13 @@ public record OrderBasket
             throw new LunoDomainException("An Order Basket must ensure the sum of its asset weights equals exactly 100%.");
         }
 
-        // 3. Calculate Target Spends
+        // 3. Invariant: Capacity Constraint
+        if (Allocations.Count > MaxBasketSize)
+        {
+            throw new LunoDomainException($"Current policy constraints limit order basket size to {MaxBasketSize} assets to ensure execution stability.");
+        }
+
+        // 4. Calculate Target Spends
         foreach (var allocation in Allocations)
         {
             allocation.TargetSpend = TotalSpend * (decimal)allocation.Weight / 100.0m;

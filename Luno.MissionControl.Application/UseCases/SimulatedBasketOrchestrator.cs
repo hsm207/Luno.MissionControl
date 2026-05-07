@@ -28,13 +28,13 @@ public sealed class SimulatedBasketOrchestrator(ILogger<SimulatedBasketOrchestra
         // 1. Validation using Core Domain Models (Valid-by-Construction)
         // Note: Core model expects weights in 0-100 range, whereas DTO uses 0.0-1.0
         var domainAllocations = command.Allocations
-            .Select(a => new Luno.MissionControl.Core.Models.Allocation(a.Pair, new Luno.MissionControl.Core.Models.AllocationWeight((int)(a.Weight * 100))))
+            .Select(a => new Luno.MissionControl.Core.Models.Allocation(a.Pair, new Luno.MissionControl.Core.Models.AllocationWeight(a.Weight * 100m)))
             .ToList();
 
         try
         {
             var basket = new OrderBasket(command.TotalSpend, domainAllocations);
-            var orders = new List<OrderSummary>();
+            List<OrderSummary> orders = [];
 
             // 2. Realistic "Orchestration" Delay
             logger.LogDebug("[SIMULATION] Resolving market metadata and verifying account state...");
