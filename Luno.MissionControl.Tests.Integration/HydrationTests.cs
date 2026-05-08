@@ -25,22 +25,24 @@ public class HydrationTests(MissionControlTestingApplicationFactory factory)
         var comboUrl = new Uri(frontendUri.ToString().TrimEnd('/') + "/combo");
         await Page.GotoAsync(comboUrl.ToString());
 
-        // Wait for the static selector (prerendered) to be visible.
-        var staticSelect = Page.Locator("#static-currency-selector");
-        await staticSelect.WaitForAsync(new() { State = WaitForSelectorState.Visible });
+        // Wait for the selector to be visible.
+        var select = Page.Locator(".hero-select");
+        await select.WaitForAsync(new() { State = WaitForSelectorState.Visible });
 
-        // Select 'MYR' to prepare state for hydration.
-        await Page.SelectOptionAsync("#currency-selector", "MYR");
+        // Select 'USDC' to prepare state for hydration.
+        // Since it's a Fluent UI component, we'item use the locator to pick the option.
+        await select.ClickAsync();
+        await Page.Locator("fluent-option").GetByText("USDC").ClickAsync();
 
         // Trigger the transition by reloading (simulating the Auto-mode handover).
         await Page.ReloadAsync();
 
         // 3. Assert: Verify State Persistence
-        // If hydration fails, the selector might revert to 'ZAR' or crash.
+        // If hydration fails, the selector might revert to 'MYR' (default) or crash.
         // We wait for the value to be correct to account for async hydration.
-        await Page.WaitForFunctionAsync("document.querySelector('#currency-selector').value === 'MYR'");
+        await Assertions.Expect(select).ToContainTextAsync("USDC");
 
-        var currentValue = await Page.EvalOnSelectorAsync<string>("#currency-selector", "el => el.value");
-        Assert.Equal("MYR", currentValue);
+        var currentValue = await select.InnerTextAsync();
+        Assert.Contains("USDC", currentValue);
     }
 }
