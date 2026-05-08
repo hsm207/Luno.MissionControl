@@ -8,6 +8,7 @@ using Luno.MissionControl.Application.UseCases;
 using Luno.MissionControl.Application.Commands;
 using Luno.MissionControl.Application.Models;
 using Luno.MissionControl.Web.Client.Adapters;
+using Luno.MissionControl.Web.Client.Services;
 using Luno.MissionControl.Web.Controllers;
 using Luno.MissionControl.Infrastructure.Adapters;
 using Luno.MissionControl.Infrastructure.Persistence;
@@ -47,6 +48,7 @@ builder.Services.AddScoped<IBasketState>(sp => sp.GetRequiredService<ServerBaske
 builder.Services.AddScoped<IPriceClient>(sp => sp.GetRequiredService<ServerBasketState>());
 builder.Services.AddHostedService<MarketWatchService>();
 builder.Services.AddScoped<Luno.MissionControl.Web.Client.Components.Layout.MainLayoutViewModel>();
+builder.Services.AddScoped<IPersistenceBridge, PersistenceBridge>();
 
 var app = builder.Build();
 

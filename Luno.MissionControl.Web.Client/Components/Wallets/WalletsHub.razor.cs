@@ -1,6 +1,7 @@
 using Luno.MissionControl.Core.Models;
 using Luno.MissionControl.Application.Ports;
 using Luno.MissionControl.Application.Diagnostics;
+using Luno.MissionControl.Web.Client.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -10,6 +11,9 @@ public partial class WalletsHub
 {
     [Inject]
     private IWalletOrchestrator WalletOrchestrator { get; set; } = default!;
+
+    [Inject]
+    private IPersistenceBridge PersistenceBridge { get; set; } = default!;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
@@ -29,7 +33,8 @@ public partial class WalletsHub
         try
         {
             _isLoading = true;
-            var items = await WalletOrchestrator.GetWalletOverviewAsync();
+            var items = await PersistenceBridge.GetOrLoadAsync("wallets-overview", 
+                () => WalletOrchestrator.GetWalletOverviewAsync());
             _overview = items
                 .OrderByDescending(i => i.IsAmbiguous)
                 .ThenBy(i => i.Asset)

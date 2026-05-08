@@ -8,6 +8,7 @@ using Luno.MissionControl.Application.Commands;
 using Luno.MissionControl.Application.Models;
 using Luno.MissionControl.Application.Diagnostics;
 using Luno.MissionControl.Web.Client.Adapters;
+using Luno.MissionControl.Web.Client.Services;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
@@ -22,9 +23,8 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     [Inject] private IToastService ToastService { get; set; } = default!;
     [Inject] private IDialogService DialogService { get; set; } = default!;
     [Inject] private ILogger<ComboOrchestrator> Logger { get; set; } = default!;
-    [Inject] private PersistentComponentState ApplicationState { get; set; } = default!;
+    [Inject] private IPersistenceBridge PersistenceBridge { get; set; } = default!;
 
-    private PersistingComponentStateSubscription _subscription;
     private List<AllocationRequest> _allocations = new();
     private IEnumerable<MarketMetadata> _selectedSearchItems { get; set; } = [];
     private ErrorBoundary? _errorBoundary;
@@ -129,24 +129,13 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
         }
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        _subscription = ApplicationState.RegisterOnPersisting(() =>
-        {
-            ApplicationState.PersistAsJson("SelectedCurrency", State.SelectedCurrency);
-            ApplicationState.PersistAsJson("TargetSpend", State.TargetSpend);
-            return Task.CompletedTask;
-        });
+        State.SelectedCurrency = await PersistenceBridge.GetOrLoadAsync("SelectedCurrency", 
+            () => Task.FromResult(State.SelectedCurrency));
 
-        if (ApplicationState.TryTakeFromJson<string>("SelectedCurrency", out var currency))
-        {
-            State.SelectedCurrency = currency!;
-        }
-
-        if (ApplicationState.TryTakeFromJson<decimal>("TargetSpend", out var spend))
-        {
-            State.TargetSpend = spend;
-        }
+        State.TargetSpend = await PersistenceBridge.GetOrLoadAsync("TargetSpend", 
+            () => Task.FromResult(State.TargetSpend));
 
         // Default starting state aligned with SelectedCurrency
         bool isMyr = State.SelectedCurrency == "MYR";
@@ -230,7 +219,6 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        _subscription.Dispose();
         State.OnPriceUpdate -= HandlePriceUpdate;
         State.OnMarketsUpdate -= HandleMarketsUpdate;
     }

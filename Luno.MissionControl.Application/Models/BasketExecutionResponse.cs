@@ -9,4 +9,7 @@ namespace Luno.MissionControl.Application.Models;
 public sealed record BasketExecutionResponse(
     bool Success,
     IReadOnlyList<OrderSummary> Orders,
-    string? ErrorMessage = null);
+    string? ErrorMessage = null)
+{
+    public BasketExecutionResponse() : this(false, [], null) { }
+}

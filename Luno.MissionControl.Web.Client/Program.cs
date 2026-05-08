@@ -74,6 +74,7 @@ builder.Services.AddScoped<IBasketService, BasketServiceProxy>();
 builder.Services.AddScoped<IWalletOrchestrator, WalletServiceProxy>();
 
 builder.Services.AddScoped<Luno.MissionControl.Web.Client.Components.Layout.MainLayoutViewModel>();
+builder.Services.AddScoped<IPersistenceBridge, PersistenceBridge>();
 
 
 var app = builder.Build();
