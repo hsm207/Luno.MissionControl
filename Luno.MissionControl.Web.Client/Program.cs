@@ -71,6 +71,7 @@ builder.Services.AddScoped<IBasketState>(sp => sp.GetRequiredService<ClientBaske
 builder.Services.AddScoped<IPriceClient>(sp => sp.GetRequiredService<ClientBasketState>());
 
 builder.Services.AddScoped<IBasketService, BasketServiceProxy>();
+builder.Services.AddScoped<IWalletOrchestrator, WalletServiceProxy>();
 
 builder.Services.AddScoped<Luno.MissionControl.Web.Client.Components.Layout.MainLayoutViewModel>();
 
