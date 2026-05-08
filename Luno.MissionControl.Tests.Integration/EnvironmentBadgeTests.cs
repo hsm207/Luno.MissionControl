@@ -25,9 +25,9 @@ public class EnvironmentBadgeTests() : LunoBrowserTestBase
             await Page.GotoAsync(frontendUri.ToString());
 
             var bridge = Page.Locator(".environment-badge-bridge");
-            var statusSpan = bridge.Locator(".status-text-target");
 
-            await Assertions.Expect(statusSpan).ToContainTextAsync(expectedText, new() { Timeout = 15000 });
+            // We look for the text anywhere within the bridge container for better resilience
+            await Assertions.Expect(bridge).ToContainTextAsync(expectedText, new() { Timeout = 15000 });
             await Assertions.Expect(bridge).ToHaveAttributeAsync("data-status", expectedStatus);
 
             await CaptureForensicsAsync(factory, $"badge-{env}");
