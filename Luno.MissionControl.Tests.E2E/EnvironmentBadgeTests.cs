@@ -47,5 +47,11 @@ public class EnvironmentBadgeTests
         
         // Verify the exact text content (trimmed to ignore SSR whitespace ceremony)
         Assert.Equal(expectedText, statusText.TextContent.Trim());
+
+        // --- STAGE 4: LOG VERIFICATION ---
+        // We also inspect the internal service logs to ensure the 'Safety' boundary is intact.
+        // This confirms the app internally identifies as the correct environment.
+        var logs = factory.LogCollector.GetLogs("webfrontend");
+        Assert.Contains(logs, log => log.Contains($"Hosting environment: {env}", StringComparison.OrdinalIgnoreCase));
     }
 }
