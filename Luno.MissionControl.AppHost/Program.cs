@@ -26,6 +26,11 @@ var webfrontend = builder.AddProject<Projects.Luno_MissionControl_Web>("webfront
     .WithEnvironment("Luno__ApiKeySecret", apiKeySecret)
     .WithReference(settingsDb);
 
+var migrations = webfrontend.AddEFMigrations("settings-migrations")
+    .RunDatabaseUpdateOnStart();
+
+webfrontend.WaitForCompletion(migrations);
+
 if (!builder.Environment.IsDevelopment())
 {
     var endpoint = builder.Configuration["ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL"] ?? "http://env-dashboard:18890";

@@ -52,30 +52,6 @@ builder.Services.AddScoped<IPersistenceBridge, PersistenceBridge>();
 
 var app = builder.Build();
 
-// Ensure the database is created at startup with high-fidelity resilience.
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<SettingsDbContext>();
-    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    
-    // We use a simple retry pattern to allow the database container to finish initializing.
-    var retries = 5;
-    while (retries > 0)
-    {
-        try
-        {
-            await context.Database.EnsureCreatedAsync();
-            break;
-        }
-        catch (Exception ex) when (retries > 1)
-        {
-            logger.LogWarning("Waiting for database to be ready... ({Retries} attempts left). Error: {Message}", retries, ex.Message);
-            retries--;
-            await Task.Delay(2000);
-        }
-    }
-}
-
 app.MapDefaultEndpoints();
 app.MapOtlpForwarder();
 
