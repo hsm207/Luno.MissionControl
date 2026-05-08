@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Luno.MissionControl.Web.Client.Services;
 
@@ -35,7 +36,7 @@ public sealed class PersistenceBridge : IPersistenceBridge, IDisposable
 
         if (_subscription is null)
         {
-            _subscription = _state.RegisterOnPersisting(PersistDataAsync);
+            _subscription = _state.RegisterOnPersisting(PersistDataAsync, RenderMode.InteractiveAuto);
         }
 
         return data;
