@@ -101,7 +101,9 @@ public class ParityGateTests(MissionControlTestingApplicationFactory factory)
 
             // --- STAGE 5: FINAL EXECUTION ---
             // We initiate the order placement, confirm the review gate, and verify the 'Mission Accomplished' toast.
-            await Page.Locator(".buy-button").ClickAsync();
+            var buyButton = Page.Locator(".buy-button");
+            await Assertions.Expect(buyButton).ToBeEnabledAsync();
+            await buyButton.ClickAsync();
             await Task.Delay(500);
 
             var dialogHeader = Page.GetByText("CONFIRM YOUR COMBO");

@@ -36,7 +36,6 @@ public class MissionControlTestingApplicationFactory : DistributedApplicationFac
                     hostOptions.EnvironmentName = Args[i + 1];
                     break;
                 }
-            }
         }
 
         // Disable ANSI color output to ensure clean log capture for forensic analysis.
