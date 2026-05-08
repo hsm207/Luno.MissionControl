@@ -99,6 +99,11 @@ public class ParityGateTests(MissionControlTestingApplicationFactory factory)
             await ethInput.PressAsync("Tab");
             await Task.Delay(1000);
 
+            // Verify that the values are actually stored and reflected in the inputs
+            await Assertions.Expect(inputControl).ToHaveValueAsync("1500");
+            await Assertions.Expect(xbtInput).ToHaveValueAsync("99.99");
+            await Assertions.Expect(ethInput).ToHaveValueAsync("0.01");
+
             // --- STAGE 5: FINAL EXECUTION ---
             // We initiate the order placement, confirm the review gate, and verify the 'Mission Accomplished' toast.
             var buyButton = Page.Locator(".buy-button");
