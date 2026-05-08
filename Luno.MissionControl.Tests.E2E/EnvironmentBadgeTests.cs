@@ -4,6 +4,8 @@ using AngleSharp;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 
+using Luno.MissionControl.Tests.Integration;
+
 namespace Luno.MissionControl.Tests.E2E;
 
 public class EnvironmentBadgeTests

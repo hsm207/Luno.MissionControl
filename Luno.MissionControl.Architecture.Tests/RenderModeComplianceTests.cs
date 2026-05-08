@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Luno.MissionControl.Tests.Integration;
+namespace Luno.MissionControl.Architecture.Tests;
 
 /// <summary>
 /// Static analysis tests that verify Blazor render mode compliance.
@@ -24,12 +24,10 @@ namespace Luno.MissionControl.Tests.Integration;
 public class RenderModeComplianceTests
 {
     // Resolve the Web.Client project source root relative to the test assembly location.
-    // Assembly lives at: Tests.Integration/bin/Debug/net10.0/
-    // 4 levels up: net10.0 -> Debug -> bin -> Tests.Integration -> [SolutionRoot]
     private static string SolutionRoot => Path.GetFullPath(
         Path.Combine(
             Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
-            "..", "..", "..", ".."));
+            "..", "..", "..", "..")); // 4 levels up to reach root from bin/Debug/net10.0/
 
     private static string WebClientRoot => Path.Combine(
         SolutionRoot, "Luno.MissionControl.Web.Client");
@@ -57,7 +55,7 @@ public class RenderModeComplianceTests
         return null;
     }
 
-    [Fact]
+    [Fact(DisplayName = "Scenario: All Client @page components must have an explicit @rendermode to prevent frozen UI")]
     public void AllClientPageComponents_HaveExplicitRenderModeDirective()
     {
         // Arrange
@@ -90,7 +88,7 @@ public class RenderModeComplianceTests
             """);
     }
 
-    [Fact]
+    [Fact(DisplayName = "Scenario: All Client @page components must use an interactive render mode (Auto/Server/WASM)")]
     public void AllClientPageComponents_RenderModeIsInteractive()
     {
         // Arrange
@@ -127,7 +125,7 @@ public class RenderModeComplianceTests
             """);
     }
 
-    [Fact]
+    [Fact(DisplayName = "Scenario: Interactive components must reside in the Web.Client project to support WASM/Auto modes")]
     public void AllClientPageComponents_AreLocatedInWebClientProject()
     {
         // This test validates the project structure invariant:

@@ -3,6 +3,8 @@ using Aspire.Hosting.Testing;
 using Microsoft.Playwright;
 using Microsoft.Playwright.Xunit;
 
+using Luno.MissionControl.Tests.Integration;
+
 namespace Luno.MissionControl.Tests.E2E;
 
 /// <summary>
