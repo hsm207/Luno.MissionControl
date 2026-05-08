@@ -263,7 +263,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
 
         var dialogResult = await DialogService.ShowDialogAsync<ReviewGate>(options =>
         {
-            options.Header.Title = "Mission Critical: Confirm Your Combo";
+            options.Header.Title = "CONFIRM YOUR COMBO";
             options.Modal = true;
             options.Parameters.Add(nameof(ReviewGate.Content), command);
             options.Width = "450px";
