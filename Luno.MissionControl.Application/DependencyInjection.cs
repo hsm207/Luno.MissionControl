@@ -18,6 +18,11 @@ public static class DependencyInjection
             services.AddScoped<IBasketService, BasketOrchestrator>();
         }
 
+        services.AddSingleton<Luno.MissionControl.Core.Services.WalletResolver>();
+        services.AddScoped<IWalletOrchestrator, WalletOrchestrator>();
+
         return services;
+
+
     }
 }
