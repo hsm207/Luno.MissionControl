@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Luno.MissionControl.Tests.Integration\Luno.MissionControl.Tests.Integration.csproj" />
+    <ProjectReference Include="..\Luno.MissionControl.AppHost\Luno.MissionControl.AppHost.csproj" />
   </ItemGroup>
 
 </Project>
