@@ -27,6 +27,7 @@ var webfrontend = builder.AddProject<Projects.Luno_MissionControl_Web>("webfront
     .WithReference(settingsDb);
 
 var migrations = webfrontend.AddEFMigrations("settings-migrations")
+    .WithMigrationsProject<Projects.Luno_MissionControl_Infrastructure>()
     .RunDatabaseUpdateOnStart();
 
 webfrontend.WaitForCompletion(migrations);
