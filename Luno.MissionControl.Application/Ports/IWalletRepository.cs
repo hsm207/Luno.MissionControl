@@ -3,7 +3,7 @@ using Luno.MissionControl.Core.Models;
 namespace Luno.MissionControl.Application.Ports;
 
 /// <summary>
-/// Port for persisting and retrieving user wallet preferences. 🫦
+/// Port for persisting and retrieving user wallet preferences.
 /// </summary>
 public interface IWalletRepository
 {
