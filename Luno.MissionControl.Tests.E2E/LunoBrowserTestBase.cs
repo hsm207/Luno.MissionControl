@@ -1,6 +1,6 @@
 using Microsoft.Playwright.Xunit;
 
-namespace Luno.MissionControl.Tests.Integration;
+namespace Luno.MissionControl.Tests.E2E;
 
 /// <summary>
 /// Specialized base class for browser-based integration tests.

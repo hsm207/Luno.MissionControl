@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 
-namespace Luno.MissionControl.Tests.Integration;
+namespace Luno.MissionControl.Tests.E2E;
 
 /// <summary>
 /// A thread-safe log collector that stores logs indexed by their category name.

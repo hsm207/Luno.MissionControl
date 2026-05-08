@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Luno.MissionControl.Tests.Integration;
+namespace Luno.MissionControl.Tests.E2E;
 
 public class MissionControlTestingApplicationFactory : DistributedApplicationFactory
 {
@@ -36,9 +36,11 @@ public class MissionControlTestingApplicationFactory : DistributedApplicationFac
                     hostOptions.EnvironmentName = Args[i + 1];
                     break;
                 }
+            }
         }
 
         // Disable ANSI color output to ensure clean log capture for forensic analysis.
+
         Environment.SetEnvironmentVariable("Logging__Console__FormatterOptions__ColorBehavior", "Disabled");
         Environment.SetEnvironmentVariable("Logging__Console__DisableColors", "true");
         Environment.SetEnvironmentVariable("NO_COLOR", "true");

@@ -3,7 +3,7 @@ using Microsoft.Playwright;
 using Microsoft.Playwright.Xunit;
 using Aspire.Hosting.Testing;
 
-namespace Luno.MissionControl.Tests.Integration;
+namespace Luno.MissionControl.Tests.E2E;
 
 public class EnvironmentBadgeTests() : LunoBrowserTestBase
 {
