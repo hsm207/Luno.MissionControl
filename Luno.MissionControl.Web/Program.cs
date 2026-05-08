@@ -21,33 +21,31 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+// --- CORE ARCHITECTURE ---
+builder.AddNpgsqlDbContext<SettingsDbContext>("settingsdb");
+builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddApplicationServices(builder.Environment.IsDevelopment());
+
+// --- UI & FRAMEWORK ---
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents(options => options.DetailedErrors = builder.Environment.IsDevelopment())
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddScoped<CircuitHandler, CircuitLifecycleLogger>();
-
 builder.Services.AddSignalR();
 builder.Services.AddFluentUIComponents(config =>
 {
     config.MarkupSanitized.SanitizeInlineStyle = (value) => value;
 });
 
-builder.AddNpgsqlDbContext<SettingsDbContext>("settingsdb");
-
-builder.Services.AddInfrastructureServices(builder.Configuration);
-builder.Services.AddApplicationServices(builder.Environment.IsDevelopment());
-
+// --- MISSION CONTROL SERVICES ---
 builder.Services.AddSingleton<PriceBroadcaster>();
 builder.Services.AddSingleton<IPriceBroadcaster>(sp => sp.GetRequiredService<PriceBroadcaster>());
 builder.Services.AddSingleton<MarketInventory>();
 builder.Services.AddScoped<ServerBasketState>();
 builder.Services.AddScoped<IBasketState>(sp => sp.GetRequiredService<ServerBasketState>());
 builder.Services.AddScoped<IPriceClient>(sp => sp.GetRequiredService<ServerBasketState>());
-
-
 builder.Services.AddHostedService<MarketWatchService>();
-
 builder.Services.AddScoped<Luno.MissionControl.Web.Client.Components.Layout.MainLayoutViewModel>();
 
 var app = builder.Build();
