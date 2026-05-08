@@ -10,7 +10,7 @@ using Luno.MissionControl.Application.Models;
 using Luno.MissionControl.Web.Client.Adapters;
 using Luno.MissionControl.Web.Controllers;
 using Luno.MissionControl.Infrastructure.Adapters;
-using Luno.MissionControl.Infrastructure.Adapters.Persistence;
+using Luno.MissionControl.Infrastructure.Persistence;
 using Luno.MissionControl.Infrastructure;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.Extensions.Hosting;
@@ -50,11 +50,28 @@ builder.Services.AddScoped<Luno.MissionControl.Web.Client.Components.Layout.Main
 
 var app = builder.Build();
 
-// Ensure the database is created at startup to handle initial migrations or schema creation.
+// Ensure the database is created at startup with high-fidelity resilience.
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<SettingsDbContext>();
-    await context.Database.EnsureCreatedAsync();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    // We use a simple retry pattern to allow the database container to finish initializing.
+    var retries = 5;
+    while (retries > 0)
+    {
+        try
+        {
+            await context.Database.EnsureCreatedAsync();
+            break;
+        }
+        catch (Exception ex) when (retries > 1)
+        {
+            logger.LogWarning("Waiting for database to be ready... ({Retries} attempts left). Error: {Message}", retries, ex.Message);
+            retries--;
+            await Task.Delay(2000);
+        }
+    }
 }
 
 app.MapDefaultEndpoints();
@@ -82,6 +99,7 @@ app.MapRazorComponents<App>()
 
 app.MapHub<PriceHub>("/hubs/price");
 app.MapBasketActions();
+app.MapWalletActions();
 
 app.Run();
 
