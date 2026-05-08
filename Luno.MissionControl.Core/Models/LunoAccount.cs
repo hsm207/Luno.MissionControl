@@ -17,11 +17,6 @@ public record LunoAccount
     public string Name { get; init; } = string.Empty;
 
     /// <summary>
-    /// Gets the currency code associated with this account (e.g., "XBT", "MYR").
-    /// </summary>
-    public string Currency { get; init; } = string.Empty;
-
-    /// <summary>
     /// Gets the current available balance in this account.
     /// </summary>
     public decimal Balance { get; init; }

@@ -12,14 +12,13 @@ public class WalletResolverTests
     {
         // Arrange
         var resolver = new WalletResolver();
-        var accounts = new[]
+        var candidates = new[]
         {
-            new LunoAccount { Id = 123, Name = "XBT Wallet", Currency = "XBT", Balance = 1.0m },
-            new LunoAccount { Id = 456, Name = "MYR Wallet", Currency = "MYR", Balance = 1000m }
+            new LunoAccount { Id = 123, Name = "XBT Wallet", Balance = 1.0m }
         };
 
         // Act
-        var result = resolver.Resolve(accounts, "XBT", null);
+        var result = resolver.Resolve(candidates, "XBT", null);
 
         // Assert
         Assert.Equal(123, result.Id);
@@ -30,10 +29,10 @@ public class WalletResolverTests
     {
         // Arrange
         var resolver = new WalletResolver();
-        var accounts = new[]
+        var candidates = new[]
         {
-            new LunoAccount { Id = 101, Name = "XBT Trading", Currency = "XBT", Balance = 0.5m },
-            new LunoAccount { Id = 102, Name = "XBT Savings", Currency = "XBT", Balance = 2.0m }
+            new LunoAccount { Id = 101, Name = "XBT Trading", Balance = 0.5m },
+            new LunoAccount { Id = 102, Name = "XBT Savings", Balance = 2.0m }
         };
         var preference = new TradingAccountPreference 
         { 
@@ -43,8 +42,7 @@ public class WalletResolverTests
         };
 
         // Act
-        // Resolving as Base account
-        var result = resolver.Resolve(accounts, "XBT", preference, isBase: true);
+        var result = resolver.Resolve(candidates, "XBT", preference, isBase: true);
 
         // Assert
         Assert.Equal(101, result.Id);
@@ -55,14 +53,14 @@ public class WalletResolverTests
     {
         // Arrange
         var resolver = new WalletResolver();
-        var accounts = new[]
+        var candidates = new[]
         {
-            new LunoAccount { Id = 101, Name = "XBT Trading", Currency = "XBT", Balance = 0.5m },
-            new LunoAccount { Id = 102, Name = "XBT Savings", Currency = "XBT", Balance = 2.0m }
+            new LunoAccount { Id = 101, Name = "XBT Trading", Balance = 0.5m },
+            new LunoAccount { Id = 102, Name = "XBT Savings", Balance = 2.0m }
         };
 
         // Act & Assert
-        Assert.Throws<WalletAmbiguityException>(() => resolver.Resolve(accounts, "XBT", null));
+        Assert.Throws<WalletAmbiguityException>(() => resolver.Resolve(candidates, "XBT", null));
     }
 
     [Fact(DisplayName = "Given an asset with multiple accounts and a preference that no longer matches any live account, the resolver must treat the state as ambiguous and fail-fast.")]
@@ -70,10 +68,10 @@ public class WalletResolverTests
     {
         // Arrange
         var resolver = new WalletResolver();
-        var accounts = new[]
+        var candidates = new[]
         {
-            new LunoAccount { Id = 101, Name = "XBT Trading", Currency = "XBT", Balance = 0.5m },
-            new LunoAccount { Id = 102, Name = "XBT Savings", Currency = "XBT", Balance = 2.0m }
+            new LunoAccount { Id = 101, Name = "XBT Trading", Balance = 0.5m },
+            new LunoAccount { Id = 102, Name = "XBT Savings", Balance = 2.0m }
         };
         var stalePreference = new TradingAccountPreference 
         { 
@@ -83,7 +81,7 @@ public class WalletResolverTests
         };
 
         // Act & Assert
-        Assert.Throws<WalletAmbiguityException>(() => resolver.Resolve(accounts, "XBT", stalePreference, isBase: true));
+        Assert.Throws<WalletAmbiguityException>(() => resolver.Resolve(candidates, "XBT", stalePreference, isBase: true));
     }
 
     [Fact(DisplayName = "Given a request to resolve an asset that has no associated Luno accounts, the resolver must throw a descriptive exception to facilitate diagnostic troubleshooting.")]
@@ -91,12 +89,9 @@ public class WalletResolverTests
     {
         // Arrange
         var resolver = new WalletResolver();
-        var accounts = new[]
-        {
-            new LunoAccount { Id = 456, Name = "MYR Wallet", Currency = "MYR", Balance = 1000m }
-        };
+        var candidates = Array.Empty<LunoAccount>();
 
         // Act & Assert
-        Assert.Throws<WalletNotFoundException>(() => resolver.Resolve(accounts, "XBT", null));
+        Assert.Throws<WalletNotFoundException>(() => resolver.Resolve(candidates, "XBT", null));
     }
 }

@@ -45,7 +45,7 @@
             </div>
         </div>
         <FluentCard Class="gilded-card">
-            <FluentDataGrid Items="@_allocations.AsQueryable()" TGridItem="AllocationRequest" Class="basket-grid">
+            <FluentDataGrid Items="@_allocations.AsQueryable()" TGridItem="AllocationRequest" ItemKey="@(c => c.Pair)" Class="basket-grid">
                 <TemplateColumn Title="Asset Pair">
                     <span class="asset-name">@FormatPair(context.Pair)</span>
                 </TemplateColumn>
@@ -116,7 +116,7 @@
     </ChildContent>
     <ErrorContent>
         <div class="error-container">
-            <FluentLabel Class="error-title">Something went wrong</FluentLabel>
+            <FluentText Typo="Typography.Body" Class="error-title">Something went wrong</FluentText>
             <p class="error-text">The basket interface has encountered an error. Please refresh the page.</p>
         </div>
     </ErrorContent>

@@ -10,10 +10,6 @@ namespace Luno.MissionControl.Application.Ports;
 /// </summary>
 public interface ILunoMarketData
 {
-    /// <summary>
-    /// Retrieves all available balances for the authenticated user.
-    /// </summary>
-    Task<IReadOnlyList<CoreModels.AccountBalance>> GetBalancesAsync(CancellationToken ct = default);
 
     /// <summary>
     /// Retrieves metadata for a set of trading pairs.
