@@ -22,7 +22,7 @@ public static class WalletController
         group.MapPost("/pin", async ([FromQuery] string asset, [FromQuery] long accountId, IWalletOrchestrator orchestrator, CancellationToken ct) =>
         {
             await orchestrator.PinAccountAsync(asset, accountId, ct);
-            return Results.Ok();
+            return Results.NoContent();
         });
     }
 }
