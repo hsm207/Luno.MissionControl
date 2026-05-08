@@ -33,7 +33,6 @@ builder.Services.AddFluentUIComponents(config =>
     config.MarkupSanitized.SanitizeInlineStyle = (value) => value;
 });
 
-// 📦 PERSISTENCE: PostgreSQL + EF Core! 🐘 🫦
 builder.AddNpgsqlDbContext<SettingsDbContext>("settingsdb");
 
 builder.Services.AddInfrastructureServices(builder.Configuration);
@@ -53,7 +52,7 @@ builder.Services.AddScoped<Luno.MissionControl.Web.Client.Components.Layout.Main
 
 var app = builder.Build();
 
-// Ensure the database is created at startup! 🫦
+// Ensure the database is created at startup to handle initial migrations or schema creation.
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<SettingsDbContext>();
