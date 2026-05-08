@@ -1,41 +1,51 @@
 using Aspire.Hosting;
-using Microsoft.Playwright;
-using Microsoft.Playwright.Xunit;
 using Aspire.Hosting.Testing;
+using AngleSharp;
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
 
 namespace Luno.MissionControl.Tests.E2E;
 
-public class EnvironmentBadgeTests() : LunoBrowserTestBase
+public class EnvironmentBadgeTests
 {
-    [Theory(DisplayName = "Scenario: Environment badge correctly reflects host environment status")]
+    [Theory(DisplayName = "Scenario: Environment badge correctly reflects host environment status (SSR Smoke Test)")]
     [InlineData("Development", "DEVELOPMENT", "gold-glow")]
     [InlineData("Production", "PRODUCTION", "danger-glow")]
     public async Task Given_EnvironmentSetTo_When_PageLoads_Then_BadgeReflectsStatus(string env, string expectedText, string expectedStatus)
     {
-        StartConsoleLogCapture();
-
+        // --- STAGE 1: INFRASTRUCTURE SETUP ---
+        // We use the DistributedApplicationFactory to spin up the AppHost in a controlled environment.
+        // This is significantly faster than a full browser E2E test.
         using var factory = new MissionControlTestingApplicationFactory();
         factory.Args = ["--environment", env];
+        
+        var app = await factory.CreateAndStartAsync();
+        var client = app.CreateHttpClient("webfrontend");
 
-        try
-        {
-            var app = await factory.CreateAndStartAsync();
-            var frontendUri = app.GetEndpoint("webfrontend");
+        // --- STAGE 2: EXECUTION ---
+        // We perform a simple HTTP GET to the root. Since we use InteractiveAuto, 
+        // the initial HTML response must contain the SSR-rendered environment badge.
+        var response = await client.GetAsync("/");
+        response.EnsureSuccessStatusCode();
+        var htmlContent = await response.Content.ReadAsStringAsync();
 
-            await Page.GotoAsync(frontendUri.ToString());
+        // --- STAGE 3: SSR PARSING & ASSERTION ---
+        // We use AngleSharp to parse the HTML and extract the badge location using CSS selectors.
+        // This verifies that the 'First Contentful Paint' is correctly themed.
+        var context = BrowsingContext.New(Configuration.Default);
+        var parser = context.GetService<IHtmlParser>();
+        using var document = await parser.ParseDocumentAsync(htmlContent);
 
-            var bridge = Page.Locator(".environment-badge-bridge");
+        var bridge = document.QuerySelector(".environment-badge-bridge");
+        var statusText = document.QuerySelector(".status-text-target");
 
-            // We look for the text anywhere within the bridge container for better resilience
-            await Assertions.Expect(bridge).ToContainTextAsync(expectedText, new() { Timeout = 15000 });
-            await Assertions.Expect(bridge).ToHaveAttributeAsync("data-status", expectedStatus);
+        Assert.NotNull(bridge);
+        Assert.NotNull(statusText);
 
-            await CaptureForensicsAsync(factory, $"badge-{env}");
-        }
-        catch (Exception)
-        {
-            await CaptureForensicsAsync(factory, $"badge-{env}", isFailure: true);
-            throw;
-        }
+        // Verify the data-status attribute for CSS glow effects
+        Assert.Equal(expectedStatus, bridge.GetAttribute("data-status"));
+        
+        // Verify the exact text content (trimmed to ignore SSR whitespace ceremony)
+        Assert.Equal(expectedText, statusText.TextContent.Trim());
     }
 }
