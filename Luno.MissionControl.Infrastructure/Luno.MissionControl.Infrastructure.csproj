@@ -15,4 +15,8 @@
     <ProjectReference Include="../Luno.MissionControl.Application/Luno.MissionControl.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.0" />
+  </ItemGroup>
+
 </Project>

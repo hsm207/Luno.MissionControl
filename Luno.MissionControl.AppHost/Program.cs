@@ -15,12 +15,17 @@ var apiKeySecret = builder.AddParameter("luno-api-key-secret",
     builder.Configuration["Luno:ApiKeySecret"] ?? builder.Configuration["Parameters:luno-api-key-secret"] ?? "MISSING_SECRET",
     secret: true);
 
+var postgres = builder.AddPostgres("postgres")
+    .WithDataVolume();
+var settingsDb = postgres.AddDatabase("settingsdb");
+
 var webfrontend = builder.AddProject<Projects.Luno_MissionControl_Web>("webfrontend")
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health")
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", builder.Environment.EnvironmentName)
     .WithEnvironment("Luno__ApiKeyId", apiKeyId)
-    .WithEnvironment("Luno__ApiKeySecret", apiKeySecret);
+    .WithEnvironment("Luno__ApiKeySecret", apiKeySecret)
+    .WithReference(settingsDb);
 
 if (!builder.Environment.IsDevelopment())
 {

@@ -1,5 +1,6 @@
 using Luno.MissionControl.Application.Ports;
 using Luno.MissionControl.Infrastructure.Adapters;
+using Luno.MissionControl.Infrastructure.Adapters.Persistence;
 using Luno.SDK;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,8 @@ public static class DependencyInjection
         services.AddScoped<LunoSdkBridge>();
         services.AddScoped<ILunoTrader>(sp => sp.GetRequiredService<LunoSdkBridge>());
         services.AddScoped<ILunoMarketData>(sp => sp.GetRequiredService<LunoSdkBridge>());
+        
+        services.AddScoped<IWalletRepository, PostgresWalletBridge>();
 
         return services;
     }

@@ -9,6 +9,8 @@ using Luno.MissionControl.Application.Commands;
 using Luno.MissionControl.Application.Models;
 using Luno.MissionControl.Web.Client.Adapters;
 using Luno.MissionControl.Web.Controllers;
+using Luno.MissionControl.Infrastructure.Adapters;
+using Luno.MissionControl.Infrastructure.Adapters.Persistence;
 using Luno.MissionControl.Infrastructure;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.Extensions.Hosting;
@@ -31,7 +33,11 @@ builder.Services.AddFluentUIComponents(config =>
     config.MarkupSanitized.SanitizeInlineStyle = (value) => value;
 });
 
+// 📦 PERSISTENCE: PostgreSQL + EF Core! 🐘 🫦
+builder.AddNpgsqlDbContext<SettingsDbContext>("settingsdb");
+
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddApplicationServices(builder.Environment.IsDevelopment());
 
 builder.Services.AddSingleton<PriceBroadcaster>();
 builder.Services.AddSingleton<IPriceBroadcaster>(sp => sp.GetRequiredService<PriceBroadcaster>());
@@ -40,20 +46,19 @@ builder.Services.AddScoped<ServerBasketState>();
 builder.Services.AddScoped<IBasketState>(sp => sp.GetRequiredService<ServerBasketState>());
 builder.Services.AddScoped<IPriceClient>(sp => sp.GetRequiredService<ServerBasketState>());
 
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddScoped<IBasketService, SimulatedBasketOrchestrator>();
-}
-else
-{
-    builder.Services.AddScoped<IBasketService, BasketOrchestrator>();
-}
 
 builder.Services.AddHostedService<MarketWatchService>();
 
 builder.Services.AddScoped<Luno.MissionControl.Web.Client.Components.Layout.MainLayoutViewModel>();
 
 var app = builder.Build();
+
+// Ensure the database is created at startup! 🫦
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<SettingsDbContext>();
+    await context.Database.EnsureCreatedAsync();
+}
 
 app.MapDefaultEndpoints();
 app.MapOtlpForwarder();
@@ -82,4 +87,5 @@ app.MapHub<PriceHub>("/hubs/price");
 app.MapBasketActions();
 
 app.Run();
+
 public partial class Program { }
