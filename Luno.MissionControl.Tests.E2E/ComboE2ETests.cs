@@ -14,10 +14,10 @@ public class ComboE2ETests(MissionControlTestingApplicationFactory factory)
 
     /// <remarks>
     /// NOTE: This test is sensitive to resource contention when executed in parallel with other AppHost-based tests.
-    /// To ensure 100% certainty that the integration logic is not broken, run this test in isolation 
-    /// (e.g., using 'dotnet test --filter "FullyQualifiedName~ParityGateTests"').
+    /// To ensure 100% certainty that the logic is not broken, run this test in isolation 
+    /// (e.g., using 'dotnet test --filter "FullyQualifiedName~ComboE2ETests"').
     /// </remarks>
-    [Theory(DisplayName = "Parity Gate: Full Basket Execution Flow (Triple Verification)")]
+    [Theory(DisplayName = "Scenario: Full lifecycle of a Combo Basket Order from asset selection to execution")]
     [InlineData(1)]
     [InlineData(2)]
     [InlineData(3)]
