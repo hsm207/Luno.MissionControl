@@ -12,4 +12,6 @@
   <Project Path="Luno.MissionControl.Core/Luno.MissionControl.Core.csproj" />
   <Project Path="Luno.MissionControl.Hosting/Luno.MissionControl.Hosting.csproj" />
   <Project Path="Luno.MissionControl.Tests.E2E/Luno.MissionControl.Tests.E2E.csproj" />
+  <Project Path="Luno.MissionControl.Tests.Integration/Luno.MissionControl.Tests.Integration.csproj" />
+  <Project Path="Luno.MissionControl.MigrationService/Luno.MissionControl.MigrationService.csproj" />
 </Solution>
