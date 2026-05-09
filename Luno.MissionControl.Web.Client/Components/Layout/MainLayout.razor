@@ -2,8 +2,8 @@
 @using Microsoft.FluentUI.AspNetCore.Components
 
 <FluentLayout>
-    <FluentLayoutItem Area="@LayoutArea.Header" Sticky="true" Style="background-color: var(--titan-obsidian); border-bottom: 1px solid rgba(212, 175, 55, 0.3); height: 60px;">
-        <FluentStack VerticalAlignment="VerticalAlignment.Center" Style="width: 100%; height: 100%; padding: 0 16px;">
+    <FluentLayoutItem Area="@LayoutArea.Header" Sticky="true" Class="titan-header">
+        <FluentStack VerticalAlignment="VerticalAlignment.Center" Class="titan-header-stack">
             <FluentIcon Value="@(new Icons.Filled.Size24.ShieldLock())" Color="Color.Primary" />
             <FluentText Size="TextSize.Size500" Weight="TextWeight.Bold" Class="executive-header">
                 @ViewModel.AppTitle
@@ -18,8 +18,8 @@
         </FluentStack>
     </FluentLayoutItem>
 
-    <FluentStack Class="main" Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Stretch" Style="height: calc(100vh - 60px); overflow: hidden;">
-        <FluentLayoutItem Area="@LayoutArea.Navigation" Width="280px" Style="background: rgba(8, 8, 8, 0.8); border-right: 1px solid var(--titan-charcoal);">
+    <FluentStack Class="main titan-main-stack" Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Stretch">
+        <FluentLayoutItem Area="@LayoutArea.Navigation" Class="titan-nav-sidebar">
             <FluentNav Width="100%">
                 <FluentNavSectionHeader Title="Navigation" />
                 <FluentNavItem Href="/" Match="NavLinkMatch.All" IconRest="@(new Icons.Regular.Size20.Board())" IconActive="@(new Icons.Filled.Size20.Board())">Dashboard</FluentNavItem>
@@ -28,7 +28,7 @@
             </FluentNav>
         </FluentLayoutItem>
 
-        <FluentLayoutItem Area="@LayoutArea.Content" Style="flex-grow: 1; overflow-y: auto; padding: 24px;">
+        <FluentLayoutItem Area="@LayoutArea.Content" Class="titan-content-area">
             <div class="content-body">
                 @Body
             </div>
@@ -38,44 +38,4 @@
 
 <FluentProviders />
 <ReconnectModal />
-
-<style>
-    /* Universal Navigation Override (Bypassing Isolation) */
-    :root:root:root:root .fluent-nav {
-        --brand-seed: #00f2ff;
-    }
-
-    /* Maintain Titan Gold for Icons/Text while having Cyan Indicator */
-    :root:root:root:root .fluent-navitem.active {
-        color: var(--titan-gold);
-    }
-
-    :root:root:root:root .fluent-navitem .icon {
-        fill: var(--titan-gold);
-        color: var(--titan-gold);
-    }
-
-    /* Liquid Cyan Active Indicator */
-    :root:root:root:root .fluent-navitem.active::after {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 15%;
-        height: 70%;
-        width: 4px;
-        background-color: #00f2ff;
-        box-shadow: 0 0 15px rgba(0, 242, 255, 1), 0 0 5px rgba(255, 255, 255, 0.5);
-        border-radius: 0 4px 4px 0;
-        z-index: 10;
-        display: block;
-    }
-
-    /* Neutralize library default indicator */
-    :root:root:root:root .fluent-navitem.active::before {
-        background-color: #00f2ff;
-        width: 4px;
-        display: block;
-        content: '';
-    }
-</style>
 
