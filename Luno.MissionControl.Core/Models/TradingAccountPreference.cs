@@ -1,28 +1,24 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+
 namespace Luno.MissionControl.Core.Models;
 
 /// <summary>
-/// Represents a user's preferred trading accounts for a specific currency (e.g., MYR).
-/// This is a pure POCO, decoupled from any database implementation.
+/// Represents a user's pinned account preference for a specific currency.
+/// This model has been hardened to a single AccountId per currency, 
+/// eliminating role-based (Base/Counter) ambiguity.
 /// </summary>
-public class TradingAccountPreference
+public record TradingAccountPreference
 {
-    /// <summary>
-    /// Gets the currency code this preference applies to (e.g., "MYR").
-    /// </summary>
-    public string CurrencyCode { get; init; } = string.Empty;
+    [Key]
+    [Required]
+    [MaxLength(10)]
+    public required string CurrencyCode { get; init; }
 
     /// <summary>
-    /// Gets the preferred Base Account ID (e.g., the XBT wallet).
+    /// The specific Luno Account ID preferred for this currency.
     /// </summary>
-    public long BaseAccountId { get; init; }
+    public required long AccountId { get; init; }
 
-    /// <summary>
-    /// Gets the preferred Counter Account ID (e.g., the MYR wallet).
-    /// </summary>
-    public long CounterAccountId { get; init; }
-
-    /// <summary>
-    /// Gets the timestamp when this preference was last updated.
-    /// </summary>
-    public DateTime LastUpdated { get; init; } = DateTime.UtcNow;
+    public required DateTime LastUpdated { get; init; }
 }

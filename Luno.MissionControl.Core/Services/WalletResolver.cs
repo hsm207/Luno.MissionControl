@@ -4,50 +4,45 @@ using Luno.MissionControl.Core.Models;
 namespace Luno.MissionControl.Core.Services;
 
 /// <summary>
-/// Domain service for deterministic Luno account resolution.
-/// Enforces the 'No More Guessing' mandate by failing-fast on any detected ambiguity.
+/// Domain service responsible for resolving the appropriate Luno account for a given currency 
+/// from a set of candidates, respecting user preferences and enforcing the "Zero-Ambiguity" mandate.
 /// </summary>
 public class WalletResolver
 {
     /// <summary>
-    /// Resolves a single account for the given currency from a list of available accounts.
+    /// Resolves a single account from the available candidates.
     /// </summary>
-    /// <param name="candidates">The pre-filtered list of available accounts for the target asset.</param>
-    /// <param name="targetCurrency">The currency code (used for exception reporting only).</param>
-    /// <param name="preference">Optional user-pinned preference for this currency.</param>
-    /// <param name="isBase">Whether we are resolving for a Base currency or Counter currency.</param>
-    /// <returns>The resolved LunoAccount.</returns>
-    public LunoAccount Resolve(
-        IEnumerable<LunoAccount> candidates, 
-        string targetCurrency,
-        TradingAccountPreference? preference,
-        bool isBase = true)
+    /// <param name="candidates">Available Luno accounts for the target currency.</param>
+    /// <param name="targetCurrency">The currency code being resolved (for error reporting).</param>
+    /// <param name="preference">Optional user preference for this currency.</param>
+    /// <exception cref="WalletAmbiguityException">Thrown if multiple accounts exist without a preference.</exception>
+    /// <exception cref="WalletNotFoundException">Thrown if no accounts exist.</exception>
+    public LunoAccount Resolve(IEnumerable<LunoAccount> candidates, string targetCurrency, TradingAccountPreference? preference)
     {
-        var candidateList = candidates.ToList();
+        var matches = candidates.ToList();
 
-        if (candidateList.Count == 0)
+        if (matches.Count == 0)
         {
             throw new WalletNotFoundException(targetCurrency);
         }
 
-        if (candidateList.Count == 1)
+        if (matches.Count == 1)
         {
-            return candidateList[0];
+            return matches[0];
         }
 
         // Ambiguity Detected: Multiple accounts found. Check preference.
         if (preference is not null)
         {
-            long preferredId = isBase ? preference.BaseAccountId : preference.CounterAccountId;
-            var preferredAccount = candidateList.FirstOrDefault(a => a.Id == preferredId);
-
-            if (preferredAccount is not null)
+            var preferred = matches.FirstOrDefault(a => a.Id == preference.AccountId);
+            if (preferred is not null)
             {
-                return preferredAccount;
+                return preferred;
             }
         }
 
-        // No preference or stale preference in a multi-account scenario.
-        throw new WalletAmbiguityException(targetCurrency, candidateList.Count);
+        // Crisis: Multiple accounts exist but no valid preference is set.
+        throw new WalletAmbiguityException(targetCurrency, matches.Count);
     }
 }
+

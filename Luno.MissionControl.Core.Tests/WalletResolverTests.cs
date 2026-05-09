@@ -2,6 +2,7 @@ using Luno.MissionControl.Core.Exceptions;
 using Luno.MissionControl.Core.Models;
 using Luno.MissionControl.Core.Services;
 using Xunit;
+using WalletAmbiguityException = Luno.MissionControl.Core.Exceptions.WalletAmbiguityException;
 
 namespace Luno.MissionControl.Core.Tests;
 
@@ -34,15 +35,15 @@ public class WalletResolverTests
             new LunoAccount { Id = 101, Name = "XBT Trading", Balance = 0.5m },
             new LunoAccount { Id = 102, Name = "XBT Savings", Balance = 2.0m }
         };
-        var preference = new TradingAccountPreference 
-        { 
-            CurrencyCode = "XBT", 
-            BaseAccountId = 101, 
-            CounterAccountId = 0 // Irrelevant for this test
+        var preference = new TradingAccountPreference
+        {
+            CurrencyCode = "XBT",
+            AccountId = 101,
+            LastUpdated = DateTime.UtcNow
         };
 
         // Act
-        var result = resolver.Resolve(candidates, "XBT", preference, isBase: true);
+        var result = resolver.Resolve(candidates, "XBT", preference);
 
         // Assert
         Assert.Equal(101, result.Id);
@@ -73,15 +74,15 @@ public class WalletResolverTests
             new LunoAccount { Id = 101, Name = "XBT Trading", Balance = 0.5m },
             new LunoAccount { Id = 102, Name = "XBT Savings", Balance = 2.0m }
         };
-        var stalePreference = new TradingAccountPreference 
-        { 
-            CurrencyCode = "XBT", 
-            BaseAccountId = 999, // Doesn't exist anymore
-            CounterAccountId = 0 
+        var stalePreference = new TradingAccountPreference
+        {
+            CurrencyCode = "XBT",
+            AccountId = 999, // Doesn't match any live account
+            LastUpdated = DateTime.UtcNow
         };
 
         // Act & Assert
-        Assert.Throws<WalletAmbiguityException>(() => resolver.Resolve(candidates, "XBT", stalePreference, isBase: true));
+        Assert.Throws<WalletAmbiguityException>(() => resolver.Resolve(candidates, "XBT", stalePreference));
     }
 
     [Fact(DisplayName = "Given a request to resolve an asset that has no associated Luno accounts, the resolver must throw a descriptive exception to facilitate diagnostic troubleshooting.")]
