@@ -40,16 +40,6 @@ public interface IBasketState : IPriceClient
     decimal TargetSpend { get; set; }
 
     /// <summary>
-    /// The ID of the base account (e.g., the wallet receiving the assets).
-    /// </summary>
-    long BaseAccountId { get; set; }
-
-    /// <summary>
-    /// The ID of the counter account (e.g., the wallet providing the funds).
-    /// </summary>
-    long CounterAccountId { get; set; }
-
-    /// <summary>
     /// Starts the underlying connectivity (if any).
     /// </summary>
     Task StartAsync(CancellationToken ct = default);

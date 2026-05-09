@@ -1,4 +1,3 @@
-
 using Luno.MissionControl.Application.Ports;
 using Luno.MissionControl.Application.Diagnostics;
 using Luno.MissionControl.Core.Models;
@@ -9,7 +8,8 @@ using Microsoft.Extensions.Logging;
 namespace Luno.MissionControl.Application.UseCases;
 
 /// <summary>
-/// Orchestrates wallet-related use cases for the Wallets Hub.
+/// Orchestrates the resolution and persistence of wallet preferences, ensuring deterministic 
+/// account selection for multi-asset trading workflows.
 /// </summary>
 public class WalletOrchestrator(
     ILunoAccountAdapter accountAdapter,
@@ -18,7 +18,7 @@ public class WalletOrchestrator(
     ILogger<WalletOrchestrator> logger) : IWalletOrchestrator
 {
     /// <summary>
-    /// Fetches a high-level overview of all assets and their resolution status.
+    /// Resolves the current state of all wallets, identifying which account is currently pinned/resolved for each asset.
     /// </summary>
     public virtual async Task<List<Wallet>> GetWalletOverviewAsync(CancellationToken ct = default)
     {
@@ -35,7 +35,8 @@ public class WalletOrchestrator(
             long? resolvedId = null;
             try
             {
-                var resolved = resolver.Resolve(assetAccounts, asset, preference, isBase: true);
+                // RESOLUTION: Passing preference to the hardened resolver
+                var resolved = resolver.Resolve(assetAccounts, asset, preference);
                 resolvedId = resolved.Id;
                 ForensicMetrics.WalletsResolved.Add(1, new KeyValuePair<string, object?>("asset", asset));
             }
@@ -74,17 +75,17 @@ public class WalletOrchestrator(
     {
         using var activity = ForensicTracing.StartActivity("PinAccount");
         activity?.SetTag("asset", asset);
-        activity?.SetTag("accountId", accountId);
+        activity?.SetTag("account.id", accountId);
 
         logger.LogInformation("Pinning account {AccountId} for asset {Asset}...", accountId, asset);
 
-        // For now, we pin the same account for both Base and Counter roles if it's the same currency.
-        // In a more complex setup, we might differentiate, but pinning one 'Trading Account' is the current goal.
+        // For now, we pin the same account for both roles to maintain zero-ambiguity.
+        // Pinning one 'Trading Account' is the current goal.
+        // HARDENED PINNING: Only one AccountId per currency
         var preference = new TradingAccountPreference
         {
             CurrencyCode = asset,
-            BaseAccountId = accountId,
-            CounterAccountId = accountId,
+            AccountId = accountId,
             LastUpdated = DateTime.UtcNow
         };
 

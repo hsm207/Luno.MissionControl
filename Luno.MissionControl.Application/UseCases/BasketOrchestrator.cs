@@ -13,10 +13,6 @@ using Luno.MissionControl.Core.Models;
 
 namespace Luno.MissionControl.Application.UseCases;
 
-/// <summary>
-/// Orchestrates the execution of a multi-asset smart basket.
-/// Handles validation and sequential order placement via decoupled domain abstractions.
-/// </summary>
 public sealed class BasketOrchestrator(
     ILunoTrader trader,
     ILunoMarketData marketData,
@@ -33,7 +29,6 @@ public sealed class BasketOrchestrator(
 
         logger.LogInformation("Order request received for {Total} counter currency across {Count} pairs.", command.TotalSpend, command.Allocations.Count);
 
-        // 1. Domain Validation (Valid-by-Construction)
         var domainAllocations = command.Allocations
             .Select(a => new Allocation(a.Pair, new AllocationWeight(a.Weight * 100.0m)))
             .ToList();
@@ -43,15 +38,12 @@ public sealed class BasketOrchestrator(
 
         try
         {
-            // 2. Resolve Market Metadata
             var pairs = basket.Allocations.Select(a => a.Pair).ToList();
             var markets = await marketData.GetMarketsAsync(pairs, ct);
             var marketMap = markets.ToDictionary(m => m.MarketId);
 
-            // 3. Fetch Live Accounts (Bridged via Adapter - Grouped by Asset)
             var groupedAccounts = await accountAdapter.GetAccountsAsync(ct);
 
-            // 4. Sequential Execution
             foreach (var allocation in basket.Allocations)
             {
                 if (!marketMap.TryGetValue(allocation.Pair, out var market))
@@ -59,31 +51,28 @@ public sealed class BasketOrchestrator(
                     throw new InvalidOperationException($"Market metadata for {allocation.Pair} was not found.");
                 }
 
-                // 5. Deterministic Wallet Resolution (Zero-Ambiguity Mandate)
+                // Deterministic Wallet Resolution (Hardened to single AccountId)
                 var basePreference = await walletRepository.GetPreferenceAsync(market.BaseCurrency, ct);
                 var counterPreference = await walletRepository.GetPreferenceAsync(market.CounterCurrency, ct);
 
                 groupedAccounts.TryGetValue(market.BaseCurrency, out var baseCandidates);
                 groupedAccounts.TryGetValue(market.CounterCurrency, out var counterCandidates);
 
-                var baseAccount = resolver.Resolve(baseCandidates ?? [], market.BaseCurrency, basePreference, isBase: true);
-                var counterAccount = resolver.Resolve(counterCandidates ?? [], market.CounterCurrency, counterPreference, isBase: false);
+                // We removed the 'isBase' flag from the Resolver. Resolve now just needs the preference.
+                var baseAccount = resolver.Resolve(baseCandidates ?? [], market.BaseCurrency, basePreference);
+                var counterAccount = resolver.Resolve(counterCandidates ?? [], market.CounterCurrency, counterPreference);
 
-                // 6. Obtain a domain-aligned estimation
                 var estimation = await trader.EstimateOrderAsync(allocation.Pair, allocation.TargetSpend, ct);
 
                 logger.LogInformation("Executing order to buy {Volume} {BaseAsset} for {Price} {CounterAsset} (Spend: {PortionSpend}, BaseAcc: {BaseAccountId}, CounterAcc: {CounterAccountId})",
                     estimation.Volume, market.BaseCurrency, estimation.Price, market.CounterCurrency, allocation.TargetSpend, baseAccount.Id, counterAccount.Id);
 
-                // 7. Execute the order via the trader abstraction
                 var orderId = await trader.PostOrderAsync(estimation, baseAccount.Id, counterAccount.Id, ct);
 
                 orderSummaries.Add(new OrderSummary(orderId, allocation.Pair));
 
-                // Polite Pacing
                 if (allocation != basket.Allocations.Last())
                 {
-                    logger.LogDebug("Waiting 500ms before next allocation to ensure API stability...");
                     await Task.Delay(500, CancellationToken.None);
                 }
             }
@@ -97,4 +86,3 @@ public sealed class BasketOrchestrator(
         }
     }
 }
-
