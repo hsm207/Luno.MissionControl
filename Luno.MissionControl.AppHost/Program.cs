@@ -26,9 +26,8 @@ var webfrontend = builder.AddProject<Projects.Luno_MissionControl_Web>("webfront
     .WithEnvironment("Luno__ApiKeySecret", apiKeySecret)
     .WithReference(settingsDb);
 
-var migrations = webfrontend.AddEFMigrations("settings-migrations")
-    .WithMigrationsProject<Projects.Luno_MissionControl_Infrastructure>()
-    .RunDatabaseUpdateOnStart();
+var migrations = builder.AddProject<Projects.Luno_MissionControl_MigrationService>("settings-migrations")
+    .WithReference(settingsDb);
 
 webfrontend.WaitForCompletion(migrations);
 

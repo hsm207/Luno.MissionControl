@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Luno.MissionControl.Web\Luno.MissionControl.Web.csproj" />
-    <ProjectReference Include="..\Luno.MissionControl.Infrastructure\Luno.MissionControl.Infrastructure.csproj" />
+    <ProjectReference Include="..\Luno.MissionControl.MigrationService\Luno.MissionControl.MigrationService.csproj" />
   </ItemGroup>
 
   <ItemGroup>
