@@ -10,10 +10,18 @@ using Xunit;
 
 namespace Luno.MissionControl.Web.Client.Tests;
 
+/// <summary>
+/// Unit tests for the <see cref="WalletsHub"/> component, focusing on state-driven rendering logic
+/// and boundary discipline verification using bUnit.
+/// </summary>
 public class WalletsHubTests : BunitContext
 {
     private readonly IWalletOrchestrator _mockOrchestrator;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WalletsHubTests"/> class.
+    /// Configures the test context with required mock services and loose JSInterop.
+    /// </summary>
     public WalletsHubTests()
     {
         _mockOrchestrator = Substitute.For<IWalletOrchestrator>();
@@ -66,7 +74,7 @@ public class WalletsHubTests : BunitContext
                 Accounts = [
                     new() { Id = 10, Name = "Main", Balance = 1000m }
                 ],
-                PinnedPreference = new TradingAccountPreference { CurrencyCode = "MYR", BaseAccountId = 10, CounterAccountId = 10 },
+                PinnedPreference = new TradingAccountPreference { CurrencyCode = "MYR", AccountId = 10, LastUpdated = DateTime.UtcNow },
                 ResolvedAccountId = 10
             }
         });

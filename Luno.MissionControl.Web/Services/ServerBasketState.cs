@@ -24,9 +24,13 @@ public class ServerBasketState : IBasketState, IDisposable
 
     public string SelectedCurrency { get; set; } = "MYR";
     public decimal TargetSpend { get; set; } = 1000m;
-    public long BaseAccountId { get; set; }
-    public long CounterAccountId { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ServerBasketState"/> class.
+    /// Tethers the state directly to the internal price broadcaster.
+    /// </summary>
+    /// <param name="broadcaster">The internal price broadcasting engine.</param>
+    /// <param name="marketInventory">The metadata inventory service.</param>
     public ServerBasketState(IPriceBroadcaster broadcaster, MarketInventory marketInventory)
     {
         _broadcaster = broadcaster ?? throw new ArgumentNullException(nameof(broadcaster));
@@ -40,22 +44,32 @@ public class ServerBasketState : IBasketState, IDisposable
         OnPriceUpdate?.Invoke(snapshot);
     }
 
+    /// <summary>
+    /// Synchronizes the state with a new ticker snapshot.
+    /// </summary>
+    /// <param name="snapshot">The live price update snapshot.</param>
     public Task ReceivePriceUpdate(TickerSnapshot snapshot)
     {
-        // Compatibility implementation for the IPriceClient interface
         HandleBroadcasterUpdate(snapshot);
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Synchronizes the state with the latest market metadata.
+    /// </summary>
+    /// <param name="markets">The complete list of supported trading pairs.</param>
     public Task ReceiveMarketMetadata(IReadOnlyList<MarketMetadata> markets)
     {
         OnMarketsUpdate?.Invoke(markets);
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Establishes the initial state for the server-side container.
+    /// </summary>
     public Task StartAsync(CancellationToken ct = default)
     {
-        // No-op: The server-side state is always "connected" to the internal broadcaster
+        // No-op: The server-side state is directly tethered to the singleton broadcaster.
         return Task.CompletedTask;
     }
 

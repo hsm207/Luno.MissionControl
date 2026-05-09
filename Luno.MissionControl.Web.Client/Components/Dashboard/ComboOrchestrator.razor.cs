@@ -14,6 +14,10 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using AllocationRequest = Luno.MissionControl.Application.Commands.AllocationRequest;
 
+/// <summary>
+/// Orchestrates the selection, weighting, and execution of multi-asset investment baskets.
+/// Manages live market data synchronization and currency-aware allocation transitions.
+/// </summary>
 public partial class ComboOrchestrator : ComponentBase, IDisposable
 {
     private string _amountInputString = "50";
@@ -35,9 +39,9 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     {
         get
         {
-            if (_lastPriceUpdate == null) return "CONNECTING TO LIVE STREAM...";
+            if (_lastPriceUpdate == null) return "Connecting to live market stream...";
             var seconds = (int)(DateTimeOffset.UtcNow - _lastPriceUpdate.Value).TotalSeconds;
-            return $"PRICES REFRESHED {seconds} SECONDS AGO";
+            return $"Prices refreshed {seconds} seconds ago";
         }
     }
 
@@ -239,14 +243,8 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     {
         using var forensic = ForensicTracing.StartActivity("BasketExecution");
 
-        // [ARCHITECTURE] Temporary placeholders until User-Selected accounts are implemented.
-        var baseAccId = State.BaseAccountId != 0 ? State.BaseAccountId : 12345L;
-        var counterAccId = State.CounterAccountId != 0 ? State.CounterAccountId : 67890L;
-
         var command = new ExecuteAllocationCommand(
             State.TargetSpend,
-            baseAccId,
-            counterAccId,
             _allocations);
 
         var dialogResult = await DialogService.ShowDialogAsync<ReviewGate>(options =>

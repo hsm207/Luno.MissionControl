@@ -27,9 +27,12 @@ public class ClientBasketState : IBasketState
 
     public string SelectedCurrency { get; set; } = "MYR";
     public decimal TargetSpend { get; set; } = 1000m;
-    public long BaseAccountId { get; set; }
-    public long CounterAccountId { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ClientBasketState"/> class.
+    /// </summary>
+    /// <param name="hubConnection">The SignalR connection to the PriceHub.</param>
+    /// <param name="logger">The diagnostic logger instance.</param>
     public ClientBasketState(
         [FromKeyedServices("PriceHub")] HubConnection hubConnection,
         ILogger<ClientBasketState> logger)
@@ -37,15 +40,14 @@ public class ClientBasketState : IBasketState
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _hubConnection = hubConnection ?? throw new ArgumentNullException(nameof(hubConnection));
 
-        // Registration using the contract's method name to ensure Phase 3 alignment
         _hubConnection.On<TickerSnapshot>(nameof(ReceivePriceUpdate), ReceivePriceUpdate);
         _hubConnection.On<IReadOnlyList<MarketMetadata>>(nameof(ReceiveMarketMetadata), ReceiveMarketMetadata);
     }
 
     /// <summary>
-    /// Explicit implementation of the IPriceClient contract.
-    /// Updates the local inventory and notifies UI subscribers.
+    /// Processes an incoming ticker snapshot from the SignalR stream and broadcasts the update.
     /// </summary>
+    /// <param name="snapshot">The live price update snapshot.</param>
     public Task ReceivePriceUpdate(TickerSnapshot snapshot)
     {
         _logger.LogTrace("Price Received: {Pair} = {Price}", snapshot.Pair, snapshot.Price);
@@ -55,8 +57,9 @@ public class ClientBasketState : IBasketState
     }
 
     /// <summary>
-    /// Explicit implementation of the IPriceClient contract for market metadata.
+    /// Processes a full market metadata update, typically received upon initial connection or configuration changes.
     /// </summary>
+    /// <param name="markets">The complete list of supported trading pairs.</param>
     public Task ReceiveMarketMetadata(IReadOnlyList<MarketMetadata> markets)
     {
         _logger.LogDebug("Received metadata for {Count} trading pairs.", markets.Count);
@@ -66,6 +69,9 @@ public class ClientBasketState : IBasketState
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Establishes the real-time bridge connection to the SignalR PriceHub.
+    /// </summary>
     public async Task StartAsync(CancellationToken ct = default)
     {
         if (_hubConnection.State == HubConnectionState.Disconnected)
@@ -74,5 +80,8 @@ public class ClientBasketState : IBasketState
         }
     }
 
+    /// <summary>
+    /// Terminates the bridge connection to the SignalR PriceHub.
+    /// </summary>
     public Task StopAsync(CancellationToken ct = default) => _hubConnection.StopAsync(ct);
 }
