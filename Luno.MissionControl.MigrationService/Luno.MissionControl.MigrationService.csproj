@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-Luno.MissionControl.MigrationService-f49c5e32-8e1f-488f-96a1-3d7f5da8a7ff</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0-preview.1.25120.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Luno.MissionControl.Infrastructure\Luno.MissionControl.Infrastructure.csproj" />
+    <ProjectReference Include="..\Luno.MissionControl.ServiceDefaults\Luno.MissionControl.ServiceDefaults.csproj" />
+  </ItemGroup>
+</Project>
