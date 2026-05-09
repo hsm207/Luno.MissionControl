@@ -54,3 +54,5 @@
         transform: scale(1.02);
     }
 }
+
+/* Navigation overrides migrated to inline styles due to component isolation constraints. */

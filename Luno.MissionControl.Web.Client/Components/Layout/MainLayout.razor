@@ -22,9 +22,9 @@
         <FluentLayoutItem Area="@LayoutArea.Navigation" Width="280px" Style="background: rgba(8, 8, 8, 0.8); border-right: 1px solid var(--titan-charcoal);">
             <FluentNav Width="100%">
                 <FluentNavSectionHeader Title="Navigation" />
-                <FluentNavItem Href="/" IconRest="@(new Icons.Regular.Size20.Board())">Dashboard</FluentNavItem>
-                <FluentNavItem Href="/combo" IconRest="@(new Icons.Regular.Size20.Cart())">Combo Orchestrator</FluentNavItem>
-                <FluentNavItem Href="/wallets" IconRest="@(new Icons.Regular.Size20.Wallet())">Wallets Hub</FluentNavItem>
+                <FluentNavItem Href="/" Match="NavLinkMatch.All" IconRest="@(new Icons.Regular.Size20.Board())" IconActive="@(new Icons.Filled.Size20.Board())">Dashboard</FluentNavItem>
+                <FluentNavItem Href="/combo" Match="NavLinkMatch.All" IconRest="@(new Icons.Regular.Size20.Cart())" IconActive="@(new Icons.Filled.Size20.Cart())">Combo Orchestrator</FluentNavItem>
+                <FluentNavItem Href="/wallets" Match="NavLinkMatch.All" IconRest="@(new Icons.Regular.Size20.Wallet())" IconActive="@(new Icons.Filled.Size20.Wallet())">Wallets Hub</FluentNavItem>
             </FluentNav>
         </FluentLayoutItem>
 
@@ -38,3 +38,44 @@
 
 <FluentProviders />
 <ReconnectModal />
+
+<style>
+    /* Universal Navigation Override (Bypassing Isolation) */
+    :root:root:root:root .fluent-nav {
+        --brand-seed: #00f2ff;
+    }
+
+    /* Maintain Titan Gold for Icons/Text while having Cyan Indicator */
+    :root:root:root:root .fluent-navitem.active {
+        color: var(--titan-gold);
+    }
+
+    :root:root:root:root .fluent-navitem .icon {
+        fill: var(--titan-gold);
+        color: var(--titan-gold);
+    }
+
+    /* Liquid Cyan Active Indicator */
+    :root:root:root:root .fluent-navitem.active::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 15%;
+        height: 70%;
+        width: 4px;
+        background-color: #00f2ff;
+        box-shadow: 0 0 15px rgba(0, 242, 255, 1), 0 0 5px rgba(255, 255, 255, 0.5);
+        border-radius: 0 4px 4px 0;
+        z-index: 10;
+        display: block;
+    }
+
+    /* Neutralize library default indicator */
+    :root:root:root:root .fluent-navitem.active::before {
+        background-color: #00f2ff;
+        width: 4px;
+        display: block;
+        content: '';
+    }
+</style>
+
