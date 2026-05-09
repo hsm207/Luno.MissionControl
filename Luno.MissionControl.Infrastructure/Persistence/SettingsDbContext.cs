@@ -26,10 +26,7 @@ public class SettingsDbContext(DbContextOptions<SettingsDbContext> options) : Db
                 .HasMaxLength(10)
                 .IsRequired();
 
-            entity.Property(e => e.BaseAccountId)
-                .IsRequired();
-
-            entity.Property(e => e.CounterAccountId)
+            entity.Property(e => e.AccountId)
                 .IsRequired();
         });
     }
