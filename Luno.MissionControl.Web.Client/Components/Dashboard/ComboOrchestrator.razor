@@ -98,7 +98,7 @@
                                   Disabled="@(_totalWeight != 1.0m || _isExecuting)"
                                   OnClick="@ExecuteBasket"
                                   Class="buy-button">
-                        @(_isExecuting ? "PLACING ORDERS..." : "BUY COIN COMBO")
+                        @(_isExecuting ? "EXECUTING ORDERS..." : "PURCHASE COMBO")
                     </FluentButton>
                 </div>
             </div>
@@ -116,8 +116,8 @@
     </ChildContent>
     <ErrorContent>
         <div class="error-container">
-            <FluentText Typo="Typography.Body" Class="error-title">Something went wrong</FluentText>
-            <p class="error-text">The basket interface has encountered an error. Please refresh the page.</p>
+            <FluentText Typo="Typography.Body" Class="error-title">An unexpected UI orchestration failure occurred</FluentText>
+            <p class="error-text">The allocation orchestration engine has encountered an unhandled exception. Please refresh the browser.</p>
         </div>
     </ErrorContent>
 </ErrorBoundary>
