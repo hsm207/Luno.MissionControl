@@ -9,6 +9,11 @@
     --titan-header-height: 60px;
     --titan-sidebar-width: 280px;
 
+    /* Titan Premium Interaction Aesthetics */
+    --titan-gold-metallic: linear-gradient(180deg, #F5D76E 0%, var(--titan-gold) 50%, #8B6914 100%);
+    --titan-gold-glow: 0 0 12px rgba(212, 175, 55, 0.4), 0 0 4px rgba(255, 255, 255, 0.2);
+    --titan-active-wash: color-mix(in srgb, var(--titan-gold), transparent 92%);
+
     /* Global Aesthetics */
     --liquid-transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     --accent-gold: var(--titan-gold);
@@ -81,6 +86,35 @@
 .titan-nav-sidebar {
     background: rgba(8, 8, 8, 0.9);
     border-right: 1px solid var(--titan-charcoal);
+}
+
+/* Premium Navigation Active State */
+.titan-nav-sidebar .fluent-navitem.active {
+    background-color: var(--titan-active-wash);
+    color: var(--titan-gold);
+    position: relative;
+}
+
+.titan-nav-sidebar .fluent-navitem.active .icon {
+    fill: var(--titan-gold);
+    color: var(--titan-gold);
+}
+
+.titan-nav-sidebar .fluent-navitem.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 15%;
+    height: 70%;
+    width: 3px;
+    background: var(--titan-gold-metallic);
+    box-shadow: var(--titan-gold-glow);
+    border-radius: 0 4px 4px 0;
+}
+
+/* Hide library default indicator to prevent visual clashing */
+.titan-nav-sidebar .fluent-navitem.active::before {
+    display: none;
 }
 
 .titan-header-stack {
