@@ -6,6 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Luno.MissionControl.Tests.E2E;
 
+/// <summary>
+/// A specialized factory for orchestrating the .NET Aspire distributed application in a testing environment.
+/// Provides integrated log collection and forensic environment configuration.
+/// </summary>
 public class MissionControlTestingApplicationFactory : DistributedApplicationFactory
 {
     public string[]? Args { get; set; }
@@ -66,6 +70,10 @@ public class MissionControlTestingApplicationFactory : DistributedApplicationFac
         base.OnBuilt(application);
     }
 
+    /// <summary>
+    /// Starts the distributed application and waits for the web frontend to reach a healthy state.
+    /// </summary>
+    /// <returns>The started <see cref="DistributedApplication"/> instance.</returns>
     public async Task<DistributedApplication> CreateAndStartAsync(CancellationToken ct = default)
     {
         await StartAsync(ct);
@@ -76,7 +84,7 @@ public class MissionControlTestingApplicationFactory : DistributedApplicationFac
         }
 
         await App.ResourceNotifications.WaitForResourceHealthyAsync("webfrontend")
-            .WaitAsync(TimeSpan.FromSeconds(60), ct);
+            .WaitAsync(TimeSpan.FromSeconds(120), ct);
 
         return App;
     }

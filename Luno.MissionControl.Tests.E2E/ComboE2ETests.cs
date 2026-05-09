@@ -78,24 +78,15 @@ public class ComboE2ETests(MissionControlTestingApplicationFactory factory)
             await loadingOverlay.WaitForAsync(new() { State = WaitForSelectorState.Hidden, Timeout = 60000 });
 
             var inputControl = Page.Locator("#hero-investment-input >> input");
-            await inputControl.FocusAsync();
-            await Page.Keyboard.PressAsync("Control+A");
-            await Page.Keyboard.PressAsync("Backspace");
-            await inputControl.PressSequentiallyAsync("1500", new() { Delay = 50 });
+            await inputControl.FillAsync("1500");
             await inputControl.PressAsync("Tab");
 
             var xbtInput = Page.Locator("#weight-input-XBTUSDC >> input");
-            await xbtInput.FocusAsync();
-            await Page.Keyboard.PressAsync("Control+A");
-            await Page.Keyboard.PressAsync("Backspace");
-            await xbtInput.PressSequentiallyAsync("99.99", new() { Delay = 50 });
+            await xbtInput.FillAsync("99.99");
             await xbtInput.PressAsync("Tab");
 
             var ethInput = Page.Locator("#weight-input-ETHUSDC >> input");
-            await ethInput.FocusAsync();
-            await Page.Keyboard.PressAsync("Control+A");
-            await Page.Keyboard.PressAsync("Backspace");
-            await ethInput.PressSequentiallyAsync("0.01", new() { Delay = 50 });
+            await ethInput.FillAsync("0.01");
             await ethInput.PressAsync("Tab");
             await Task.Delay(1000);
 
