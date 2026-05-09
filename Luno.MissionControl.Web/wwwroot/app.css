@@ -1,4 +1,4 @@
-:root {
+:root:root {
     /* Titan Heritage Palette (Base Definitions) */
     --titan-gold: #D4AF37;
     --titan-obsidian: #080808;
@@ -6,25 +6,27 @@
     --titan-white: #f5f5f5;
     
     /* Fluent UI V5 Design Token Overrides (v9 System) */
-    --colorBrandBackground: var(--titan-gold) !important;
-    --colorBrandBackgroundHover: #C5A017 !important;
-    --colorBrandBackgroundPressed: #A3840E !important;
-    --colorCompoundBrandBackground: var(--titan-gold) !important;
-    --colorBrandForeground1: var(--titan-gold) !important;
-    --colorNeutralBackground1: var(--titan-obsidian) !important;
+    --brand-seed: var(--titan-gold);
+    --colorBrandBackground: var(--brand-seed);
+    --colorBrandBackgroundHover: #C5A017;
+    --colorBrandBackgroundPressed: #A3840E;
+    --colorCompoundBrandBackground: var(--brand-seed);
+    --colorBrandForeground1: var(--brand-seed);
+    --colorCompoundBrandForeground1: var(--brand-seed);
+    --colorNeutralBackground1: var(--titan-obsidian);
     
-    /* 💎 High-Contrast Theme Foreground Tokens */
-    --colorNeutralForeground1: var(--titan-white) !important;
-    --colorNeutralForeground2: #e0e0e0 !important;
-    --colorNeutralForeground3: #bababa !important;
-    --colorNeutralForeground4: #8a8a8a !important;
-    --colorNeutralForegroundStatic: var(--titan-white) !important;
-    --colorNeutralForegroundOnBrand: var(--titan-obsidian) !important;
-    --colorNeutralForegroundInverted: var(--titan-obsidian) !important;
+    /* High-Contrast Theme Foreground Tokens */
+    --colorNeutralForeground1: var(--titan-white);
+    --colorNeutralForeground2: #e0e0e0;
+    --colorNeutralForeground3: #bababa;
+    --colorNeutralForeground4: #8a8a8a;
+    --colorNeutralForegroundStatic: var(--titan-white);
+    --colorNeutralForegroundOnBrand: var(--titan-obsidian);
+    --colorNeutralForegroundInverted: var(--titan-obsidian);
     
-    --colorNeutralStroke1: var(--titan-charcoal) !important;
-    --colorNeutralStroke2: var(--titan-gold) !important;
-    --colorStrokeFocus2: transparent !important; /* Glow replaces hard ring */
+    --colorNeutralStroke1: var(--titan-charcoal);
+    --colorNeutralStroke2: var(--titan-gold);
+    --colorStrokeFocus2: transparent; /* Glow replaces hard ring */
     
     color-scheme: dark;
     
@@ -55,41 +57,41 @@ html, body {
 }
 
 fluent-label, .fluent-label, p, span, b, div {
-    color: var(--titan-white) !important;
+    color: var(--titan-white);
 }
 
 /* 🧪 Surface & Card Component Styles */
 .gilded-card {
-    background: rgba(26, 26, 26, 0.6) !important;
-    backdrop-filter: blur(24px) saturate(180%) !important;
-    border: 1px solid rgba(212, 175, 55, 0.2) !important;
-    border-radius: 16px !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+    background: rgba(26, 26, 26, 0.6);
+    backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
     transform: perspective(1000px) translate3d(0, 0, 0);
     will-change: transform, box-shadow;
-    padding: 32px !important;
+    padding: 32px;
 }
 
 .gilded-card:hover {
     transform: perspective(1000px) translate3d(0, -6px, 15px);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.1) !important;
-    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.5);
 }
 
 /* 🎇 Input Component & Interaction Styling */
 [appearance="underline"]::part(control), 
 [appearance="transparent"]::part(control) {
-    background: transparent !important;
-    border: none !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 0 !important;
-    color: var(--titan-white) !important;
-    padding-left: 0 !important;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0;
+    color: var(--titan-white);
+    padding-left: 0;
 }
 
 [appearance="underline"]:focus-within::part(control),
 [appearance="transparent"]:focus-within::part(control) {
-    border-bottom: 1px solid var(--titan-gold) !important;
+    border-bottom: 1px solid var(--titan-gold);
     box-shadow: 0 4px 12px rgba(212, 175, 55, 0.1);
 }
 
@@ -133,44 +135,44 @@ fluent-label, .fluent-label, p, span, b, div {
 
 /* Ensure Gold Text preserved */
 .gold-text, .gold-text *, .executive-header {
-    color: var(--titan-gold) !important;
+    color: var(--titan-gold);
 }
 
-.executive-header {
-    color: var(--titan-gold) !important;
-    letter-spacing: 5px !important;
-    font-weight: 900 !important;
+:root:root .executive-header {
+    color: var(--titan-gold);
+    letter-spacing: 5px;
+    font-weight: 900;
     text-transform: uppercase;
     text-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
 }
 
-/* 🎇 Focused Input State Highlighting */
+/* Focused Input State Highlighting */
 fluent-text-field:focus-within, 
 fluent-number-field:focus-within, 
 fluent-select:focus-within, 
 fluent-checkbox:focus-within,
 fluent-text-area:focus-within {
-    box-shadow: 0 0 12px 3px rgba(212, 175, 55, 0.35) !important;
-    transition: box-shadow 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    box-shadow: 0 0 12px 3px rgba(212, 175, 55, 0.35);
+    transition: box-shadow 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
     border-radius: 4px;
 }
 
 /* Utility Classes */
-.gold-text { color: var(--titan-gold) !important; }
-.emerald-text { color: #50fa7b !important; }
-.right-align-text input { text-align: right !important; }
+.gold-text { color: var(--titan-gold); }
+.emerald-text { color: #50fa7b; }
+.right-align-text input { text-align: right; }
 
 
-/* 📉 DataGrid Component Overrides */
-.fluent-data-grid [role="columnheader"] {
-    background: rgba(212, 175, 55, 0.08) !important;
-    color: var(--titan-gold) !important;
-    font-weight: 800 !important;
-    border-bottom: 2px solid var(--titan-gold) !important;
+/* DataGrid Component Overrides */
+:root:root .fluent-data-grid [role="columnheader"] {
+    background: rgba(212, 175, 55, 0.08);
+    color: var(--titan-gold);
+    font-weight: 800;
+    border-bottom: 2px solid var(--titan-gold);
 }
 
-.fluent-data-grid [role="gridcell"] {
-    color: var(--titan-white) !important;
+:root:root .fluent-data-grid [role="gridcell"] {
+    color: var(--titan-white);
 }
 
 /* Scrollbar Branding */
