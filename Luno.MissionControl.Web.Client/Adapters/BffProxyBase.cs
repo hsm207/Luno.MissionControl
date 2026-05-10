@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
+using Luno.MissionControl.Application.Models;
 
 namespace Luno.MissionControl.Web.Client.Adapters;
 
@@ -57,7 +58,7 @@ public abstract class BffProxyBase(HttpClient httpClient, ILogger logger)
         }
 
         // Standardized ProblemDetails handling
-        var problem = await response.Content.ReadFromJsonAsync<LunoProblemDetails>(cancellationToken: ct);
+        var problem = await response.Content.ReadFromJsonAsync<LunoProblemDetailsDto>(cancellationToken: ct);
         var message = problem?.Detail ?? $"Communication failure (HTTP {response.StatusCode})";
         
         Logger.LogWarning("BFF error at {Uri}: {Message}", response.RequestMessage?.RequestUri, message);
@@ -65,8 +66,3 @@ public abstract class BffProxyBase(HttpClient httpClient, ILogger logger)
         throw new HttpRequestException(message, null, response.StatusCode);
     }
 }
-
-/// <summary>
-/// Standard ProblemDetails for Luno Mission Control.
-/// </summary>
-public record LunoProblemDetails(string? Title, string? Detail, int? Status);

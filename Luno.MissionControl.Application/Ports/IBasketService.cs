@@ -11,5 +11,5 @@ public interface IBasketService
     /// <summary>
     /// Executes a full basket allocation based on the provided command.
     /// </summary>
-    Task<BasketExecutionResponse> ExecuteAsync(ExecuteAllocationCommand command, CancellationToken ct = default);
+    Task<BasketExecutionResponseDto> ExecuteAsync(ExecuteAllocationCommand command, CancellationToken ct = default);
 }

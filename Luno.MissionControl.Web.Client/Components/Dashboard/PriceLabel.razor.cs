@@ -24,7 +24,7 @@ public partial class PriceLabel : ComponentBase, IDisposable
         State.OnPriceUpdate += HandlePriceUpdate;
     }
 
-    private void HandlePriceUpdate(TickerSnapshot snapshot)
+    private void HandlePriceUpdate(TickerSnapshotDto snapshot)
     {
         if (snapshot.Pair == Pair)
         {

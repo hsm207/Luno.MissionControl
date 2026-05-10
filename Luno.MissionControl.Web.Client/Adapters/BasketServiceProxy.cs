@@ -14,20 +14,20 @@ public class BasketServiceProxy(HttpClient httpClient, ILogger<BasketServiceProx
     /// <summary>
     /// Executes a full basket allocation by sending the command to the BFF.
     /// </summary>
-    public async Task<BasketExecutionResponse> ExecuteAsync(ExecuteAllocationCommand command, CancellationToken ct = default)
+    public async Task<BasketExecutionResponseDto> ExecuteAsync(ExecuteAllocationCommand command, CancellationToken ct = default)
     {
         try
         {
-            return await PostAsync<ExecuteAllocationCommand, BasketExecutionResponse>("/api/basket/execute", command, ct);
+            return await PostAsync<ExecuteAllocationCommand, BasketExecutionResponseDto>("/api/basket/execute", command, ct);
         }
         catch (HttpRequestException ex)
         {
             // Map the standardized exception back to the response model for UI consumption
-            return new BasketExecutionResponse(false, [], ex.Message);
+            return new BasketExecutionResponseDto(false, [], ex.Message);
         }
         catch (Exception ex)
         {
-            return new BasketExecutionResponse(false, [], $"Unexpected Error: {ex.Message}");
+            return new BasketExecutionResponseDto(false, [], $"Unexpected Error: {ex.Message}");
         }
     }
 }

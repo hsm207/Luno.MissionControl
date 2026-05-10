@@ -10,7 +10,7 @@ namespace Luno.MissionControl.Web.Services;
 /// </summary>
 public class MarketInventory
 {
-    private static readonly IReadOnlyList<MarketMetadata> BootstrapMarkets =
+    private static readonly IReadOnlyList<MarketMetadataDto> BootstrapMarkets =
     [
         new("XBTMYR", "XBT", "MYR"),
         new("ETHMYR", "ETH", "MYR"),
@@ -18,10 +18,10 @@ public class MarketInventory
         new("ETHUSDC", "ETH", "USDC")
     ];
 
-    private readonly List<MarketMetadata> _markets = [.. BootstrapMarkets];
+    private readonly List<MarketMetadataDto> _markets = [.. BootstrapMarkets];
     private readonly object _lock = new();
 
-    public void UpdateMarkets(IEnumerable<MarketMetadata> markets)
+    public void UpdateMarkets(IEnumerable<MarketMetadataDto> markets)
     {
         lock (_lock)
         {
@@ -30,7 +30,7 @@ public class MarketInventory
         }
     }
 
-    public IReadOnlyList<MarketMetadata> GetMarkets()
+    public IReadOnlyList<MarketMetadataDto> GetMarkets()
     {
         lock (_lock)
         {

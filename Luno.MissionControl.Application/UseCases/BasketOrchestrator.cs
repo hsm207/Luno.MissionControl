@@ -13,6 +13,10 @@ using Luno.MissionControl.Core.Models;
 
 namespace Luno.MissionControl.Application.UseCases;
 
+/// <summary>
+/// Orchestrates the execution of a multi-asset smart basket.
+/// Handles validation and sequential order placement via decoupled domain abstractions.
+/// </summary>
 public sealed class BasketOrchestrator(
     ILunoTrader trader,
     ILunoMarketData marketData,
@@ -22,7 +26,7 @@ public sealed class BasketOrchestrator(
     ILogger<BasketOrchestrator> logger)
     : IBasketService
 {
-    public async Task<BasketExecutionResponse> ExecuteAsync(ExecuteAllocationCommand command, CancellationToken ct = default)
+    public async Task<BasketExecutionResponseDto> ExecuteAsync(ExecuteAllocationCommand command, CancellationToken ct = default)
     {
         using var activity = ForensicTracing.StartActivity("BasketExecution");
         activity?.SetTag("spend.total", command.TotalSpend);
@@ -34,7 +38,7 @@ public sealed class BasketOrchestrator(
             .ToList();
 
         var basket = new OrderBasket(command.TotalSpend, domainAllocations);
-        List<OrderSummary> orderSummaries = [];
+        List<OrderSummaryDto> orderSummaries = [];
 
         try
         {
@@ -69,7 +73,7 @@ public sealed class BasketOrchestrator(
 
                 var orderId = await trader.PostOrderAsync(estimation, baseAccount.Id, counterAccount.Id, ct);
 
-                orderSummaries.Add(new OrderSummary(orderId, allocation.Pair));
+                orderSummaries.Add(new OrderSummaryDto(orderId, allocation.Pair));
 
                 if (allocation != basket.Allocations.Last())
                 {
@@ -77,12 +81,12 @@ public sealed class BasketOrchestrator(
                 }
             }
 
-            return new BasketExecutionResponse(true, orderSummaries);
+            return new BasketExecutionResponseDto(true, orderSummaries);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Basket execution failed for {TotalSpend}. Reason: {Message}", command.TotalSpend, ex.Message);
-            return new BasketExecutionResponse(false, orderSummaries, ex.Message);
+            return new BasketExecutionResponseDto(false, orderSummaries, ex.Message);
         }
     }
 }

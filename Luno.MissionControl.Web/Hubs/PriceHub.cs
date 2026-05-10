@@ -33,7 +33,7 @@ public class PriceHub : Hub<IPriceClient>
     /// Broadcasts a ticker snapshot to all connected clients.
     /// This method is primarily used for server-to-client streaming orchestrated by MarketWatchService.
     /// </summary>
-    public async Task BroadcastPrice(TickerSnapshot snapshot)
+    public async Task BroadcastPrice(TickerSnapshotDto snapshot)
     {
         await Clients.All.ReceivePriceUpdate(snapshot);
     }
@@ -41,7 +41,7 @@ public class PriceHub : Hub<IPriceClient>
     /// <summary>
     /// Broadcasts the full list of available markets to all connected clients.
     /// </summary>
-    public async Task BroadcastMarketMetadata(IReadOnlyList<MarketMetadata> markets)
+    public async Task BroadcastMarketMetadata(IReadOnlyList<MarketMetadataDto> markets)
     {
         await Clients.All.ReceiveMarketMetadata(markets);
     }

@@ -12,22 +12,22 @@ public interface IBasketState : IPriceClient
     /// <summary>
     /// Occurs when a new price snapshot is available.
     /// </summary>
-    event Action<TickerSnapshot>? OnPriceUpdate;
+    event Action<TickerSnapshotDto>? OnPriceUpdate;
 
     /// <summary>
     /// Occurs when the inventory of available markets is updated.
     /// </summary>
-    event Action<IReadOnlyList<MarketMetadata>>? OnMarketsUpdate;
+    event Action<IReadOnlyList<MarketMetadataDto>>? OnMarketsUpdate;
 
     /// <summary>
     /// The current inventory of live prices.
     /// </summary>
-    IReadOnlyDictionary<string, TickerSnapshot> Prices { get; }
+    IReadOnlyDictionary<string, TickerSnapshotDto> Prices { get; }
 
     /// <summary>
     /// The full inventory of available markets from the Luno SDK.
     /// </summary>
-    IReadOnlyList<MarketMetadata> AvailableMarkets { get; }
+    IReadOnlyList<MarketMetadataDto> AvailableMarkets { get; }
 
     /// <summary>
     /// The currently selected counter currency (e.g., "MYR", "USD").

@@ -30,7 +30,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     [Inject] private IPersistenceBridge PersistenceBridge { get; set; } = default!;
 
     private List<AllocationRequest> _allocations = new();
-    private IEnumerable<MarketMetadata> _selectedSearchItems { get; set; } = [];
+    private IEnumerable<MarketMetadataDto> _selectedSearchItems { get; set; } = [];
     private ErrorBoundary? _errorBoundary;
     private decimal _rawSpendInput = 0m;
     private DateTimeOffset? _lastPriceUpdate;
@@ -46,7 +46,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     }
 
 
-    private Task OnSearchAsync(OptionsSearchEventArgs<MarketMetadata> e)
+    private Task OnSearchAsync(OptionsSearchEventArgs<MarketMetadataDto> e)
     {
         e.Items = State.AvailableMarkets
             .Where(m => m.CounterCurrency == GetLunoCounter(State.SelectedCurrency))
@@ -156,7 +156,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
         State.OnMarketsUpdate += HandleMarketsUpdate;
     }
 
-    private void HandlePriceUpdate(TickerSnapshot snapshot)
+    private void HandlePriceUpdate(TickerSnapshotDto snapshot)
     {
         if (_allocations.Any(a => a.Pair == snapshot.Pair))
         {
@@ -167,7 +167,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     }
 
 
-    private void HandleMarketsUpdate(IReadOnlyList<MarketMetadata> markets)
+    private void HandleMarketsUpdate(IReadOnlyList<MarketMetadataDto> markets)
     {
         InvokeAsync(StateHasChanged);
     }

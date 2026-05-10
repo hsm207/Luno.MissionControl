@@ -14,13 +14,13 @@ public class ServerBasketState : IBasketState, IDisposable
 {
     private readonly IPriceBroadcaster _broadcaster;
     private readonly MarketInventory _marketInventory;
-    private readonly ConcurrentDictionary<string, TickerSnapshot> _prices = [];
+    private readonly ConcurrentDictionary<string, TickerSnapshotDto> _prices = [];
 
-    public event Action<TickerSnapshot>? OnPriceUpdate;
-    public event Action<IReadOnlyList<MarketMetadata>>? OnMarketsUpdate;
+    public event Action<TickerSnapshotDto>? OnPriceUpdate;
+    public event Action<IReadOnlyList<MarketMetadataDto>>? OnMarketsUpdate;
 
-    public IReadOnlyDictionary<string, TickerSnapshot> Prices => _prices;
-    public IReadOnlyList<MarketMetadata> AvailableMarkets => _marketInventory.GetMarkets();
+    public IReadOnlyDictionary<string, TickerSnapshotDto> Prices => _prices;
+    public IReadOnlyList<MarketMetadataDto> AvailableMarkets => _marketInventory.GetMarkets();
 
     public string SelectedCurrency { get; set; } = "MYR";
     public decimal TargetSpend { get; set; } = 1000m;
@@ -38,7 +38,7 @@ public class ServerBasketState : IBasketState, IDisposable
         _broadcaster.OnPriceUpdate += HandleBroadcasterUpdate;
     }
 
-    private void HandleBroadcasterUpdate(TickerSnapshot snapshot)
+    private void HandleBroadcasterUpdate(TickerSnapshotDto snapshot)
     {
         _prices[snapshot.Pair] = snapshot;
         OnPriceUpdate?.Invoke(snapshot);
@@ -48,7 +48,7 @@ public class ServerBasketState : IBasketState, IDisposable
     /// Synchronizes the state with a new ticker snapshot.
     /// </summary>
     /// <param name="snapshot">The live price update snapshot.</param>
-    public Task ReceivePriceUpdate(TickerSnapshot snapshot)
+    public Task ReceivePriceUpdate(TickerSnapshotDto snapshot)
     {
         HandleBroadcasterUpdate(snapshot);
         return Task.CompletedTask;
@@ -58,7 +58,7 @@ public class ServerBasketState : IBasketState, IDisposable
     /// Synchronizes the state with the latest market metadata.
     /// </summary>
     /// <param name="markets">The complete list of supported trading pairs.</param>
-    public Task ReceiveMarketMetadata(IReadOnlyList<MarketMetadata> markets)
+    public Task ReceiveMarketMetadata(IReadOnlyList<MarketMetadataDto> markets)
     {
         OnMarketsUpdate?.Invoke(markets);
         return Task.CompletedTask;

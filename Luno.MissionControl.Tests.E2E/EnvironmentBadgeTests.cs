@@ -34,6 +34,7 @@ public class EnvironmentBadgeTests
         // This verifies that the 'First Contentful Paint' is correctly themed.
         var context = BrowsingContext.New(Configuration.Default);
         var parser = context.GetService<IHtmlParser>();
+        Assert.NotNull(parser);
         using var document = await parser.ParseDocumentAsync(htmlContent);
 
         var bridge = document.QuerySelector(".environment-badge-bridge");

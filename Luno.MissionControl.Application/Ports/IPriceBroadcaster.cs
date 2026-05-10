@@ -12,12 +12,12 @@ public interface IPriceBroadcaster
     /// <summary>
     /// Occurs when a new price snapshot is available.
     /// </summary>
-    event Action<TickerSnapshot>? OnPriceUpdate;
+    event Action<TickerSnapshotDto>? OnPriceUpdate;
 
     /// <summary>
     /// Broadcasts a snapshot to all local subscribers.
     /// </summary>
-    void Broadcast(TickerSnapshot snapshot);
+    void Broadcast(TickerSnapshotDto snapshot);
 }
 
 /// <summary>
@@ -25,9 +25,9 @@ public interface IPriceBroadcaster
 /// </summary>
 public class PriceBroadcaster : IPriceBroadcaster
 {
-    public event Action<TickerSnapshot>? OnPriceUpdate;
+    public event Action<TickerSnapshotDto>? OnPriceUpdate;
 
-    public void Broadcast(TickerSnapshot snapshot)
+    public void Broadcast(TickerSnapshotDto snapshot)
     {
         OnPriceUpdate?.Invoke(snapshot);
     }

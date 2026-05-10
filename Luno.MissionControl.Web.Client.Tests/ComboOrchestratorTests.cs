@@ -23,7 +23,7 @@ public class ComboOrchestratorTests : BunitContext
         var mockLogger = Substitute.For<ILogger<ComboOrchestrator>>();
 
         // Setup mock data for initial state
-        mockState.AvailableMarkets.Returns(new List<MarketMetadata>
+        mockState.AvailableMarkets.Returns(new List<MarketMetadataDto>
         {
             new("XBTMYR", "XBT", "MYR"),
             new("ETHMYR", "ETH", "MYR")

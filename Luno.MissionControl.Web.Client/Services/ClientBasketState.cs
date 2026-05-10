@@ -16,14 +16,14 @@ public class ClientBasketState : IBasketState
 {
     private readonly HubConnection _hubConnection;
     private readonly ILogger<ClientBasketState> _logger;
-    private readonly ConcurrentDictionary<string, TickerSnapshot> _prices = new();
-    private readonly List<MarketMetadata> _markets = new();
+    private readonly ConcurrentDictionary<string, TickerSnapshotDto> _prices = new();
+    private readonly List<MarketMetadataDto> _markets = new();
 
-    public event Action<TickerSnapshot>? OnPriceUpdate;
-    public event Action<IReadOnlyList<MarketMetadata>>? OnMarketsUpdate;
+    public event Action<TickerSnapshotDto>? OnPriceUpdate;
+    public event Action<IReadOnlyList<MarketMetadataDto>>? OnMarketsUpdate;
 
-    public IReadOnlyDictionary<string, TickerSnapshot> Prices => _prices;
-    public IReadOnlyList<MarketMetadata> AvailableMarkets => _markets;
+    public IReadOnlyDictionary<string, TickerSnapshotDto> Prices => _prices;
+    public IReadOnlyList<MarketMetadataDto> AvailableMarkets => _markets;
 
     public string SelectedCurrency { get; set; } = "MYR";
     public decimal TargetSpend { get; set; } = 1000m;
@@ -40,15 +40,15 @@ public class ClientBasketState : IBasketState
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _hubConnection = hubConnection ?? throw new ArgumentNullException(nameof(hubConnection));
 
-        _hubConnection.On<TickerSnapshot>(nameof(ReceivePriceUpdate), ReceivePriceUpdate);
-        _hubConnection.On<IReadOnlyList<MarketMetadata>>(nameof(ReceiveMarketMetadata), ReceiveMarketMetadata);
+        _hubConnection.On<TickerSnapshotDto>(nameof(ReceivePriceUpdate), ReceivePriceUpdate);
+        _hubConnection.On<IReadOnlyList<MarketMetadataDto>>(nameof(ReceiveMarketMetadata), ReceiveMarketMetadata);
     }
 
     /// <summary>
     /// Processes an incoming ticker snapshot from the SignalR stream and broadcasts the update.
     /// </summary>
     /// <param name="snapshot">The live price update snapshot.</param>
-    public Task ReceivePriceUpdate(TickerSnapshot snapshot)
+    public Task ReceivePriceUpdate(TickerSnapshotDto snapshot)
     {
         _logger.LogTrace("Price Received: {Pair} = {Price}", snapshot.Pair, snapshot.Price);
         _prices[snapshot.Pair] = snapshot;
@@ -60,7 +60,7 @@ public class ClientBasketState : IBasketState
     /// Processes a full market metadata update, typically received upon initial connection or configuration changes.
     /// </summary>
     /// <param name="markets">The complete list of supported trading pairs.</param>
-    public Task ReceiveMarketMetadata(IReadOnlyList<MarketMetadata> markets)
+    public Task ReceiveMarketMetadata(IReadOnlyList<MarketMetadataDto> markets)
     {
         _logger.LogDebug("Received metadata for {Count} trading pairs.", markets.Count);
         _markets.Clear();
