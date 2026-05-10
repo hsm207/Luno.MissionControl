@@ -492,3 +492,4 @@ labs/
 **/aspire-output/
 .aspire/
 
+.env*
