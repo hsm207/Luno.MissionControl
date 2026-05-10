@@ -2,46 +2,34 @@
 
 ## The Incident
 
-During the modernization of the `Luno.MissionControl` dashboard (targeting .NET 10 and Aspire 13), the "MARKET-SYNC LIMIT BUY" UI experienced multiple critical failure modes unique to the **Blazor InteractiveAuto** render mode. These failures resulted in "frozen" price labels, fatal JavaScript-driven UI paralysis, and inconsistent visual alignment.
+During the modernization of the `Luno.MissionControl` dashboard, the "MARKET-SYNC LIMIT BUY" UI experienced failure modes unique to **Blazor InteractiveAuto**:
 
-Specific regressions included:
-1.  **WASM State Starvation**: The client-side WebAssembly (WASM) components remained in a "Loading..." state indefinitely. While the Server-side pre-rendering had access to market data, the WASM runtime—operating on a separate circuit—was never "hydrated" with the initial state, causing it to wait for a SignalR broadcast that it had already missed.
-2.  **Render-Tree Paralysis (JS Crash)**: The use of high-complexity, JavaScript-backed components (specifically `FluentAutocomplete`) introduced a fatal `TypeError` (`Cannot read properties of null (reading 'toLowerCase')`) within the Blazor lifecycle. Because the error occurred in the underlying JS interop, it paralyzed the entire C# render loop, stopping SignalR heartbeats and freezing all interactive elements.
-3.  **Shadow DOM Styling Resistance**: Standard CSS rules for text alignment were ignored by Fluent UI input components. The internal `<input>` elements were shielded by the Shadow DOM, requiring specific "piercing" selectors to achieve professional financial formatting (right-alignment).
+1.  **WASM State Starvation**: Client-side WASM components remained in a "Loading..." state because the initial state (fetched during Server pre-rendering) was lost during the handover to the browser runtime.
+2.  **Referential Instability**: The use of `FluentAutocomplete` resulted in previously selected items "disappearing" or checked states failing to persist when the search results were refreshed from the API.
+3.  **Shadow DOM Styling Resistance**: Alignment rules were ignored by encapsulated Web Components, leading to unprofessional financial formatting.
 
 ## Root Cause Analysis
 
-1.  **Asynchronous Circuit Divergence**: In `InteractiveAuto`, the application effectively boots twice. The first (Server) pass generates HTML; the second (WASM) pass takes over interactivity. If the "truth" (Market Prices) is only pushed via events, the second pass starts with an empty state and no mechanism to "pull" the current snapshot.
-2.  **The Autocomplete "One-Way Door"**: `FluentAutocomplete` and similar components rely on complex JS state management that is brittle when bound to high-frequency C# data updates. A single null-reference in the JS layer is a catastrophic failure for the Blazor circuit.
-3.  **Encapsulation Blindness**: Attempting to style the *container* of a Web Component does not affect the *internals* of the control. Financial UIs require precise control over the inner `<input>` element which is only accessible via the `::part()` CSS pseudo-element.
+1.  **Hydration Handover**: In `InteractiveAuto`, the application boots twice. If the server-side state is not "baked" into the initial HTML, the WASM runtime starts empty.
+2.  **Object Instance Mismatch**: If `OnOptionsSearch` returns new object instances from an API, the `FluentAutocomplete` component cannot match them by reference to the existing `SelectedItems` collection.
+3.  **Encapsulation**: Internal `<input>` elements of Web Components are shielded by the Shadow DOM, requiring specific `::part()` selectors for styling.
 
 ## The Mandate: Stability and Hydration Patterns
 
-### 1. The "Push-on-Connect" Hydration Pattern
-Any service providing real-time data to an `InteractiveAuto` UI **MUST** implement a mechanism to push the current state immediately upon connection. 
-- **Mechanism**: Use a Singleton "Inventory" or "Cache" on the server.
-- **Trigger**: Intercept the SignalR `OnConnectedAsync` event to emit the full current state (e.g., all market prices) to the specific caller before moving to a broadcast-only model.
+### 1. The Persistence Bridge Pattern
+Use the framework-native **`PersistentComponentState`** to synchronize data between Server and Client during hydration. 
+- **Guideline**: Implement a `PersistenceBridge` service to "bake" the initial market data snapshot into the pre-rendered HTML, ensuring the WASM runtime has immediate access to the "current truth" without an extra network roundtrip.
 
-### 2. The "Managed Combo" over Autocomplete
-For mission-critical search and selection, avoid JS-heavy Autocomplete components. 
-- **Pattern**: Use a standard `<FluentSearch>` for input and a reactive `<FluentListbox>` for results. 
-- **Enforcement**: Perform all filtering logic in **C#** (using `IEnumerable.Where`). This ensures that even if the search is high-frequency, the Blazor circuit remains stable and debuggable within the .NET runtime.
+### 2. Referential Stability for Autocomplete
+When using `FluentAutocomplete` with async data sources, you **MUST** ensure referential equality for selected items.
+- **Guideline**: Use the **`OptionSelectedComparer`** parameter to provide an `IEqualityComparer<TOption>` that matches items by a unique identifier (e.g., `UserId` or `PairId`) rather than by object reference.
 
-### 3. Shadow DOM Piercing for Financial Formatting
-To align text within encapsulated controls, CSS must explicitly target the exported parts of the component.
-- **Example**: 
-  ```css
-  fluent-number-field::part(control), 
-  fluent-text-field::part(control) {
-      text-align: right !important;
-  }
-  ```
-
-### 4. Component-Level State Isolation
-High-frequency data updates (e.g., live prices) must be isolated into "Humble View" components (e.g., `PriceLabel.razor`). This prevents a price tick from triggering a full `StateHasChanged()` on the parent component, which would otherwise reset user input focus or interrupt the search listbox.
+### 3. Modern Styling (No !important)
+To align text within encapsulated controls, use the `::part(control)` selector combined with professional design tokens.
+- **Guideline**: Use standard CSS properties within the `::part` scope. **NEVER** use `!important` flags; if a style isn't applying, verify the specificity of your selector or use the `:root:root` bypass.
 
 ## Actionable Guardrails
 
-1.  **Check the Browser Console First**: If prices are "Loading..." or buttons are unresponsive in an `InteractiveAuto` app, audit the console for `TypeError` or `NullReference` exceptions in the JS interop layer.
-2.  **Validate WASM Hydration**: Use `Console.WriteLine` or Tracing within `OnInitializedAsync` on the client project to verify that the initial data payload has actually arrived from the server.
-3.  **Standardize Input Alignment**: All financial inputs in Mission Control MUST use the `right-align-text` CSS class, which is backed by the `::part(control)` piercing rule.
+1.  **Verify Hydration with Bridge**: Audit the `PersistenceBridge` registration to ensure it is correctly capturing and restoring state during the `InteractiveAuto` transition.
+2.  **Standardize Autocomplete Comparers**: Any `FluentAutocomplete` bound to an external API MUST implement a custom `OptionSelectedComparer`.
+3.  **Audit for !important**: Any use of `!important` in CSS is considered an architectural failure and must be remediated using token-based overrides.
