@@ -68,16 +68,6 @@ trigger_aspire_deployment() {
         local ret=$?
         [ $ret -eq 6 ] && echo -e "${YELLOW}⚠️  Note: RPC disconnected (Code 6), but deployment triggered.${NC}" || exit $ret
     }
-
-    cat <<EOF > "$OUTPUT_DIR/.env"
-LUNO_API_KEY_ID=$LUNO_ID
-LUNO_API_KEY_SECRET=$LUNO_SECRET
-WEBFRONTEND_IMAGE=webfrontend:latest
-WEBFRONTEND_PORT=8080
-ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL=http://env-dashboard:18890
-EOF
-
-    docker compose --file "$COMPOSE_FILE" up -d
 }
 
 # --- 2. Orchestration Helpers ---
