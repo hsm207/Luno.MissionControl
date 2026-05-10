@@ -197,17 +197,10 @@ fluent-text-area:focus-within {
 }
 
 /* Utility Classes */
-.gold-text {
-    color: var(--titan-gold);
-}
+.gold-text { color: var(--titan-gold); }
+.emerald-text { color: #50fa7b; }
+.right-align-text input { text-align: right; }
 
-.emerald-text {
-    color: #50fa7b;
-}
-
-.right-align-text input {
-    text-align: right;
-}
 
 
 /* DataGrid Component Overrides */
@@ -223,15 +216,9 @@ fluent-text-area:focus-within {
 }
 
 /* Scrollbar Branding */
-::-webkit-scrollbar {
-    width: 6px;
-}
-
-::-webkit-scrollbar-track {
-    background: var(--titan-obsidian);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--titan-gold);
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--titan-obsidian); }
+::-webkit-scrollbar-thumb { 
+    background: var(--titan-gold); 
     border-radius: 10px;
 }
