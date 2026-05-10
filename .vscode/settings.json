@@ -1,0 +1,15 @@
+{
+  "dotnet.unitTestDebuggingOptions": {
+    "env": {
+      "PLAYWRIGHT_BROWSERS_PATH": "0",
+      "ASPNETCORE_ENVIRONMENT": "Development"
+    }
+  },
+  "terminal.integrated.profiles.linux": {
+    "bash": {
+      "path": "/bin/bash",
+      "icon": "terminal-bash"
+    }
+  },
+  "terminal.integrated.defaultProfile.linux": "bash"
+}
