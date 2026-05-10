@@ -18,7 +18,7 @@
     --liquid-transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     --accent-gold: var(--titan-gold);
 
-    /* Fluent UI Design Token Injection */
+    /* Fluent UI Design Token Injection (Overriding library defaults for brand alignment) */
     --brand-seed: var(--titan-gold);
     --colorBrandBackground: var(--brand-seed);
     --colorBrandBackgroundHover: #C5A017;
@@ -27,9 +27,36 @@
     --colorBrandForeground1: var(--brand-seed);
     --colorCompoundBrandForeground1: var(--brand-seed);
     
-    /* Neutral Background Overrides */
+    /* Neutral Background Overrides (Enforcing dark-theme brand consistency) */
     --colorNeutralBackground1: var(--titan-obsidian);
     --colorNeutralBackground2: var(--titan-obsidian);
+    --colorNeutralBackground3: var(--titan-obsidian);
+    --colorNeutralBackground4: var(--titan-obsidian);
+    --colorNeutralBackground5: var(--titan-obsidian);
+    --colorNeutralBackground6: var(--titan-obsidian);
+    --colorNeutralBackgroundStatic: var(--titan-obsidian);
+    
+    /* Interaction State Overrides (Neutralizing light-themed library defaults) */
+    --colorSubtleBackgroundHover: rgba(255, 255, 255, 0.05);
+    --colorSubtleBackgroundPressed: rgba(255, 255, 255, 0.1);
+    --colorSubtleBackgroundSelected: rgba(212, 175, 55, 0.1);
+    
+    --colorNeutralBackground1Hover: var(--titan-charcoal);
+    --colorNeutralBackground1Pressed: var(--titan-charcoal);
+    --colorNeutralBackground1Selected: var(--titan-charcoal);
+    
+    --colorNeutralBackground2Hover: var(--titan-charcoal);
+    --colorNeutralBackground2Pressed: var(--titan-charcoal);
+    --colorNeutralBackground2Selected: var(--titan-charcoal);
+
+    --colorNeutralBackground3Hover: var(--titan-charcoal);
+    --colorNeutralBackground3Pressed: var(--titan-charcoal);
+    --colorNeutralBackground3Selected: var(--titan-charcoal);
+
+    --colorNeutralBackground4Hover: var(--titan-charcoal);
+    --colorNeutralBackground4Pressed: var(--titan-charcoal);
+    --colorNeutralBackground4Selected: var(--titan-charcoal);
+    
     --colorNeutralForeground1: var(--titan-white);
     --colorNeutralForeground2: #e0e0e0;
     --colorNeutralForeground3: #bababa;
@@ -37,7 +64,7 @@
     --colorNeutralForegroundStatic: var(--titan-white);
     --colorNeutralForegroundOnBrand: var(--titan-obsidian);
     --colorNeutralForegroundInverted: var(--titan-obsidian);
-
+    
     --colorNeutralStroke1: var(--titan-charcoal);
     --colorNeutralStroke2: var(--titan-gold);
     --colorStrokeFocus2: transparent;
@@ -45,11 +72,65 @@
     color-scheme: dark;
 }
 
+/* Titan Layout Purification (Override library engine) */
+.fluent-layout {
+    --layout-header-height: var(--titan-header-height) !important;
+    --layout-navigation-width: var(--titan-sidebar-width) !important;
+}
+
+.titan-header {
+    --colorBrandBackground: var(--titan-obsidian); /* Header is Obsidian, not Brand Gold */
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.titan-nav-sidebar {
+    background: rgba(8, 8, 8, 0.9);
+    border-right: 1px solid var(--titan-charcoal);
+}
+
+/* Premium Navigation Active State */
+.titan-nav-sidebar .fluent-navitem.active {
+    background-color: var(--titan-active-wash);
+    color: var(--titan-gold);
+    position: relative;
+}
+
+.titan-nav-sidebar .fluent-navitem.active .icon {
+    fill: var(--titan-gold);
+    color: var(--titan-gold);
+}
+
+.titan-nav-sidebar .fluent-navitem.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 15%;
+    height: 70%;
+    width: 3px;
+    background: var(--titan-gold-metallic);
+    box-shadow: var(--titan-gold-glow);
+    border-radius: 0 4px 4px 0;
+}
+
+/* Hide library default indicator to prevent visual clashing */
+.titan-nav-sidebar .fluent-navitem.active::before {
+    display: none;
+}
+
+.titan-header-stack {
+    width: 100%;
+    height: 100%;
+    padding: 0 16px;
+}
+
+.titan-main-stack {
+    height: calc(100vh - var(--titan-header-height));
+    overflow: hidden;
+}
 
 
 /* Global Layout & Reset */
-html,
-body {
+html, body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
@@ -60,21 +141,11 @@ body {
     color-scheme: dark;
 }
 
-/* 💎 Global Transitions & Surface Definitions */
-:root {
-    --liquid-transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
 * {
     transition: var(--liquid-transition);
 }
 
-fluent-label,
-.fluent-label,
-p,
-span,
-b,
-div {
+fluent-label, .fluent-label, p, span, b, div {
     color: var(--titan-white);
 }
 
@@ -131,20 +202,9 @@ div {
 }
 
 @keyframes pulse-halo {
-    0% {
-        transform: scale(0.95);
-        opacity: 0.2;
-    }
-
-    50% {
-        transform: scale(1.05);
-        opacity: 0.6;
-    }
-
-    100% {
-        transform: scale(0.95);
-        opacity: 0.2;
-    }
+    0% { transform: scale(0.95); opacity: 0.2; }
+    50% { transform: scale(1.05); opacity: 0.6; }
+    100% { transform: scale(0.95); opacity: 0.2; }
 }
 
 .liquid-glow-wrapper:hover::after {
@@ -153,27 +213,17 @@ div {
 }
 
 @keyframes breathing-glow {
-    0% {
-        box-shadow: 0 0 10px rgba(212, 175, 55, 0.1);
-    }
-
-    50% {
-        box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
-    }
-
-    100% {
-        box-shadow: 0 0 10px rgba(212, 175, 55, 0.1);
-    }
+    0% { box-shadow: 0 0 10px rgba(212, 175, 55, 0.1); }
+    50% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.3); }
+    100% { box-shadow: 0 0 10px rgba(212, 175, 55, 0.1); }
 }
 
 .breathing-glow {
     animation: breathing-glow 3s infinite ease-in-out;
 }
 
-/* Ensure stark Color Contrast */
-.gold-text,
-.gold-text *,
-.executive-header {
+/* Ensure Gold Text preserved */
+.gold-text, .gold-text *, .executive-header {
     color: var(--titan-gold);
 }
 
@@ -186,9 +236,9 @@ div {
 }
 
 /* Focused Input State Highlighting */
-fluent-text-field:focus-within,
-fluent-number-field:focus-within,
-fluent-select:focus-within,
+fluent-text-field:focus-within, 
+fluent-number-field:focus-within, 
+fluent-select:focus-within, 
 fluent-checkbox:focus-within,
 fluent-text-area:focus-within {
     box-shadow: 0 0 12px 3px rgba(212, 175, 55, 0.35);
@@ -200,7 +250,6 @@ fluent-text-area:focus-within {
 .gold-text { color: var(--titan-gold); }
 .emerald-text { color: #50fa7b; }
 .right-align-text input { text-align: right; }
-
 
 
 /* DataGrid Component Overrides */
