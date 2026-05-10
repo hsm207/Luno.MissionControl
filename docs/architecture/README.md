@@ -12,4 +12,7 @@ The highest level of abstraction, showing how Luno Mission Control fits into the
 ### [C2: Container Diagram](./C2_Container.md)
 A zoomed-in view of our Aspire-orchestrated topology, including the Blazor Web App, the Migration Service, and Postgres persistence.
 
+### [Feature Architecture: Sequence Flows](./Features.md)
+Deterministic visualizations of the core business logic, including multi-asset Combo Orders and Wallet Pinning orchestration, documented via high-fidelity sequence diagrams.
+
 ---
