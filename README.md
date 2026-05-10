@@ -35,13 +35,18 @@ aspire start Luno.MissionControl.AppHost/Luno.MissionControl.AppHost.csproj
 
 Once running, the **Aspire Dashboard** will provide the URLs for the Web Frontend and telemetry.
 
-### 🚀 Production (Deployment)
-For production deployments, use the provided deployment script. 
+### 🏗️ Local Production (Deployment)
+For production-like local deployments using Docker Compose, use the provided executive orchestrator:
 
 ```bash
-# Example deployment
-./scripts/deploy.sh <args>
+# Execute deployment with Luno credentials
+./scripts/deploy.sh --id <YOUR_KEY_ID> --secret <YOUR_KEY_SECRET>
 ```
+
+This script leverages **.NET Aspire** to generate a deterministic Docker Compose manifest in `./aspire-output/`. 
+
+> [!NOTE]
+> **Data Persistence**: In production mode, PostgreSQL uses a named Docker volume (`mission-control-postgres-data`) to ensure your wallet preferences survive deployment cycles.
 
 > [!IMPORTANT]
 > **Credential Management**: You must pass your own credentials (API keys, etc.) as arguments to the script. Managing these secrets is the responsibility of the user.
