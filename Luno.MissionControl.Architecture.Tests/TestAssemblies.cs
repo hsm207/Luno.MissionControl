@@ -9,7 +9,7 @@ public static class TestAssemblies
 {
     public static readonly Assembly Core = typeof(OrderEstimation).Assembly;
     public static readonly Assembly Application = typeof(BasketOrchestrator).Assembly;
-    public static readonly Assembly Infrastructure = typeof(LunoSdkBridge).Assembly;
+    public static readonly Assembly Infrastructure = typeof(LunoSdkExchangeAdapter).Assembly;
     public static readonly Assembly Web = typeof(Program).Assembly;
     public static readonly Assembly WebClient = typeof(Luno.MissionControl.Web.Client.Components.Dashboard.ComboOrchestrator).Assembly;
 

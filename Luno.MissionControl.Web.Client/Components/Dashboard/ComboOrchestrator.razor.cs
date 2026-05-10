@@ -8,11 +8,16 @@ using Luno.MissionControl.Application.Commands;
 using Luno.MissionControl.Application.Models;
 using Luno.MissionControl.Application.Diagnostics;
 using Luno.MissionControl.Web.Client.Adapters;
+using Luno.MissionControl.Web.Client.Services;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using AllocationRequest = Luno.MissionControl.Application.Commands.AllocationRequest;
 
+/// <summary>
+/// Orchestrates the selection, weighting, and execution of multi-asset investment baskets.
+/// Manages live market data synchronization and currency-aware allocation transitions.
+/// </summary>
 public partial class ComboOrchestrator : ComponentBase, IDisposable
 {
     private string _amountInputString = "50";
@@ -22,11 +27,10 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     [Inject] private IToastService ToastService { get; set; } = default!;
     [Inject] private IDialogService DialogService { get; set; } = default!;
     [Inject] private ILogger<ComboOrchestrator> Logger { get; set; } = default!;
-    [Inject] private PersistentComponentState ApplicationState { get; set; } = default!;
+    [Inject] private IPersistenceBridge PersistenceBridge { get; set; } = default!;
 
-    private PersistingComponentStateSubscription _subscription;
     private List<AllocationRequest> _allocations = new();
-    private IEnumerable<MarketMetadata> _selectedSearchItems { get; set; } = [];
+    private IEnumerable<MarketMetadataDto> _selectedSearchItems { get; set; } = [];
     private ErrorBoundary? _errorBoundary;
     private decimal _rawSpendInput = 0m;
     private DateTimeOffset? _lastPriceUpdate;
@@ -35,14 +39,14 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     {
         get
         {
-            if (_lastPriceUpdate == null) return "CONNECTING TO LIVE STREAM...";
+            if (_lastPriceUpdate == null) return "Connecting to live market stream...";
             var seconds = (int)(DateTimeOffset.UtcNow - _lastPriceUpdate.Value).TotalSeconds;
-            return $"PRICES REFRESHED {seconds} SECONDS AGO";
+            return $"Prices refreshed {seconds} seconds ago";
         }
     }
 
 
-    private Task OnSearchAsync(OptionsSearchEventArgs<MarketMetadata> e)
+    private Task OnSearchAsync(OptionsSearchEventArgs<MarketMetadataDto> e)
     {
         e.Items = State.AvailableMarkets
             .Where(m => m.CounterCurrency == GetLunoCounter(State.SelectedCurrency))
@@ -129,24 +133,13 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
         }
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        _subscription = ApplicationState.RegisterOnPersisting(() =>
-        {
-            ApplicationState.PersistAsJson("SelectedCurrency", State.SelectedCurrency);
-            ApplicationState.PersistAsJson("TargetSpend", State.TargetSpend);
-            return Task.CompletedTask;
-        });
+        State.SelectedCurrency = await PersistenceBridge.GetOrLoadAsync("SelectedCurrency", 
+            () => Task.FromResult(State.SelectedCurrency));
 
-        if (ApplicationState.TryTakeFromJson<string>("SelectedCurrency", out var currency))
-        {
-            State.SelectedCurrency = currency!;
-        }
-
-        if (ApplicationState.TryTakeFromJson<decimal>("TargetSpend", out var spend))
-        {
-            State.TargetSpend = spend;
-        }
+        State.TargetSpend = await PersistenceBridge.GetOrLoadAsync("TargetSpend", 
+            () => Task.FromResult(State.TargetSpend));
 
         // Default starting state aligned with SelectedCurrency
         bool isMyr = State.SelectedCurrency == "MYR";
@@ -163,7 +156,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
         State.OnMarketsUpdate += HandleMarketsUpdate;
     }
 
-    private void HandlePriceUpdate(TickerSnapshot snapshot)
+    private void HandlePriceUpdate(TickerSnapshotDto snapshot)
     {
         if (_allocations.Any(a => a.Pair == snapshot.Pair))
         {
@@ -174,7 +167,7 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     }
 
 
-    private void HandleMarketsUpdate(IReadOnlyList<MarketMetadata> markets)
+    private void HandleMarketsUpdate(IReadOnlyList<MarketMetadataDto> markets)
     {
         InvokeAsync(StateHasChanged);
     }
@@ -230,7 +223,6 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        _subscription.Dispose();
         State.OnPriceUpdate -= HandlePriceUpdate;
         State.OnMarketsUpdate -= HandleMarketsUpdate;
     }
@@ -251,19 +243,13 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
     {
         using var forensic = ForensicTracing.StartActivity("BasketExecution");
 
-        // [ARCHITECTURE] Temporary placeholders until User-Selected accounts are implemented.
-        var baseAccId = State.BaseAccountId != 0 ? State.BaseAccountId : 12345L;
-        var counterAccId = State.CounterAccountId != 0 ? State.CounterAccountId : 67890L;
-
         var command = new ExecuteAllocationCommand(
             State.TargetSpend,
-            baseAccId,
-            counterAccId,
             _allocations);
 
         var dialogResult = await DialogService.ShowDialogAsync<ReviewGate>(options =>
         {
-            options.Header.Title = "Mission Critical: Confirm Your Combo";
+            options.Header.Title = "CONFIRM YOUR COMBO";
             options.Modal = true;
             options.Parameters.Add(nameof(ReviewGate.Content), command);
             options.Width = "450px";

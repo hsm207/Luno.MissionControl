@@ -45,7 +45,7 @@
             </div>
         </div>
         <FluentCard Class="gilded-card">
-            <FluentDataGrid Items="@_allocations.AsQueryable()" TGridItem="AllocationRequest" Class="basket-grid">
+            <FluentDataGrid Items="@_allocations.AsQueryable()" TGridItem="AllocationRequest" ItemKey="@(c => c.Pair)" Class="basket-grid">
                 <TemplateColumn Title="Asset Pair">
                     <span class="asset-name">@FormatPair(context.Pair)</span>
                 </TemplateColumn>
@@ -78,7 +78,7 @@
 
             <div class="actions-footer">
                 <div class="search-wrapper">
-                    <FluentAutocomplete TOption="MarketMetadata"
+                    <FluentAutocomplete TOption="MarketMetadataDto"
                                         TValue="string"
                                         Placeholder="Search for a coin to add..."
                                         OnOptionsSearch="@OnSearchAsync"
@@ -98,7 +98,7 @@
                                   Disabled="@(_totalWeight != 1.0m || _isExecuting)"
                                   OnClick="@ExecuteBasket"
                                   Class="buy-button">
-                        @(_isExecuting ? "PLACING ORDERS..." : "BUY COIN COMBO")
+                        @(_isExecuting ? "EXECUTING ORDERS..." : "PURCHASE COMBO")
                     </FluentButton>
                 </div>
             </div>
@@ -116,8 +116,8 @@
     </ChildContent>
     <ErrorContent>
         <div class="error-container">
-            <FluentLabel Class="error-title">Something went wrong</FluentLabel>
-            <p class="error-text">The basket interface has encountered an error. Please refresh the page.</p>
+            <FluentText Typo="Typography.Body" Class="error-title">An unexpected UI orchestration failure occurred</FluentText>
+            <p class="error-text">The allocation orchestration engine has encountered an unhandled exception. Please refresh the browser.</p>
         </div>
     </ErrorContent>
 </ErrorBoundary>

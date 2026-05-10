@@ -1,0 +1,28 @@
+using Microsoft.Extensions.DependencyInjection;
+using Luno.MissionControl.Application.Commands;
+using Luno.MissionControl.Application.Ports;
+using Luno.MissionControl.Application.UseCases;
+
+namespace Luno.MissionControl.Application;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services, bool isDevelopment)
+    {
+        if (isDevelopment)
+        {
+            services.AddScoped<IBasketService, SimulatedBasketOrchestrator>();
+        }
+        else
+        {
+            services.AddScoped<IBasketService, BasketOrchestrator>();
+        }
+
+        services.AddSingleton<Luno.MissionControl.Core.Services.WalletResolver>();
+        services.AddScoped<IWalletOrchestrator, WalletOrchestrator>();
+
+        return services;
+
+
+    }
+}

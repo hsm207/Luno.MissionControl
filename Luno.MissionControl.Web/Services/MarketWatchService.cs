@@ -97,7 +97,7 @@ public class MarketWatchService : BackgroundService
         _logger.LogInformation("Updating market metadata inventory...");
         var markets = await _lunoClient.Market.GetMarketsAsync(new GetMarketsQuery(), ct);
 
-        var metadata = markets.Select(m => new MarketMetadata(
+        var metadata = markets.Select(m => new MarketMetadataDto(
             Pair: m.Pair,
             BaseCurrency: m.BaseCurrency,
             CounterCurrency: m.CounterCurrency
@@ -117,8 +117,8 @@ public class MarketWatchService : BackgroundService
         {
             if (ticker == null) continue;
 
-            // Mapping Phase 3: TickerResponse (SDK) -> TickerSnapshot (BFF)
-            var snapshot = new TickerSnapshot(
+            // Mapping Phase 3: TickerResponse (SDK) -> TickerSnapshotDto (BFF)
+            var snapshot = new TickerSnapshotDto(
                 Pair: ticker.Pair,
                 Price: ticker.Price,
                 Ask: ticker.Ask,

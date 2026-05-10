@@ -20,35 +20,34 @@ namespace Luno.MissionControl.Application.UseCases;
 public sealed class BasketOrchestrator(
     ILunoTrader trader,
     ILunoMarketData marketData,
+    ILunoAccountAdapter accountAdapter,
+    IWalletRepository walletRepository,
+    Luno.MissionControl.Core.Services.WalletResolver resolver,
     ILogger<BasketOrchestrator> logger)
     : IBasketService
 {
-    public async Task<BasketExecutionResponse> ExecuteAsync(ExecuteAllocationCommand command, CancellationToken ct = default)
+    public async Task<BasketExecutionResponseDto> ExecuteAsync(ExecuteAllocationCommand command, CancellationToken ct = default)
     {
         using var activity = ForensicTracing.StartActivity("BasketExecution");
         activity?.SetTag("spend.total", command.TotalSpend);
 
         logger.LogInformation("Order request received for {Total} counter currency across {Count} pairs.", command.TotalSpend, command.Allocations.Count);
 
-        // 1. Domain Validation (Valid-by-Construction)
         var domainAllocations = command.Allocations
             .Select(a => new Allocation(a.Pair, new AllocationWeight(a.Weight * 100.0m)))
             .ToList();
 
         var basket = new OrderBasket(command.TotalSpend, domainAllocations);
-        List<OrderSummary> orderSummaries = [];
+        List<OrderSummaryDto> orderSummaries = [];
 
         try
         {
-            // 2. Resolve Market Metadata
             var pairs = basket.Allocations.Select(a => a.Pair).ToList();
             var markets = await marketData.GetMarketsAsync(pairs, ct);
             var marketMap = markets.ToDictionary(m => m.MarketId);
 
-            // 3. Resolve Account Balances
-            var balances = await marketData.GetBalancesAsync(ct);
+            var groupedAccounts = await accountAdapter.GetAccountsAsync(ct);
 
-            // 4. Sequential Execution
             foreach (var allocation in basket.Allocations)
             {
                 if (!marketMap.TryGetValue(allocation.Pair, out var market))
@@ -56,70 +55,38 @@ public sealed class BasketOrchestrator(
                     throw new InvalidOperationException($"Market metadata for {allocation.Pair} was not found.");
                 }
 
-                // Identify candidate accounts for base and counter assets
-                var baseAccounts = balances
-                    .Where(a => a.Asset == market.BaseCurrency)
-                    .OrderBy(a => a.Available)
-                    .ToList();
+                // Deterministic Wallet Resolution (Hardened to single AccountId)
+                var basePreference = await walletRepository.GetPreferenceAsync(market.BaseCurrency, ct);
+                var counterPreference = await walletRepository.GetPreferenceAsync(market.CounterCurrency, ct);
 
-                var counterAccount = balances
-                    .OrderBy(a => a.Available)
-                    .FirstOrDefault(a => a.Asset == market.CounterCurrency)
-                    ?? throw new InvalidOperationException($"No {market.CounterCurrency} account found for spend.");
+                groupedAccounts.TryGetValue(market.BaseCurrency, out var baseCandidates);
+                groupedAccounts.TryGetValue(market.CounterCurrency, out var counterCandidates);
 
-                if (!baseAccounts.Any())
-                    throw new InvalidOperationException($"No {market.BaseCurrency} account found for allocation.");
+                // We removed the 'isBase' flag from the Resolver. Resolve now just needs the preference.
+                var baseAccount = resolver.Resolve(baseCandidates ?? [], market.BaseCurrency, basePreference);
+                var counterAccount = resolver.Resolve(counterCandidates ?? [], market.CounterCurrency, counterPreference);
 
-                var counterAccountId = long.Parse(counterAccount.AccountId);
-                bool orderPlaced = false;
-                string lastError = string.Empty;
+                var estimation = await trader.EstimateOrderAsync(allocation.Pair, allocation.TargetSpend, ct);
 
-                foreach (var baseAcc in baseAccounts)
-                {
-                    var baseAccountId = long.Parse(baseAcc.AccountId);
+                logger.LogInformation("Executing order to buy {Volume} {BaseAsset} for {Price} {CounterAsset} (Spend: {PortionSpend}, BaseAcc: {BaseAccountId}, CounterAcc: {CounterAccountId})",
+                    estimation.Volume, market.BaseCurrency, estimation.Price, market.CounterCurrency, allocation.TargetSpend, baseAccount.Id, counterAccount.Id);
 
-                    // 5. Obtain a domain-aligned estimation
-                    var estimation = await trader.EstimateOrderAsync(allocation.Pair, allocation.TargetSpend, ct);
+                var orderId = await trader.PostOrderAsync(estimation, baseAccount.Id, counterAccount.Id, ct);
 
-                    try
-                    {
-                        logger.LogInformation("Executing order to buy {Volume} {BaseAsset} for {Price} {CounterAsset} (Spend: {PortionSpend}, BaseAcc: {BaseAccountId}, CounterAcc: {CounterAccountId})",
-                            estimation.Volume, market.BaseCurrency, estimation.Price, market.CounterCurrency, allocation.TargetSpend, baseAccountId, counterAccountId);
+                orderSummaries.Add(new OrderSummaryDto(orderId, allocation.Pair));
 
-                        // 6. Execute the order via the trader abstraction
-                        var orderId = await trader.PostOrderAsync(estimation, baseAccountId, counterAccountId, ct);
-
-                        orderSummaries.Add(new OrderSummary(orderId, allocation.Pair));
-                        orderPlaced = true;
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogWarning(ex, "Account {BaseAccountId} rejected the order. Trying next available account...", baseAccountId);
-                        lastError = ex.Message;
-                        continue;
-                    }
-                }
-
-                if (!orderPlaced)
-                {
-                    throw new InvalidOperationException($"Failed to place order for {allocation.Pair} after trying {baseAccounts.Count} accounts. Last error: {lastError}");
-                }
-
-                // Polite Pacing
                 if (allocation != basket.Allocations.Last())
                 {
-                    logger.LogDebug("Waiting 500ms before next allocation to ensure API stability...");
                     await Task.Delay(500, CancellationToken.None);
                 }
             }
 
-            return new BasketExecutionResponse(true, orderSummaries);
+            return new BasketExecutionResponseDto(true, orderSummaries);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Basket execution failed for {TotalSpend}", command.TotalSpend);
-            return new BasketExecutionResponse(false, orderSummaries, ex.Message);
+            logger.LogError(ex, "Basket execution failed for {TotalSpend}. Reason: {Message}", command.TotalSpend, ex.Message);
+            return new BasketExecutionResponseDto(false, orderSummaries, ex.Message);
         }
     }
 }

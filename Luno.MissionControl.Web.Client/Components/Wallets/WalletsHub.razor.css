@@ -1,0 +1,177 @@
+.wallets-container {
+    padding: 1rem 0;
+}
+
+.wallets-grid {
+    width: 100%;
+    /* Max width to prevent excessive card stretching on ultra-wide */
+    max-width: 1400px;
+}
+
+/* Base card styling */
+.wallet-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.25rem;
+    border-radius: 12px;
+    background: rgba(18, 18, 18, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.asset-hero {
+    font-weight: 800 !important;
+    font-size: 1.75rem !important;
+    line-height: 1 !important;
+}
+
+.account-count {
+    color: var(--neutral-foreground-hint) !important;
+    margin-top: 4px;
+}
+
+.state-chip {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.6rem;
+    letter-spacing: 0.05em;
+}
+
+.chip-needs-attention { background: #ff9f43; color: #000 !important; }
+.chip-active-selected { background: rgba(16, 124, 16, 0.2); color: #00FF7F !important; border: 1px solid rgba(0, 255, 127, 0.3); }
+.chip-auto-selected { background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.6) !important; }
+
+.urgency-hint {
+    padding: 8px 12px;
+    background: rgba(255, 159, 67, 0.08);
+    border-left: 3px solid #ff9f43;
+    border-radius: 4px;
+}
+
+.account-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.section-label {
+    font-size: 0.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+    margin-left: 4px;
+}
+
+.option-content {
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+}
+
+.account-option.is-active .option-content {
+    background: rgba(0, 255, 127, 0.03);
+    border-color: rgba(0, 255, 127, 0.1);
+}
+
+/* Slots for alignment */
+.identity-slot {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.balance-slot {
+    flex-shrink: 0;
+    text-align: right;
+}
+
+.action-slot {
+    flex-shrink: 0;
+    min-width: 120px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.account-name {
+    font-weight: 600 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.id-mask {
+    color: rgba(255, 255, 255, 0.3) !important;
+    font-family: var(--monospace-font-family);
+    font-size: 0.7rem !important;
+}
+
+.copy-id-btn {
+    height: 20px !important;
+    width: 20px !important;
+    color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.copy-id-btn:hover { color: #fff !important; }
+
+.balance-text {
+    font-family: var(--monospace-font-family);
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+}
+
+.asset-unit { font-size: 0.7rem; opacity: 0.4; }
+
+.active-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: rgba(0, 255, 127, 0.1);
+    border-radius: 4px;
+}
+
+.status-text {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #00FF7F;
+    text-transform: uppercase;
+}
+
+.action-button {
+    height: 32px !important;
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+}
+
+/* 
+   Responsive Stacking: 
+   When the card gets too narrow (on mobile or 3-column laptop view), 
+   we stack the balance/action to avoid overlap.
+*/
+@media (max-width: 420px) {
+    .option-content fluent-stack {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+    }
+    .balance-slot, .action-slot {
+        text-align: left;
+        justify-content: flex-start;
+        width: 100%;
+    }
+}

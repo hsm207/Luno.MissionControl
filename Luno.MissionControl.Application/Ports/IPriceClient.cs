@@ -10,11 +10,11 @@ public interface IPriceClient
     /// <summary>
     /// Receives a new price snapshot from the server.
     /// </summary>
-    Task ReceivePriceUpdate(TickerSnapshot snapshot);
+    Task ReceivePriceUpdate(TickerSnapshotDto snapshot);
 
     /// <summary>
     /// Receives the full list of available markets from the server.
     /// This is typically called once on connection or when the market list changes.
     /// </summary>
-    Task ReceiveMarketMetadata(IReadOnlyList<MarketMetadata> markets);
+    Task ReceiveMarketMetadata(IReadOnlyList<MarketMetadataDto> markets);
 }

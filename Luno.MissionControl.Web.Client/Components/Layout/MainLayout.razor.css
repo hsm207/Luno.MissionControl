@@ -20,7 +20,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.03);
+    background: color-mix(in srgb, var(--glow-color), transparent 94%);
     border: 1px solid color-mix(in srgb, var(--glow-color), transparent 80%);
     border-radius: 4px;
     padding: 2px 8px;
@@ -53,4 +53,11 @@
             inset 0 0 15px color-mix(in srgb, var(--glow-color), transparent 60%);
         transform: scale(1.02);
     }
+}
+
+/* Foundational Layout Purification */
+.titan-content-area {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 24px;
 }

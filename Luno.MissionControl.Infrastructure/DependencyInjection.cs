@@ -1,5 +1,6 @@
 using Luno.MissionControl.Application.Ports;
 using Luno.MissionControl.Infrastructure.Adapters;
+using Luno.MissionControl.Infrastructure.Persistence;
 using Luno.SDK;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,10 +18,13 @@ public static class DependencyInjection
                 configuration["Luno:ApiKeySecret"] ?? string.Empty);
         });
 
-        services.AddScoped<LunoSdkBridge>();
-        services.AddScoped<ILunoTrader>(sp => sp.GetRequiredService<LunoSdkBridge>());
-        services.AddScoped<ILunoMarketData>(sp => sp.GetRequiredService<LunoSdkBridge>());
+        services.AddScoped<LunoSdkExchangeAdapter>();
+        services.AddScoped<ILunoMarketData>(sp => sp.GetRequiredService<LunoSdkExchangeAdapter>());
+        services.AddScoped<ILunoTrader>(sp => sp.GetRequiredService<LunoSdkExchangeAdapter>());
+        services.AddScoped<IWalletRepository, PostgresWalletAdapter>();
+        services.AddScoped<ILunoAccountAdapter, LunoSdkAccountAdapter>();
 
         return services;
+
     }
 }

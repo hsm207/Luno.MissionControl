@@ -1,0 +1,124 @@
+@page "/wallets"
+@rendermode InteractiveAuto
+@namespace Luno.MissionControl.Web.Client.Components.Wallets
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<div class="wallets-container">
+    <FluentStack VerticalAlignment="VerticalAlignment.Center" Style="margin-bottom: 2rem;">
+        <FluentIcon Value="@(new Icons.Regular.Size32.Wallet())" Color="Color.Primary" />
+        <FluentText Typo="Typography.H2">Wallets Hub</FluentText>
+    </FluentStack>
+
+    @if (_isLoading)
+    {
+        <FluentSpinner />
+    }
+    else if (_errorMessage != null)
+    {
+        <FluentMessageBar Title="Error" Intent="MessageBarIntent.Error">
+            @_errorMessage
+        </FluentMessageBar>
+    }
+    else if (_overview != null)
+    {
+        <FluentGrid Spacing="3" AdaptiveSize="GridItemSize.Xs">
+            @foreach (var item in _overview)
+            {
+                bool needsAttention = item.IsAmbiguous;
+                bool isActiveSelected = !item.IsAmbiguous && item.Accounts.Count > 1;
+                bool isAutoSelected = item.Accounts.Count == 1;
+
+                string stateClass = needsAttention ? "needs-attention" : (isActiveSelected ? "active-selected" : "auto-selected");
+                string stateLabel = needsAttention ? "Needs attention" : (isActiveSelected ? "Active selected" : "Auto-selected");
+
+                var sortedAccounts = item.Accounts
+                    .OrderByDescending(a => item.ResolvedAccountId == a.Id.ToString())
+                    .ToList();
+
+                <FluentGridItem Xs="12" Sm="6" Md="4">
+                    <FluentCard Class="@($"wallet-card state-{stateClass}")">
+                        
+                        <div class="card-header">
+                            <div class="header-left">
+                                <FluentText Typo="Typography.H2" Class="asset-hero">@item.Asset</FluentText>
+                                <FluentText Typo="Typography.Caption" Class="account-count">@(item.Accounts.Count) @(item.Accounts.Count == 1 ? "account" : "accounts")</FluentText>
+                            </div>
+                            <div class="@($"state-chip chip-{stateClass}")">
+                                <FluentText Typo="Typography.Caption">@stateLabel</FluentText>
+                            </div>
+                        </div>
+
+                        @if (needsAttention)
+                        {
+                            <div class="urgency-hint">
+                                <FluentText Typo="Typography.Caption">Selection required to enable trading.</FluentText>
+                            </div>
+                        }
+
+                        <div class="account-options">
+                            @foreach (var account in sortedAccounts)
+                            {
+                                bool isCurrentActive = item.ResolvedAccountId == account.Id.ToString();
+                                string idEnding = account.Id.ToString().Length > 5 ? account.Id.ToString().Substring(account.Id.ToString().Length - 5) : account.Id.ToString();
+                                string balanceDisplay = account.Balance.ToString("N8").TrimEnd('0').TrimEnd('.');
+
+                                <div class="account-option @(isCurrentActive ? "is-active" : "")">
+                                    @if (isActiveSelected && isCurrentActive)
+                                    {
+                                        <div class="section-label">Active account</div>
+                                    }
+                                    else if (isActiveSelected && !isCurrentActive && account == sortedAccounts.First(a => item.ResolvedAccountId != a.Id.ToString()))
+                                    {
+                                        <div class="section-label">Other account</div>
+                                    }
+
+                                    <div class="option-content">
+                                        <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" HorizontalGap="12">
+                                            <div class="identity-slot">
+                                                <FluentText Typo="Typography.Body" Class="account-name">
+                                                    @(string.IsNullOrWhiteSpace(account.Name) ? $"Unnamed {item.Asset} account" : account.Name)
+                                                </FluentText>
+                                                <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" HorizontalGap="4">
+                                                    <FluentText Typo="Typography.Caption" Class="id-mask">ID ••• @idEnding</FluentText>
+                                                    <FluentButton Appearance="ButtonAppearance.Default" 
+                                                                  IconEnd="@(new Icons.Regular.Size16.Copy())" 
+                                                                  Title="Copy full ID" 
+                                                                  OnClick="@(() => CopyToClipboardAsync(account.Id.ToString()))"
+                                                                  Class="copy-id-btn" />
+                                                </FluentStack>
+                                            </div>
+
+                                            <div class="balance-slot">
+                                                <FluentText Typo="Typography.Body" Class="balance-text">@balanceDisplay <span class="asset-unit">@item.Asset</span></FluentText>
+                                            </div>
+
+                                            <div class="action-slot">
+                                                @if (isCurrentActive)
+                                                {
+                                                    <div class="active-badge">
+                                                        <FluentIcon Value="@(new Icons.Filled.Size16.CheckmarkCircle())" Color="Color.Success" />
+                                                        <span class="status-text">@(isAutoSelected ? "Ready" : "Active")</span>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <FluentButton Id="@($"btn-{account.Id}")"
+                                                                  Appearance="@(needsAttention ? ButtonAppearance.Primary : ButtonAppearance.Default)"
+                                                                  Class="action-button"
+                                                                  OnClick="@(() => PinAccountAsync(item.Asset, account.Id))">
+                                                        @(needsAttention ? "Select account" : "Switch account")
+                                                    </FluentButton>
+                                                }
+                                            </div>
+                                        </FluentStack>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </FluentCard>
+                </FluentGridItem>
+            }
+        </FluentGrid>
+    }
+</div>
+

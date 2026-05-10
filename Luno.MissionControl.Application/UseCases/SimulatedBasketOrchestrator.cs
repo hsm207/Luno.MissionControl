@@ -19,7 +19,7 @@ public sealed class SimulatedBasketOrchestrator(ILogger<SimulatedBasketOrchestra
 {
     private static readonly Random _rng = new();
 
-    public async Task<BasketExecutionResponse> ExecuteAsync(ExecuteAllocationCommand command, CancellationToken ct = default)
+    public async Task<BasketExecutionResponseDto> ExecuteAsync(ExecuteAllocationCommand command, CancellationToken ct = default)
     {
         // [FORENSIC SIGNAL] Log the incoming request for audit and test verification
         logger.LogInformation("[SIMULATION] Order request received for {TotalSpend} units. Assets: {Count}",
@@ -34,7 +34,7 @@ public sealed class SimulatedBasketOrchestrator(ILogger<SimulatedBasketOrchestra
         try
         {
             var basket = new OrderBasket(command.TotalSpend, domainAllocations);
-            List<OrderSummary> orders = [];
+            List<OrderSummaryDto> orders = [];
 
             // 2. Realistic "Orchestration" Delay
             logger.LogDebug("[SIMULATION] Resolving market metadata and verifying account state...");
@@ -50,15 +50,15 @@ public sealed class SimulatedBasketOrchestrator(ILogger<SimulatedBasketOrchestra
 
                 // Generate a fake but realistic-looking Luno Order ID
                 string simulatedOrderId = $"BX-{_rng.Next(100000, 999999)}-{Guid.NewGuid().ToString()[..8].ToUpperInvariant()}";
-                orders.Add(new OrderSummary(simulatedOrderId, allocation.Pair));
+                orders.Add(new OrderSummaryDto(simulatedOrderId, allocation.Pair));
             }
 
-            return new BasketExecutionResponse(true, orders);
+            return new BasketExecutionResponseDto(true, orders);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Simulated basket execution failed");
-            return new BasketExecutionResponse(false, [], ex.Message);
+            return new BasketExecutionResponseDto(false, [], ex.Message);
         }
     }
 }

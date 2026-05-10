@@ -60,6 +60,8 @@ public static class Extensions
                     .AddMeter("Microsoft.AspNetCore.Components")
                     .AddMeter("Microsoft.AspNetCore.Components.Lifecycle")
                     .AddMeter("Microsoft.AspNetCore.Components.Server.Circuits")
+                    .AddMeter(ForensicTracing.SourceName)
+                    .AddMeter(ForensicMetrics.MeterName)
                     .AddMeter("Luno.MissionControl.*");
             })
             .WithTracing(tracing =>

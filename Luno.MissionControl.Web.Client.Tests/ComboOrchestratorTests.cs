@@ -23,7 +23,7 @@ public class ComboOrchestratorTests : BunitContext
         var mockLogger = Substitute.For<ILogger<ComboOrchestrator>>();
 
         // Setup mock data for initial state
-        mockState.AvailableMarkets.Returns(new List<MarketMetadata>
+        mockState.AvailableMarkets.Returns(new List<MarketMetadataDto>
         {
             new("XBTMYR", "XBT", "MYR"),
             new("ETHMYR", "ETH", "MYR")
@@ -42,8 +42,9 @@ public class ComboOrchestratorTests : BunitContext
         // Configure loose JSInterop for headless rendering
         JSInterop.Mode = JSRuntimeMode.Loose;
 
-        // Register PersistentComponentState to satisfy component dependencies
+        // Register PersistentComponentState and Bridge to satisfy component dependencies
         this.AddBunitPersistentComponentState();
+        Services.AddScoped<IPersistenceBridge, PersistenceBridge>();
 
         // Act
         var cut = Render<ComboOrchestrator>();
