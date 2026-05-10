@@ -18,7 +18,7 @@
     --liquid-transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     --accent-gold: var(--titan-gold);
 
-    /* Fluent UI Design Token Injection (Overriding library defaults for brand alignment) */
+    /* Fluent UI Design Token Injection */
     --brand-seed: var(--titan-gold);
     --colorBrandBackground: var(--brand-seed);
     --colorBrandBackgroundHover: #C5A017;
@@ -26,9 +26,10 @@
     --colorCompoundBrandBackground: var(--brand-seed);
     --colorBrandForeground1: var(--brand-seed);
     --colorCompoundBrandForeground1: var(--brand-seed);
+    
+    /* Neutral Background Overrides */
     --colorNeutralBackground1: var(--titan-obsidian);
-
-    /* High-Contrast Theme Foreground Tokens */
+    --colorNeutralBackground2: var(--titan-obsidian);
     --colorNeutralForeground1: var(--titan-white);
     --colorNeutralForeground2: #e0e0e0;
     --colorNeutralForeground3: #bababa;
@@ -40,8 +41,7 @@
     --colorNeutralStroke1: var(--titan-charcoal);
     --colorNeutralStroke2: var(--titan-gold);
     --colorStrokeFocus2: transparent;
-    /* Glow replaces hard ring */
-
+    
     color-scheme: dark;
 }
 
@@ -78,7 +78,7 @@ div {
     color: var(--titan-white);
 }
 
-/* 🧪 Surface & Card Component Styles */
+/* Surface & Card Component Styles */
 .gilded-card {
     background: rgba(26, 26, 26, 0.6);
     backdrop-filter: blur(24px) saturate(180%);
@@ -97,7 +97,7 @@ div {
 }
 
 /* Input Component & Interaction Styling */
-[appearance="underline"]::part(control),
+[appearance="underline"]::part(control), 
 [appearance="transparent"]::part(control) {
     background: transparent;
     border: none;
