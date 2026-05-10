@@ -16,6 +16,16 @@ var apiKeySecret = builder.AddParameter("luno-api-key-secret",
     secret: true);
 
 var postgres = builder.AddPostgres("postgres");
+
+if (!builder.Environment.IsDevelopment())
+{
+    postgres.WithDataVolume("mission-control-postgres-data");
+}
+else
+{
+    // [ARCHITECTURAL MANDATE] Ephemeral storage for Dev to ensure clean state on every F5
+}
+
 var settingsDb = postgres.AddDatabase("settingsdb");
 
 var webfrontend = builder.AddProject<Projects.Luno_MissionControl_Web>("webfrontend")

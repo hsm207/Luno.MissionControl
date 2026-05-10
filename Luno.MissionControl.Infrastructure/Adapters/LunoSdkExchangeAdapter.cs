@@ -13,7 +13,7 @@ namespace Luno.MissionControl.Infrastructure.Adapters;
 /// A unified infrastructure adapter that provides both market data and trading execution 
 /// via the Luno SDK. Logical cohesion is maintained by grouping exchange-related operations.
 /// </summary>
-public sealed class LunoSdkExchangeAdapter(ILunoClient lunoClient, ILogger<LunoSdkExchangeAdapter> logger) 
+public sealed class LunoSdkExchangeAdapter(ILunoClient lunoClient, ILogger<LunoSdkExchangeAdapter> logger)
     : ILunoMarketData, ILunoTrader
 {
     public async Task<IReadOnlyList<CoreModels.MarketMetadata>> GetMarketsAsync(IEnumerable<string> pairs, CancellationToken ct = default)
@@ -79,7 +79,7 @@ public sealed class LunoSdkExchangeAdapter(ILunoClient lunoClient, ILogger<LunoS
             };
 
             var response = await lunoClient.Trading.PostLimitOrderAsync(command, ct);
-            
+
             activity?.SetTag("luno.order_id", response.OrderId);
             ForensicMetrics.OrdersExecuted.Add(1, new KeyValuePair<string, object?>("pair", estimation.Pair));
 

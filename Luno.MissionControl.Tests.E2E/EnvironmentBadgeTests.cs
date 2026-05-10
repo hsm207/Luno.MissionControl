@@ -18,7 +18,7 @@ public class EnvironmentBadgeTests
         // This is significantly faster than a full browser E2E test.
         using var factory = new MissionControlTestingApplicationFactory();
         factory.Args = ["--environment", env];
-        
+
         var app = await factory.CreateAndStartAsync();
         var client = app.CreateHttpClient("webfrontend");
 
@@ -45,7 +45,7 @@ public class EnvironmentBadgeTests
 
         // Verify the data-status attribute for CSS glow effects
         Assert.Equal(expectedStatus, bridge.GetAttribute("data-status"));
-        
+
         // Verify the exact text content (trimmed to ignore SSR whitespace ceremony)
         Assert.Equal(expectedText, statusText.TextContent.Trim());
 

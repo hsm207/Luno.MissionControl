@@ -20,7 +20,7 @@ public class LunoSdkAccountAdapter(ILunoClient lunoClient, ILogger<LunoSdkAccoun
         try
         {
             var response = await lunoClient.Accounts.GetBalancesAsync(new GetBalancesQuery(), ct);
-            
+
             activity?.SetTag("luno.account_count", response.Count());
 
             return response

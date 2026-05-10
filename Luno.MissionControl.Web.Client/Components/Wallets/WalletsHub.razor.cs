@@ -33,7 +33,7 @@ public partial class WalletsHub
         try
         {
             _isLoading = true;
-            var items = await PersistenceBridge.GetOrLoadAsync("wallets-overview", 
+            var items = await PersistenceBridge.GetOrLoadAsync("wallets-overview",
                 () => WalletOrchestrator.GetWalletOverviewAsync());
             _overview = items
                 .OrderByDescending(i => i.IsAmbiguous)
@@ -44,7 +44,7 @@ public partial class WalletsHub
                     i.ResolvedAccountId?.ToString(),
                     i.IsAmbiguous
                 )).ToList();
-            
+
             activity?.SetTag("ui.wallet_count", items.Count);
         }
         catch (Exception ex)

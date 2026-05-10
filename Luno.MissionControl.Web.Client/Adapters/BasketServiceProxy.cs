@@ -8,7 +8,7 @@ namespace Luno.MissionControl.Web.Client.Adapters;
 /// <summary>
 /// A Client-side proxy for the IBasketService that delegates orchestration calls to the BFF.
 /// </summary>
-public class BasketServiceProxy(HttpClient httpClient, ILogger<BasketServiceProxy> logger) 
+public class BasketServiceProxy(HttpClient httpClient, ILogger<BasketServiceProxy> logger)
     : BffProxyBase(httpClient, logger), IBasketService
 {
     /// <summary>

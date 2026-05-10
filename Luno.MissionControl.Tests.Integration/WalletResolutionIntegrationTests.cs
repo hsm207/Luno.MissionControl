@@ -23,7 +23,7 @@ public class WalletResolutionIntegrationTests
     public WalletResolutionIntegrationTests()
     {
         var services = new ServiceCollection();
-        
+
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -47,13 +47,13 @@ public class WalletResolutionIntegrationTests
         new List<object[]>
         {
             // Scenario 1: Multiple Accounts + Preference = Success ✅
-            new object[] { 
-                new List<CoreModels.LunoAccount> { 
-                    new() { Id = 102, Name = "Main ETH" }, 
-                    new() { Id = 103, Name = "Savings ETH" } 
+            new object[] {
+                new List<CoreModels.LunoAccount> {
+                    new() { Id = 102, Name = "Main ETH" },
+                    new() { Id = 103, Name = "Savings ETH" }
                 },
                 new List<CoreModels.LunoAccount> { new() { Id = 201, Name = "Main MYR" } },
-                new List<CoreModels.TradingAccountPreference> { 
+                new List<CoreModels.TradingAccountPreference> {
                     new() { CurrencyCode = "ETH", AccountId = 102, LastUpdated = DateTime.UtcNow },
                     new() { CurrencyCode = "MYR", AccountId = 201, LastUpdated = DateTime.UtcNow }
                 },
@@ -61,21 +61,21 @@ public class WalletResolutionIntegrationTests
             },
 
             // Scenario 2: Single Account + No Preference = Success ✅
-            new object[] { 
+            new object[] {
                 new List<CoreModels.LunoAccount> { new() { Id = 102, Name = "Solo ETH" } },
                 new List<CoreModels.LunoAccount> { new() { Id = 201, Name = "Solo MYR" } },
-                new List<CoreModels.TradingAccountPreference>(), 
+                new List<CoreModels.TradingAccountPreference>(),
                 true
             },
 
             // Scenario 3: Multiple Accounts + No Preference = Ambiguity FAILURE ❌
-            new object[] { 
-                new List<CoreModels.LunoAccount> { 
-                    new() { Id = 102, Name = "Main ETH" }, 
-                    new() { Id = 103, Name = "Savings ETH" } 
+            new object[] {
+                new List<CoreModels.LunoAccount> {
+                    new() { Id = 102, Name = "Main ETH" },
+                    new() { Id = 103, Name = "Savings ETH" }
                 },
                 new List<CoreModels.LunoAccount> { new() { Id = 201, Name = "Main MYR" } },
-                new List<CoreModels.TradingAccountPreference>(), 
+                new List<CoreModels.TradingAccountPreference>(),
                 false
             }
         };
@@ -83,14 +83,14 @@ public class WalletResolutionIntegrationTests
     [Theory(DisplayName = "The Orchestrator must resolve the correct wallets based on user preferences or deterministic defaults.")]
     [MemberData(nameof(ResolutionScenarios))]
     public async Task ResolveWallets_ShouldAdhereToZeroAmbiguityMandate(
-        List<CoreModels.LunoAccount> ethAccounts, 
+        List<CoreModels.LunoAccount> ethAccounts,
         List<CoreModels.LunoAccount> myrAccounts,
         List<CoreModels.TradingAccountPreference> preferences,
         bool expectSuccess)
     {
         // --- 1. ARRANGE ---
         var orchestrator = _serviceProvider.GetRequiredService<IBasketService>();
-        
+
         _stubAccountAdapter.Accounts["ETH"] = ethAccounts;
         _stubAccountAdapter.Accounts["MYR"] = myrAccounts;
 
@@ -109,13 +109,13 @@ public class WalletResolutionIntegrationTests
         {
             Assert.True(result.Success, $"Execution failed: {result.ErrorMessage}");
             var spy = (SpyTrader)_serviceProvider.GetRequiredService<ILunoTrader>();
-            
+
             Assert.NotEmpty(spy.Calls);
             var call = spy.Calls.Last();
-            
+
             var expectedBaseId = preferences.FirstOrDefault(p => p.CurrencyCode == "ETH")?.AccountId ?? ethAccounts.First().Id;
             var expectedCounterId = preferences.FirstOrDefault(p => p.CurrencyCode == "MYR")?.AccountId ?? myrAccounts.First().Id;
-            
+
             Assert.Equal(expectedBaseId, call.BaseId);
             Assert.Equal(expectedCounterId, call.CounterId);
         }

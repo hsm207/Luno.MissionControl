@@ -48,7 +48,7 @@ public abstract class BffProxyBase(HttpClient httpClient, ILogger logger)
         if (response.IsSuccessStatusCode)
         {
             // If the server returns 204 No Content or an empty body, we return a new instance of TResponse
-            if (response.StatusCode == System.Net.HttpStatusCode.NoContent || 
+            if (response.StatusCode == System.Net.HttpStatusCode.NoContent ||
                 response.Content.Headers.ContentLength == 0)
             {
                 return new TResponse();
@@ -60,9 +60,9 @@ public abstract class BffProxyBase(HttpClient httpClient, ILogger logger)
         // Standardized ProblemDetails handling
         var problem = await response.Content.ReadFromJsonAsync<LunoProblemDetailsDto>(cancellationToken: ct);
         var message = problem?.Detail ?? $"Communication failure (HTTP {response.StatusCode})";
-        
+
         Logger.LogWarning("BFF error at {Uri}: {Message}", response.RequestMessage?.RequestUri, message);
-        
+
         throw new HttpRequestException(message, null, response.StatusCode);
     }
 }

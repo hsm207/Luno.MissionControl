@@ -28,7 +28,7 @@ public class WalletsHubTests : BunitContext
         Services.AddSingleton(_mockOrchestrator);
         Services.AddFluentUIComponents();
         JSInterop.Mode = JSRuntimeMode.Loose;
-        
+
         // Register the real PersistenceBridge using the bUnit-provided fake PersistentComponentState
         this.AddBunitPersistentComponentState();
         Services.AddScoped<IPersistenceBridge, PersistenceBridge>();
@@ -56,7 +56,7 @@ public class WalletsHubTests : BunitContext
         var cut = Render<WalletsHub>();
 
         // Assert
-        cut.WaitForAssertion(() => 
+        cut.WaitForAssertion(() =>
         {
             Assert.Contains("Needs attention", cut.Markup);
         }, TimeSpan.FromSeconds(5));
@@ -83,7 +83,7 @@ public class WalletsHubTests : BunitContext
         var cut = Render<WalletsHub>();
 
         // Assert
-        cut.WaitForAssertion(() => 
+        cut.WaitForAssertion(() =>
         {
             Assert.Contains("Ready", cut.Markup);
             Assert.Contains("is-active", cut.Markup);

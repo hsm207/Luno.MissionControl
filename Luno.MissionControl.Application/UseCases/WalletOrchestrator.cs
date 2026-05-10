@@ -90,7 +90,7 @@ public class WalletOrchestrator(
         };
 
         await walletRepository.SavePreferenceAsync(preference, ct);
-        
+
         logger.LogInformation("Successfully pinned preference for {Asset}.", asset);
     }
 }

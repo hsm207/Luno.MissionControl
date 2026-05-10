@@ -16,7 +16,7 @@ public class PostgresWalletAdapter(SettingsDbContext context, ILogger<PostgresWa
     {
         using var activity = ForensicTracing.StartActivity("DB.GetPreference");
         activity?.SetTag("db.currency", currencyCode);
-        
+
         logger.LogDebug("Fetching preference for {CurrencyCode} from Postgres...", currencyCode);
 
         return await context.AccountPreferences

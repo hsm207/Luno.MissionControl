@@ -21,7 +21,7 @@ public class SettingsDbContext(DbContextOptions<SettingsDbContext> options) : Db
         {
             entity.ToTable("AccountPreferences");
             entity.HasKey(e => e.CurrencyCode);
-            
+
             entity.Property(e => e.CurrencyCode)
                 .HasMaxLength(10)
                 .IsRequired();
