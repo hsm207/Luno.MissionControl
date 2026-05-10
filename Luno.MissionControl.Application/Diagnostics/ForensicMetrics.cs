@@ -8,7 +8,7 @@ namespace Luno.MissionControl.Application.Diagnostics;
 public static class ForensicMetrics
 {
     public const string MeterName = "Luno.MissionControl.Forensics";
-    
+
     private static readonly Meter Meter = new(MeterName);
 
     // Wallet Resolution Metrics

@@ -7,7 +7,7 @@ namespace Luno.MissionControl.Web.Client.Adapters;
 /// <summary>
 /// A Client-side proxy for the IWalletOrchestrator that delegates orchestration calls to the BFF.
 /// </summary>
-public class WalletServiceProxy(HttpClient httpClient, ILogger<WalletServiceProxy> logger) 
+public class WalletServiceProxy(HttpClient httpClient, ILogger<WalletServiceProxy> logger)
     : BffProxyBase(httpClient, logger), IWalletOrchestrator
 {
     public async Task<List<Wallet>> GetWalletOverviewAsync(CancellationToken ct = default)

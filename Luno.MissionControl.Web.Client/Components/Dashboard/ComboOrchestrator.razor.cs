@@ -135,10 +135,10 @@ public partial class ComboOrchestrator : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        State.SelectedCurrency = await PersistenceBridge.GetOrLoadAsync("SelectedCurrency", 
+        State.SelectedCurrency = await PersistenceBridge.GetOrLoadAsync("SelectedCurrency",
             () => Task.FromResult(State.SelectedCurrency));
 
-        State.TargetSpend = await PersistenceBridge.GetOrLoadAsync("TargetSpend", 
+        State.TargetSpend = await PersistenceBridge.GetOrLoadAsync("TargetSpend",
             () => Task.FromResult(State.TargetSpend));
 
         // Default starting state aligned with SelectedCurrency
