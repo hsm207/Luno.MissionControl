@@ -1,0 +1,27 @@
+{
+  "name": "luno.missioncontrol",
+  "version": "1.0.0",
+  "description": "A utility dashboard for Luno investors designed to fix the friction points of the official interface, providing precision execution and custom portfolio combinations.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hsm207/Luno.MissionControl.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/hsm207/Luno.MissionControl/issues"
+  },
+  "homepage": "https://github.com/hsm207/Luno.MissionControl#readme",
+  "dependencies": {
+    "playwright": "^1.61.1"
+  }
+}
