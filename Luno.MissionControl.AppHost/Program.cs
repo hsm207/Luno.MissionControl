@@ -15,7 +15,11 @@ var apiKeySecret = builder.AddParameter("luno-api-key-secret",
     builder.Configuration["Luno:ApiKeySecret"] ?? builder.Configuration["Parameters:luno-api-key-secret"] ?? "MISSING_SECRET",
     secret: true);
 
-var postgres = builder.AddPostgres("postgres");
+var postgresPassword = builder.AddParameter("postgres-password",
+    builder.Configuration["Parameters:postgres-password"] ?? "MISSING_PG_PASSWORD",
+    secret: true);
+
+var postgres = builder.AddPostgres("postgres", password: postgresPassword);
 
 if (!builder.Environment.IsDevelopment())
 {
