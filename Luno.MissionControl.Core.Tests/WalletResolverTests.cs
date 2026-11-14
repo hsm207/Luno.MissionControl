@@ -15,7 +15,7 @@ public class WalletResolverTests
         var resolver = new WalletResolver();
         var candidates = new[]
         {
-            new LunoAccount { Id = 123, Name = "XBT Wallet", Balance = 1.0m }
+            new LunoAccount { Id = 123, Name = "XBT Wallet", Balance = 1.0m, AccountType = "SPOT" }
         };
 
         // Act
@@ -32,8 +32,8 @@ public class WalletResolverTests
         var resolver = new WalletResolver();
         var candidates = new[]
         {
-            new LunoAccount { Id = 101, Name = "XBT Trading", Balance = 0.5m },
-            new LunoAccount { Id = 102, Name = "XBT Savings", Balance = 2.0m }
+            new LunoAccount { Id = 101, Name = "XBT Trading", Balance = 0.5m, AccountType = "SPOT" },
+            new LunoAccount { Id = 102, Name = "XBT Savings", Balance = 2.0m, AccountType = "SPOT" }
         };
         var preference = new TradingAccountPreference
         {
@@ -56,8 +56,8 @@ public class WalletResolverTests
         var resolver = new WalletResolver();
         var candidates = new[]
         {
-            new LunoAccount { Id = 101, Name = "XBT Trading", Balance = 0.5m },
-            new LunoAccount { Id = 102, Name = "XBT Savings", Balance = 2.0m }
+            new LunoAccount { Id = 101, Name = "XBT Trading", Balance = 0.5m, AccountType = "SPOT" },
+            new LunoAccount { Id = 102, Name = "XBT Savings", Balance = 2.0m, AccountType = "SPOT" }
         };
 
         // Act & Assert
@@ -71,8 +71,8 @@ public class WalletResolverTests
         var resolver = new WalletResolver();
         var candidates = new[]
         {
-            new LunoAccount { Id = 101, Name = "XBT Trading", Balance = 0.5m },
-            new LunoAccount { Id = 102, Name = "XBT Savings", Balance = 2.0m }
+            new LunoAccount { Id = 101, Name = "XBT Trading", Balance = 0.5m, AccountType = "SPOT" },
+            new LunoAccount { Id = 102, Name = "XBT Savings", Balance = 2.0m, AccountType = "SPOT" }
         };
         var stalePreference = new TradingAccountPreference
         {

@@ -44,8 +44,8 @@ public class WalletsHubTests : BunitContext
             {
                 Asset = "XBT",
                 Accounts = [
-                    new() { Id = 1, Name = "Trading", Balance = 1.0m },
-                    new() { Id = 2, Name = "Savings", Balance = 0.5m }
+                    new() { Id = 1, Name = "Trading", Balance = 1.0m, AccountType = "SPOT" },
+                    new() { Id = 2, Name = "Savings", Balance = 0.5m, AccountType = "SPOT" }
                 ],
                 PinnedPreference = null,
                 ResolvedAccountId = null
@@ -72,7 +72,7 @@ public class WalletsHubTests : BunitContext
             {
                 Asset = "MYR",
                 Accounts = [
-                    new() { Id = 10, Name = "Main", Balance = 1000m }
+                    new() { Id = 10, Name = "Main", Balance = 1000m, AccountType = "SPOT" }
                 ],
                 PinnedPreference = new TradingAccountPreference { CurrencyCode = "MYR", AccountId = 10, LastUpdated = DateTime.UtcNow },
                 ResolvedAccountId = 10

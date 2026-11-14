@@ -49,10 +49,10 @@ public class WalletResolutionIntegrationTests
             // Scenario 1: Multiple Accounts + Preference = Success ✅
             new object[] {
                 new List<CoreModels.LunoAccount> {
-                    new() { Id = 102, Name = "Main ETH" },
-                    new() { Id = 103, Name = "Savings ETH" }
+                    new() { Id = 102, Name = "Main ETH", AccountType = "SPOT" },
+                    new() { Id = 103, Name = "Savings ETH", AccountType = "SPOT" }
                 },
-                new List<CoreModels.LunoAccount> { new() { Id = 201, Name = "Main MYR" } },
+                new List<CoreModels.LunoAccount> { new() { Id = 201, Name = "Main MYR", AccountType = "SPOT" } },
                 new List<CoreModels.TradingAccountPreference> {
                     new() { CurrencyCode = "ETH", AccountId = 102, LastUpdated = DateTime.UtcNow },
                     new() { CurrencyCode = "MYR", AccountId = 201, LastUpdated = DateTime.UtcNow }
@@ -62,8 +62,8 @@ public class WalletResolutionIntegrationTests
 
             // Scenario 2: Single Account + No Preference = Success ✅
             new object[] {
-                new List<CoreModels.LunoAccount> { new() { Id = 102, Name = "Solo ETH" } },
-                new List<CoreModels.LunoAccount> { new() { Id = 201, Name = "Solo MYR" } },
+                new List<CoreModels.LunoAccount> { new() { Id = 102, Name = "Solo ETH", AccountType = "SPOT" } },
+                new List<CoreModels.LunoAccount> { new() { Id = 201, Name = "Solo MYR", AccountType = "SPOT" } },
                 new List<CoreModels.TradingAccountPreference>(),
                 true
             },
@@ -71,10 +71,10 @@ public class WalletResolutionIntegrationTests
             // Scenario 3: Multiple Accounts + No Preference = Ambiguity FAILURE ❌
             new object[] {
                 new List<CoreModels.LunoAccount> {
-                    new() { Id = 102, Name = "Main ETH" },
-                    new() { Id = 103, Name = "Savings ETH" }
+                    new() { Id = 102, Name = "Main ETH", AccountType = "SPOT" },
+                    new() { Id = 103, Name = "Savings ETH", AccountType = "SPOT" }
                 },
-                new List<CoreModels.LunoAccount> { new() { Id = 201, Name = "Main MYR" } },
+                new List<CoreModels.LunoAccount> { new() { Id = 201, Name = "Main MYR", AccountType = "SPOT" } },
                 new List<CoreModels.TradingAccountPreference>(),
                 false
             }
