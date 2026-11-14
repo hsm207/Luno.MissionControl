@@ -4,6 +4,12 @@ Runs the full stack locally via Docker Compose using Aspire's `deploy` pipeline.
 
 ## Quick Start
 
+### PowerShell (Windows)
+```powershell
+.\scripts\deploy.ps1 -Id <LUNO_API_KEY_ID> -Secret <LUNO_API_KEY_SECRET>
+```
+
+### Bash (Linux / macOS / WSL)
 ```bash
 ./scripts/deploy.sh --id <LUNO_API_KEY_ID> --secret <LUNO_API_KEY_SECRET>
 ```
