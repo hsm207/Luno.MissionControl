@@ -95,4 +95,28 @@ public class WalletResolverTests
         // Act & Assert
         Assert.Throws<WalletNotFoundException>(() => resolver.Resolve(candidates, "XBT", null));
     }
+
+    [Fact(DisplayName = "Given a pinned SPOT account among candidates, When ResolveSpotAccountId runs, Then return the pinned AccountId")]
+    public void Given_Pinned_Spot_Account_When_ResolveSpotAccountId_Then_Returns_AccountId()
+    {
+        // Arrange
+        var resolver = new WalletResolver();
+        var candidates = new[]
+        {
+            new LunoAccount { Id = 101, Name = "XBT Transactional", Balance = 0.5m, AccountType = "TRANSACTIONAL" },
+            new LunoAccount { Id = 102, Name = "XBT Spot", Balance = 2.0m, AccountType = "SPOT" }
+        };
+        var preference = new TradingAccountPreference
+        {
+            CurrencyCode = "XBT",
+            AccountId = 102,
+            LastUpdated = DateTime.UtcNow
+        };
+
+        // Act
+        var result = resolver.ResolveSpotAccountId(candidates, "XBT", preference);
+
+        // Assert
+        Assert.Equal(102, result);
+    }
 }

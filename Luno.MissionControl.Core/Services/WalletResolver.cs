@@ -44,5 +44,14 @@ public class WalletResolver
         // Crisis: Multiple accounts exist but no valid preference is set.
         throw new WalletAmbiguityException(targetCurrency, matches.Count);
     }
+
+    /// <summary>
+    /// Resolves the pinned <c>SPOT</c> account ID for a currency from the available candidates.
+    /// </summary>
+    public long ResolveSpotAccountId(IEnumerable<LunoAccount> candidates, string targetCurrency, TradingAccountPreference? preference)
+    {
+        var preferred = candidates.First(a => a.Id == preference!.AccountId && a.AccountType == "SPOT");
+        return preferred.Id;
+    }
 }
 
