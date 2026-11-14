@@ -50,7 +50,12 @@ public class WalletResolver
     /// </summary>
     public long ResolveSpotAccountId(IEnumerable<LunoAccount> candidates, string targetCurrency, TradingAccountPreference? preference)
     {
-        var preferred = candidates.First(a => a.Id == preference!.AccountId && a.AccountType == "SPOT");
+        if (preference is null)
+        {
+            throw new UnpinnedWalletException(targetCurrency);
+        }
+
+        var preferred = candidates.First(a => a.Id == preference.AccountId && a.AccountType == "SPOT");
         return preferred.Id;
     }
 }

@@ -1,4 +1,4 @@
 # Luno Exchange Migration
 
-## Slice 2 — Expand `ResolveSpotAccountId` Happy Path
-- ✅ **Test 4 (Programmer Test):** Given a pinned `TradingAccountPreference` matching a `SPOT` account among candidates, When `ResolveSpotAccountId` runs, Then return the pinned `SPOT` `AccountId` (`WalletResolverTests` → `WalletResolver.ResolveSpotAccountId`)
+## Slice 3 — Refuse Unpinned Asset
+- ✅ **Test 5 (Programmer Test):** Given an unpinned asset (`preference is null`) with a candidate `SPOT` account, When `ResolveSpotAccountId` runs, Then throw `UnpinnedWalletException` (`WalletResolverTests` → `WalletExceptions` + `WalletResolver.ResolveSpotAccountId`)

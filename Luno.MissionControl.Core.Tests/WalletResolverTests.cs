@@ -119,4 +119,18 @@ public class WalletResolverTests
         // Assert
         Assert.Equal(102, result);
     }
+
+    [Fact(DisplayName = "Given an unpinned asset, When ResolveSpotAccountId runs, Then throw UnpinnedWalletException")]
+    public void Given_Unpinned_Asset_When_ResolveSpotAccountId_Then_Throws_UnpinnedWalletException()
+    {
+        // Arrange
+        var resolver = new WalletResolver();
+        var candidates = new[]
+        {
+            new LunoAccount { Id = 1, Name = "XBT Spot", Balance = 1m, AccountType = "SPOT" }
+        };
+
+        // Act & Assert
+        Assert.Throws<UnpinnedWalletException>(() => resolver.ResolveSpotAccountId(candidates, "XBT", null));
+    }
 }

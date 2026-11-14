@@ -11,3 +11,9 @@ public class WalletAmbiguityException(string currency, int accountCount)
 /// </summary>
 public class WalletNotFoundException(string currency)
     : LunoDomainException($"Resolution Failure: No Luno accounts found for asset '{currency}'.");
+
+/// <summary>
+/// Thrown when an asset has no pinned SPOT trading wallet preference.
+/// </summary>
+public class UnpinnedWalletException(string currency)
+    : LunoDomainException($"Execution Refused: Asset '{currency}' has no pinned SPOT trading wallet.");
