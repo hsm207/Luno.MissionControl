@@ -42,44 +42,8 @@ public sealed class BasketOrchestrator(
 
         try
         {
-            var pairs = basket.Allocations.Select(a => a.Pair).ToList();
-            var markets = await marketData.GetMarketsAsync(pairs, ct);
-            var marketMap = markets.ToDictionary(m => m.MarketId);
-
-            var groupedAccounts = await accountAdapter.GetAccountsAsync(ct);
-
-            foreach (var allocation in basket.Allocations)
-            {
-                if (!marketMap.TryGetValue(allocation.Pair, out var market))
-                {
-                    throw new InvalidOperationException($"Market metadata for {allocation.Pair} was not found.");
-                }
-
-                // Deterministic Wallet Resolution (Hardened to single AccountId)
-                var basePreference = await walletRepository.GetPreferenceAsync(market.BaseCurrency, ct);
-                var counterPreference = await walletRepository.GetPreferenceAsync(market.CounterCurrency, ct);
-
-                groupedAccounts.TryGetValue(market.BaseCurrency, out var baseCandidates);
-                groupedAccounts.TryGetValue(market.CounterCurrency, out var counterCandidates);
-
-                // We removed the 'isBase' flag from the Resolver. Resolve now just needs the preference.
-                var baseAccount = resolver.Resolve(baseCandidates ?? [], market.BaseCurrency, basePreference);
-                var counterAccount = resolver.Resolve(counterCandidates ?? [], market.CounterCurrency, counterPreference);
-
-                var estimation = await trader.EstimateOrderAsync(allocation.Pair, allocation.TargetSpend, ct);
-
-                logger.LogInformation("Executing order to buy {Volume} {BaseAsset} for {Price} {CounterAsset} (Spend: {PortionSpend}, BaseAcc: {BaseAccountId}, CounterAcc: {CounterAccountId})",
-                    estimation.Volume, market.BaseCurrency, estimation.Price, market.CounterCurrency, allocation.TargetSpend, baseAccount.Id, counterAccount.Id);
-
-                var orderId = await trader.PostOrderAsync(estimation, baseAccount.Id, counterAccount.Id, ct);
-
-                orderSummaries.Add(new OrderSummaryDto(orderId, allocation.Pair));
-
-                if (allocation != basket.Allocations.Last())
-                {
-                    await Task.Delay(500, CancellationToken.None);
-                }
-            }
+            var resolvedAllocations = await ResolveAllocationsAsync(basket.Allocations, ct);
+            await ExecuteResolvedAllocationsAsync(resolvedAllocations, orderSummaries, ct);
 
             return new BasketExecutionResponseDto(true, orderSummaries);
         }
@@ -89,4 +53,83 @@ public sealed class BasketOrchestrator(
             return new BasketExecutionResponseDto(false, orderSummaries, ex.Message);
         }
     }
+
+    private async Task<IReadOnlyList<ResolvedAllocation>> ResolveAllocationsAsync(
+        IReadOnlyList<Allocation> allocations,
+        CancellationToken ct)
+    {
+        var pairs = allocations.Select(a => a.Pair).ToList();
+        var marketMap = (await marketData.GetMarketsAsync(pairs, ct)).ToDictionary(m => m.MarketId);
+        var groupedAccounts = await accountAdapter.GetAccountsAsync(ct);
+        var context = new SpotResolutionContext(groupedAccounts, [], ct);
+        var resolved = new List<ResolvedAllocation>(allocations.Count);
+
+        foreach (var allocation in allocations)
+        {
+            if (!marketMap.TryGetValue(allocation.Pair, out var market))
+            {
+                throw new InvalidOperationException($"Market metadata for {allocation.Pair} was not found.");
+            }
+
+            var baseAccountId = await ResolveCurrencySpotAccountAsync(market.BaseCurrency, context);
+            var counterAccountId = await ResolveCurrencySpotAccountAsync(market.CounterCurrency, context);
+            resolved.Add(new ResolvedAllocation(allocation, market, baseAccountId, counterAccountId));
+        }
+
+        return resolved;
+    }
+
+    private async Task<long> ResolveCurrencySpotAccountAsync(string currency, SpotResolutionContext context)
+    {
+        if (!context.Preferences.TryGetValue(currency, out var preference))
+        {
+            preference = await walletRepository.GetPreferenceAsync(currency, context.CancellationToken);
+            context.Preferences[currency] = preference;
+        }
+
+        context.Accounts.TryGetValue(currency, out var candidates);
+        return resolver.ResolveSpotAccountId(candidates ?? [], currency, preference);
+    }
+
+    private async Task ExecuteResolvedAllocationsAsync(
+        IReadOnlyList<ResolvedAllocation> resolvedAllocations,
+        List<OrderSummaryDto> orderSummaries,
+        CancellationToken ct)
+    {
+        for (var i = 0; i < resolvedAllocations.Count; i++)
+        {
+            var (allocation, market, baseAccountId, counterAccountId) = resolvedAllocations[i];
+            var estimation = await trader.EstimateOrderAsync(allocation.Pair, allocation.TargetSpend, ct);
+
+            logger.LogInformation(
+                "Executing order to buy {Volume} {BaseAsset} for {Price} {CounterAsset} " +
+                "(Spend: {PortionSpend}, BaseAcc: {BaseAccountId}, CounterAcc: {CounterAccountId})",
+                estimation.Volume,
+                market.BaseCurrency,
+                estimation.Price,
+                market.CounterCurrency,
+                allocation.TargetSpend,
+                baseAccountId,
+                counterAccountId);
+
+            var orderId = await trader.PostOrderAsync(estimation, baseAccountId, counterAccountId, ct);
+            orderSummaries.Add(new OrderSummaryDto(orderId, allocation.Pair));
+
+            if (i < resolvedAllocations.Count - 1)
+            {
+                await Task.Delay(500, CancellationToken.None);
+            }
+        }
+    }
+
+    private sealed record SpotResolutionContext(
+        IDictionary<string, List<LunoAccount>> Accounts,
+        Dictionary<string, TradingAccountPreference?> Preferences,
+        CancellationToken CancellationToken);
+
+    private sealed record ResolvedAllocation(
+        Allocation Allocation,
+        MarketMetadata Market,
+        long BaseAccountId,
+        long CounterAccountId);
 }

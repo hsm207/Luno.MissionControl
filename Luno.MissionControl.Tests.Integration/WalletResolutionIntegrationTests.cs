@@ -43,87 +43,68 @@ public class WalletResolutionIntegrationTests
         _serviceProvider = services.BuildServiceProvider();
     }
 
-    public static IEnumerable<object[]> ResolutionScenarios =>
-        new List<object[]>
-        {
-            // Scenario 1: Multiple Accounts + Preference = Success ✅
-            new object[] {
-                new List<CoreModels.LunoAccount> {
-                    new() { Id = 102, Name = "Main ETH", AccountType = "SPOT" },
-                    new() { Id = 103, Name = "Savings ETH", AccountType = "SPOT" }
-                },
-                new List<CoreModels.LunoAccount> { new() { Id = 201, Name = "Main MYR", AccountType = "SPOT" } },
-                new List<CoreModels.TradingAccountPreference> {
-                    new() { CurrencyCode = "ETH", AccountId = 102, LastUpdated = DateTime.UtcNow },
-                    new() { CurrencyCode = "MYR", AccountId = 201, LastUpdated = DateTime.UtcNow }
-                },
-                true
-            },
-
-            // Scenario 2: Single Account + No Preference = Success ✅
-            new object[] {
-                new List<CoreModels.LunoAccount> { new() { Id = 102, Name = "Solo ETH", AccountType = "SPOT" } },
-                new List<CoreModels.LunoAccount> { new() { Id = 201, Name = "Solo MYR", AccountType = "SPOT" } },
-                new List<CoreModels.TradingAccountPreference>(),
-                true
-            },
-
-            // Scenario 3: Multiple Accounts + No Preference = Ambiguity FAILURE ❌
-            new object[] {
-                new List<CoreModels.LunoAccount> {
-                    new() { Id = 102, Name = "Main ETH", AccountType = "SPOT" },
-                    new() { Id = 103, Name = "Savings ETH", AccountType = "SPOT" }
-                },
-                new List<CoreModels.LunoAccount> { new() { Id = 201, Name = "Main MYR", AccountType = "SPOT" } },
-                new List<CoreModels.TradingAccountPreference>(),
-                false
-            }
-        };
-
-    [Theory(DisplayName = "The Orchestrator must resolve the correct wallets based on user preferences or deterministic defaults.")]
-    [MemberData(nameof(ResolutionScenarios))]
-    public async Task ResolveWallets_ShouldAdhereToZeroAmbiguityMandate(
-        List<CoreModels.LunoAccount> ethAccounts,
-        List<CoreModels.LunoAccount> myrAccounts,
-        List<CoreModels.TradingAccountPreference> preferences,
-        bool expectSuccess)
+    [Fact(DisplayName = "Given all assets pinned to SPOT accounts, When ExecuteAsync runs, Then place order with pinned AccountIds")]
+    public async Task ExecuteAsync_WhenAllAssetsPinnedToSpot_ThenPlacesOrderWithPinnedAccountIds()
     {
         // --- 1. ARRANGE ---
         var orchestrator = _serviceProvider.GetRequiredService<IBasketService>();
-
-        _stubAccountAdapter.Accounts["ETH"] = ethAccounts;
-        _stubAccountAdapter.Accounts["MYR"] = myrAccounts;
-
-        foreach (var pref in preferences)
-        {
-            await _fakeWalletRepo.SavePreferenceAsync(pref);
-        }
+        _stubAccountAdapter.Accounts["ETH"] = [
+            new() { Id = 102, Name = "Main ETH", AccountType = "SPOT" },
+            new() { Id = 103, Name = "Savings ETH", AccountType = "SPOT" }
+        ];
+        _stubAccountAdapter.Accounts["MYR"] = [new() { Id = 201, Name = "Main MYR", AccountType = "SPOT" }];
+        await _fakeWalletRepo.SavePreferenceAsync(new() { CurrencyCode = "ETH", AccountId = 102, LastUpdated = DateTime.UtcNow });
+        await _fakeWalletRepo.SavePreferenceAsync(new() { CurrencyCode = "MYR", AccountId = 201, LastUpdated = DateTime.UtcNow });
 
         // --- 2. ACT ---
-        // COMMAND HARDENED: No more manual ID overrides. Orchestrator MUST resolve.
         var command = new ExecuteAllocationCommand(100m, [new AllocationRequest("ETHMYR", 1.0m)]);
         var result = await orchestrator.ExecuteAsync(command);
 
         // --- 3. ASSERT ---
-        if (expectSuccess)
-        {
-            Assert.True(result.Success, $"Execution failed: {result.ErrorMessage}");
-            var spy = (SpyTrader)_serviceProvider.GetRequiredService<ILunoTrader>();
+        Assert.True(result.Success, $"Execution failed: {result.ErrorMessage}");
+        var call = Assert.Single(((SpyTrader)_serviceProvider.GetRequiredService<ILunoTrader>()).Calls);
+        Assert.Equal((102, 201), call);
+    }
 
-            Assert.NotEmpty(spy.Calls);
-            var call = spy.Calls.Last();
+    [Fact(DisplayName = "Given an unpinned single account, When ExecuteAsync runs, Then refuse and place zero orders")]
+    public async Task ExecuteAsync_WhenAssetUnpinned_ThenRefusesAndPlacesZeroOrders()
+    {
+        // --- 1. ARRANGE ---
+        var orchestrator = _serviceProvider.GetRequiredService<IBasketService>();
+        _stubAccountAdapter.Accounts["ETH"] = [new() { Id = 102, Name = "Solo ETH", AccountType = "SPOT" }];
+        _stubAccountAdapter.Accounts["MYR"] = [new() { Id = 201, Name = "Solo MYR", AccountType = "SPOT" }];
 
-            var expectedBaseId = preferences.FirstOrDefault(p => p.CurrencyCode == "ETH")?.AccountId ?? ethAccounts.First().Id;
-            var expectedCounterId = preferences.FirstOrDefault(p => p.CurrencyCode == "MYR")?.AccountId ?? myrAccounts.First().Id;
+        // --- 2. ACT ---
+        var command = new ExecuteAllocationCommand(100m, [new AllocationRequest("ETHMYR", 1.0m)]);
+        var result = await orchestrator.ExecuteAsync(command);
 
-            Assert.Equal(expectedBaseId, call.BaseId);
-            Assert.Equal(expectedCounterId, call.CounterId);
-        }
-        else
-        {
-            Assert.False(result.Success, "Expected resolution to fail due to ambiguity.");
-            Assert.Contains("Ambiguity", result.ErrorMessage);
-        }
+        // --- 3. ASSERT ---
+        var spy = (SpyTrader)_serviceProvider.GetRequiredService<ILunoTrader>();
+        Assert.False(result.Success);
+        Assert.Contains("no pinned SPOT trading wallet", result.ErrorMessage);
+        Assert.Empty(spy.Calls);
+    }
+
+    [Fact(DisplayName = "Given a multi-allocation basket where a later asset is pinned to TRANSACTIONAL, When ExecuteAsync runs, Then refuse and place zero orders")]
+    public async Task ExecuteAsync_WhenSecondAllocationHasNonSpotPin_ThenRefusesAndPlacesZeroOrders()
+    {
+        // --- 1. ARRANGE ---
+        var orchestrator = _serviceProvider.GetRequiredService<IBasketService>();
+        _stubAccountAdapter.Accounts["ETH"] = [new() { Id = 102, Name = "ETH Spot", AccountType = "SPOT" }];
+        _stubAccountAdapter.Accounts["MYR"] = [new() { Id = 201, Name = "MYR Spot", AccountType = "SPOT" }];
+        _stubAccountAdapter.Accounts["XRP"] = [new() { Id = 301, Name = "XRP Transactional", AccountType = "TRANSACTIONAL" }];
+        await _fakeWalletRepo.SavePreferenceAsync(new() { CurrencyCode = "ETH", AccountId = 102, LastUpdated = DateTime.UtcNow });
+        await _fakeWalletRepo.SavePreferenceAsync(new() { CurrencyCode = "MYR", AccountId = 201, LastUpdated = DateTime.UtcNow });
+        await _fakeWalletRepo.SavePreferenceAsync(new() { CurrencyCode = "XRP", AccountId = 301, LastUpdated = DateTime.UtcNow });
+
+        // --- 2. ACT ---
+        var command = new ExecuteAllocationCommand(100m, [new AllocationRequest("ETHMYR", 0.5m), new AllocationRequest("XRPMYR", 0.5m)]);
+        var result = await orchestrator.ExecuteAsync(command);
+
+        // --- 3. ASSERT ---
+        var spy = (SpyTrader)_serviceProvider.GetRequiredService<ILunoTrader>();
+        Assert.False(result.Success);
+        Assert.Empty(spy.Calls);
     }
 }
 
