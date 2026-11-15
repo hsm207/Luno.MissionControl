@@ -6,15 +6,24 @@ using NSubstitute;
 
 namespace Luno.MissionControl.Infrastructure.Tests;
 
+/// <summary>Unit tests for <see cref="LunoSdkAccountAdapter"/> ACL mapping.</summary>
 public class LunoSdkAccountAdapterTests
 {
-    [Fact(DisplayName = "Given AccountBalanceResponse with AccountType, When GetAccountsAsync runs, Then LunoAccount preserves AccountType")]
+    private const decimal DefaultBalance = 1.5m;
+    private const decimal ZeroAmount = 0m;
+
+    /// <summary>Given SDK balance with AccountType, Maps AccountType onto LunoAccount.</summary>
+    [Fact(DisplayName = "Given AccountBalanceResponse with AccountType, "
+        + "When GetAccountsAsync runs, Then LunoAccount preserves AccountType")]
     public async Task GetAccountsAsync_ShouldPreserveAccountType_FromSdkResponse()
     {
         var mockClient = Substitute.For<ILunoClient>();
-        var adapter = new LunoSdkAccountAdapter(mockClient, Substitute.For<ILogger<LunoSdkAccountAdapter>>());
+        var adapter = new LunoSdkAccountAdapter(
+            mockClient,
+            Substitute.For<ILogger<LunoSdkAccountAdapter>>());
         mockClient.Accounts.Requests.SendAsync(Arg.Any<GetBalancesQuery>(), Arg.Any<CancellationToken>())
-            .Returns([new AccountBalanceResponse("12345", "XBT", 1.5m, 0m, 0m, 1.5m, "Spot XBT", "TRANSACTIONAL")]);
+            .Returns([new AccountBalanceResponse(
+                "12345", "XBT", DefaultBalance, ZeroAmount, ZeroAmount, DefaultBalance, "Spot XBT", "TRANSACTIONAL")]);
 
         var accounts = await adapter.GetAccountsAsync();
 

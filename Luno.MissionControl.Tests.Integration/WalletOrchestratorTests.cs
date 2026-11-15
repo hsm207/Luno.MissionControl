@@ -6,62 +6,68 @@ using Xunit;
 
 namespace Luno.MissionControl.Tests.Integration;
 
+/// <summary>Integration tests for <see cref="WalletOrchestrator"/> SPOT overview resolution.</summary>
 public class WalletOrchestratorTests
 {
+    private const long SpotAccountId = 101L;
+    private const long TransactionalAccountId = 102L;
+
     private readonly StubAccountAdapter _accountAdapter = new();
     private readonly FakeWalletRepository _walletRepository = new();
 
     private WalletOrchestrator CreateOrchestrator() =>
         new(_accountAdapter, _walletRepository, new WalletResolver(), NullLogger<WalletOrchestrator>.Instance);
 
-    [Fact(DisplayName = "Given unpinned SPOT and TRANSACTIONAL accounts, When GetWalletOverviewAsync runs, Then group accounts and leave ResolvedAccountId null")]
+    /// <summary>Given unpinned SPOT and TRANSACTIONAL accounts, Groups them and leaves ResolvedAccountId null.</summary>
+    [Fact(DisplayName = "Given unpinned SPOT and TRANSACTIONAL accounts, "
+        + "When GetWalletOverviewAsync runs, Then group accounts and leave ResolvedAccountId null")]
     public async Task GetWalletOverviewAsync_WhenUnpinned_GroupsSpotAndViewOnlyWithoutAutoSelect()
     {
-        // --- 1. ARRANGE ---
         _accountAdapter.Accounts["XBT"] =
         [
-            new() { Id = 101, Name = "XBT Spot", AccountType = "SPOT" },
-            new() { Id = 102, Name = "XBT Transactional", AccountType = "TRANSACTIONAL" }
+            new() { Id = SpotAccountId, Name = "XBT Spot", AccountType = "SPOT" },
+            new() { Id = TransactionalAccountId, Name = "XBT Transactional", AccountType = "TRANSACTIONAL" }
         ];
         var orchestrator = CreateOrchestrator();
 
-        // --- 2. ACT ---
         var overview = await orchestrator.GetWalletOverviewAsync();
 
-        // --- 3. ASSERT ---
         var wallet = Assert.Single(overview);
         Assert.Null(wallet.ResolvedAccountId);
-        Assert.Equal(101, Assert.Single(wallet.SpotAccounts).Id);
-        Assert.Equal(102, Assert.Single(wallet.ViewOnlyAccounts).Id);
+        Assert.Equal(SpotAccountId, Assert.Single(wallet.SpotAccounts).Id);
+        Assert.Equal(TransactionalAccountId, Assert.Single(wallet.ViewOnlyAccounts).Id);
     }
 
-    [Fact(DisplayName = "Given a preference pinned to a TRANSACTIONAL account, When GetWalletOverviewAsync runs, Then leave ResolvedAccountId null")]
+    /// <summary>Given a preference pinned to TRANSACTIONAL, Leaves ResolvedAccountId null.</summary>
+    [Fact(DisplayName = "Given a preference pinned to a TRANSACTIONAL account, "
+        + "When GetWalletOverviewAsync runs, Then leave ResolvedAccountId null")]
     public async Task GetWalletOverviewAsync_WhenPinnedToTransactional_LeavesResolvedAccountIdNull()
     {
-        // --- 1. ARRANGE ---
-        _accountAdapter.Accounts["XBT"] = [new() { Id = 102, Name = "XBT Transactional", AccountType = "TRANSACTIONAL" }];
-        await _walletRepository.SavePreferenceAsync(new() { CurrencyCode = "XBT", AccountId = 102, LastUpdated = DateTime.UtcNow });
+        _accountAdapter.Accounts["XBT"] =
+            [new() { Id = TransactionalAccountId, Name = "XBT Transactional", AccountType = "TRANSACTIONAL" }];
+        await SavePreferenceAsync("XBT", TransactionalAccountId);
         var orchestrator = CreateOrchestrator();
 
-        // --- 2. ACT ---
         var overview = await orchestrator.GetWalletOverviewAsync();
 
-        // --- 3. ASSERT ---
         Assert.Null(Assert.Single(overview).ResolvedAccountId);
     }
 
-    [Fact(DisplayName = "Given a preference pinned to a SPOT account, When GetWalletOverviewAsync runs, Then set ResolvedAccountId")]
+    /// <summary>Given a preference pinned to SPOT, Sets ResolvedAccountId.</summary>
+    [Fact(DisplayName = "Given a preference pinned to a SPOT account, "
+        + "When GetWalletOverviewAsync runs, Then set ResolvedAccountId")]
     public async Task GetWalletOverviewAsync_WhenPinnedToSpot_SetsResolvedAccountId()
     {
-        // --- 1. ARRANGE ---
-        _accountAdapter.Accounts["XBT"] = [new() { Id = 101, Name = "XBT Spot", AccountType = "SPOT" }];
-        await _walletRepository.SavePreferenceAsync(new() { CurrencyCode = "XBT", AccountId = 101, LastUpdated = DateTime.UtcNow });
+        _accountAdapter.Accounts["XBT"] = [new() { Id = SpotAccountId, Name = "XBT Spot", AccountType = "SPOT" }];
+        await SavePreferenceAsync("XBT", SpotAccountId);
         var orchestrator = CreateOrchestrator();
 
-        // --- 2. ACT ---
         var overview = await orchestrator.GetWalletOverviewAsync();
 
-        // --- 3. ASSERT ---
-        Assert.Equal(101, Assert.Single(overview).ResolvedAccountId);
+        Assert.Equal(SpotAccountId, Assert.Single(overview).ResolvedAccountId);
     }
+
+    private Task SavePreferenceAsync(string asset, long accountId) =>
+        _walletRepository.SavePreferenceAsync(
+            new() { CurrencyCode = asset, AccountId = accountId, LastUpdated = DateTime.UtcNow });
 }
