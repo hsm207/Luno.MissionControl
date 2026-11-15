@@ -133,4 +133,16 @@ public class WalletResolverTests
         // Act & Assert
         Assert.Throws<UnpinnedWalletException>(() => resolver.ResolveSpotAccountId(candidates, "XBT", null));
     }
+
+    [Fact(DisplayName = "Given a pinned TRANSACTIONAL account, When ResolveSpotAccountId runs, Then throw NonSpotWalletException")]
+    public void Given_Pinned_Transactional_Account_When_ResolveSpotAccountId_Then_Throws_NonSpotWalletException()
+    {
+        // Arrange
+        var resolver = new WalletResolver();
+        var candidates = new[] { new LunoAccount { Id = 101, Name = "XBT Transactional", Balance = 1m, AccountType = "TRANSACTIONAL" } };
+        var preference = new TradingAccountPreference { CurrencyCode = "XBT", AccountId = 101, LastUpdated = DateTime.UtcNow };
+
+        // Act & Assert
+        Assert.Throws<NonSpotWalletException>(() => resolver.ResolveSpotAccountId(candidates, "XBT", preference));
+    }
 }

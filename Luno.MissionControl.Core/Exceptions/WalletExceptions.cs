@@ -17,3 +17,9 @@ public class WalletNotFoundException(string currency)
 /// </summary>
 public class UnpinnedWalletException(string currency)
     : LunoDomainException($"Execution Refused: Asset '{currency}' has no pinned SPOT trading wallet.");
+
+/// <summary>
+/// Thrown when a pinned account is not a SPOT trading wallet.
+/// </summary>
+public class NonSpotWalletException(string currency, long accountId, string accountType)
+    : LunoDomainException($"Execution Refused: Pinned account '{accountId}' for asset '{currency}' has AccountType '{accountType}', expected 'SPOT'.");

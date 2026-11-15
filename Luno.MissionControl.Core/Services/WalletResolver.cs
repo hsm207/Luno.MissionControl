@@ -55,7 +55,12 @@ public class WalletResolver
             throw new UnpinnedWalletException(targetCurrency);
         }
 
-        var preferred = candidates.First(a => a.Id == preference.AccountId && a.AccountType == "SPOT");
+        var preferred = candidates.First(a => a.Id == preference.AccountId);
+        if (preferred.AccountType != "SPOT")
+        {
+            throw new NonSpotWalletException(targetCurrency, preferred.Id, preferred.AccountType);
+        }
+
         return preferred.Id;
     }
 }

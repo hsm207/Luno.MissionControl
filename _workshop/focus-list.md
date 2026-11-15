@@ -1,4 +1,4 @@
 # Luno Exchange Migration
 
-## Slice 3 — Refuse Unpinned Asset
-- ✅ **Test 5 (Programmer Test):** Given an unpinned asset (`preference is null`) with a candidate `SPOT` account, When `ResolveSpotAccountId` runs, Then throw `UnpinnedWalletException` (`WalletResolverTests` → `WalletExceptions` + `WalletResolver.ResolveSpotAccountId`)
+## Slice 4 — First Mechanism: Reject `"TRANSACTIONAL"` Pin
+- ✅ **Test 6 (Programmer Test):** Given a pinned `"TRANSACTIONAL"` account, When `ResolveSpotAccountId` runs, Then throw `NonSpotWalletException` (`WalletResolverTests` → `WalletExceptions` + `WalletResolver.ResolveSpotAccountId`)
