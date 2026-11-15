@@ -1,6 +1,13 @@
 {
   "version": 2,
   "skills": {
+    "Fluent UI Blazor v5 — Usage Guide": {
+      "source": "microsoft/fluentui-blazor",
+      "ref": "dev",
+      "sourceType": "github",
+      "skillPath": "examples/Demo/FluentUI.Demo.Client/wwwroot/skills/fluentui-blazor-usage/SKILL.md",
+      "computedHash": "8825b8959b3762d556f7f9ad4527edf964e04eecb63400ef8cc91ba519033910"
+    },
     "agentic-workflows": {
       "source": "dotnet/skills",
       "sourceType": "github",
@@ -324,12 +331,6 @@
       "sourceType": "github",
       "skillPath": "plugins/dotnet-test/skills/find-untested-sources/SKILL.md",
       "computedHash": "7ffd32108127e4a82fa1712b94ba4f0cdf9eada518d33b74c8f220db1b12bc0e"
-    },
-    "fluentui-blazor": {
-      "source": "github/awesome-copilot",
-      "sourceType": "github",
-      "skillPath": "skills/fluentui-blazor/SKILL.md",
-      "computedHash": "b0273cea920e9605fd942c70a5877dfe96ba7068ab552133c96aee38138b6ed2"
     },
     "generate-testability-wrappers": {
       "source": "dotnet/skills",
