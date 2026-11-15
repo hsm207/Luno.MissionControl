@@ -1,6 +1,6 @@
-using Luno.MissionControl.Core.Models;
-using Luno.MissionControl.Application.Ports;
 using Luno.MissionControl.Application.Diagnostics;
+using Luno.MissionControl.Application.Ports;
+using Luno.MissionControl.Core.Models;
 using Luno.MissionControl.Web.Client.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -18,9 +18,16 @@ public partial class WalletsHub
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
 
-    private List<WalletOverviewViewModel>? _overview;
+    private IReadOnlyList<SpotWalletViewModel>? _spotWallets;
+    private IReadOnlyList<WalletCardModel> _transactionalCards = [];
+    private IReadOnlyList<WalletCardModel> _otherViewOnlyCards = [];
     private bool _isLoading = true;
     private string? _errorMessage;
+
+    private bool HasAnyWallets =>
+        _spotWallets is { Count: > 0 } ||
+        _transactionalCards.Count > 0 ||
+        _otherViewOnlyCards.Count > 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -35,16 +42,7 @@ public partial class WalletsHub
             _isLoading = true;
             var items = await PersistenceBridge.GetOrLoadAsync("wallets-overview",
                 () => WalletOrchestrator.GetWalletOverviewAsync());
-            _overview = items
-                .OrderByDescending(i => i.IsAmbiguous)
-                .ThenBy(i => i.Asset)
-                .Select(i => new WalletOverviewViewModel(
-                    i.Asset,
-                    i.Accounts,
-                    i.ResolvedAccountId?.ToString(),
-                    i.IsAmbiguous
-                )).ToList();
-
+            ApplyOverview(items);
             activity?.SetTag("ui.wallet_count", items.Count);
         }
         catch (Exception ex)
@@ -57,6 +55,36 @@ public partial class WalletsHub
         {
             _isLoading = false;
         }
+    }
+
+    private void ApplyOverview(IReadOnlyList<Wallet> items)
+    {
+        _spotWallets = items
+            .Where(i => i.SpotAccounts.Count > 0)
+            .OrderByDescending(i => i.ResolvedAccountId is null)
+            .ThenBy(i => i.Asset)
+            .Select(i => new SpotWalletViewModel
+            {
+                Asset = i.Asset,
+                ResolvedAccountId = i.ResolvedAccountId?.ToString(),
+                SpotAccounts = i.SpotAccounts
+            })
+            .ToList();
+
+        var viewOnlyWallets = items
+            .Where(i => i.ViewOnlyAccounts.Count > 0)
+            .OrderBy(i => i.Asset)
+            .Select(i => new ViewOnlyWalletViewModel
+            {
+                Asset = i.Asset,
+                ViewOnlyAccounts = i.ViewOnlyAccounts
+            })
+            .ToList();
+
+        _transactionalCards = WalletDisplayFormatter.BuildViewOnlyCards(
+            viewOnlyWallets, a => a.AccountType == "TRANSACTIONAL", "Transactional");
+        _otherViewOnlyCards = WalletDisplayFormatter.BuildViewOnlyCards(
+            viewOnlyWallets, a => a.AccountType != "TRANSACTIONAL");
     }
 
     private async Task PinAccountAsync(string asset, long accountId)

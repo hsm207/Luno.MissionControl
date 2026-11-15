@@ -1,0 +1,88 @@
+@namespace Luno.MissionControl.Web.Client.Components.Wallets
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<FluentGridItem Xs="12" Sm="6" Md="4">
+    <FluentCard Class="@($"wallet-card state-{Card.StateClass}")">
+        <div class="card-header">
+            <div class="header-left">
+                <FluentText As="TextTag.H2" Class="asset-hero">@Card.Asset</FluentText>
+                <FluentText Size="TextSize.Size200" Class="account-count">
+                    @Card.Accounts.Count @(Card.Accounts.Count == 1 ? "account" : "accounts")
+                </FluentText>
+            </div>
+            <div class="@($"state-chip chip-{Card.StateClass}")">
+                <FluentText Size="TextSize.Size200">@Card.StateLabel</FluentText>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Card.UrgencyHint))
+        {
+            <div class="urgency-hint">
+                <FluentText Size="TextSize.Size200">@Card.UrgencyHint</FluentText>
+            </div>
+        }
+
+        <div class="account-options">
+            @foreach (var row in Card.Accounts)
+            {
+                <div @key="row.AccountId" class="account-option @(row.IsActive ? "is-active" : "")">
+                    @if (!string.IsNullOrEmpty(row.SectionLabel))
+                    {
+                        <div class="section-label">@row.SectionLabel</div>
+                    }
+
+                    <div class="option-content">
+                        <FluentStack Orientation="Orientation.Horizontal"
+                                     VerticalAlignment="VerticalAlignment.Center"
+                                     HorizontalGap="12">
+                            <div class="identity-slot">
+                                <FluentText Size="TextSize.Size300" Class="account-name">
+                                    @row.DisplayName
+                                </FluentText>
+                                <FluentStack Orientation="Orientation.Horizontal"
+                                             VerticalAlignment="VerticalAlignment.Center"
+                                             HorizontalGap="4">
+                                    <FluentText Size="TextSize.Size200" Class="id-mask">
+                                        ID ••• @row.MaskedId
+                                    </FluentText>
+                                    <FluentButton Appearance="ButtonAppearance.Default"
+                                                  IconEnd="@(new Icons.Regular.Size16.Copy())"
+                                                  Title="Copy full ID"
+                                                  OnClick="@(() => CopyAccountIdAsync(row.AccountId))"
+                                                  Class="copy-id-btn" />
+                                </FluentStack>
+                            </div>
+
+                            <div class="balance-slot">
+                                <FluentText Size="TextSize.Size300" Class="balance-text">
+                                    @row.FormattedBalance <span class="asset-unit">@Card.Asset</span>
+                                </FluentText>
+                            </div>
+
+                            @if (ActionSlot is not null)
+                            {
+                                <div class="action-slot">
+                                    @ActionSlot(row)
+                                </div>
+                            }
+                        </FluentStack>
+                    </div>
+                </div>
+            }
+        </div>
+    </FluentCard>
+</FluentGridItem>
+
+@code {
+    [Parameter, EditorRequired]
+    public WalletCardModel Card { get; set; } = default!;
+
+    [Parameter]
+    public RenderFragment<WalletAccountRowModel>? ActionSlot { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<string> OnCopyId { get; set; }
+
+    private Task CopyAccountIdAsync(long accountId) =>
+        OnCopyId.InvokeAsync(accountId.ToString());
+}

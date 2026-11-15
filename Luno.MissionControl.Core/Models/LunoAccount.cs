@@ -20,4 +20,9 @@ public record LunoAccount
     /// Gets the current available balance in this account.
     /// </summary>
     public decimal Balance { get; init; }
+
+    /// <summary>
+    /// Gets the Luno account category (e.g., "SPOT", "TRANSACTIONAL", "STAKING").
+    /// </summary>
+    public required string AccountType { get; init; }
 }

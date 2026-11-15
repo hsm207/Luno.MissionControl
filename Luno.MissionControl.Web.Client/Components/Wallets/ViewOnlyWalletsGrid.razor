@@ -1,0 +1,26 @@
+@namespace Luno.MissionControl.Web.Client.Components.Wallets
+@using Microsoft.FluentUI.AspNetCore.Components
+
+@if (Cards.Count == 0)
+{
+    <FluentMessageBar Title="No Wallets" Intent="MessageBarIntent.Info">
+        No view-only wallets in this category.
+    </FluentMessageBar>
+}
+else
+{
+    <FluentGrid Spacing="3">
+        @foreach (var card in Cards)
+        {
+            <WalletCard @key="card.Asset" Card="card" OnCopyId="OnCopyId" />
+        }
+    </FluentGrid>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<WalletCardModel> Cards { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public EventCallback<string> OnCopyId { get; set; }
+}

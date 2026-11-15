@@ -4,45 +4,39 @@ using Luno.MissionControl.Core.Models;
 namespace Luno.MissionControl.Core.Services;
 
 /// <summary>
-/// Domain service responsible for resolving the appropriate Luno account for a given currency 
-/// from a set of candidates, respecting user preferences and enforcing the "Zero-Ambiguity" mandate.
+/// Domain service responsible for resolving a currency's pinned SPOT trading wallet
+/// from live Luno accounts.
 /// </summary>
 public class WalletResolver
 {
     /// <summary>
-    /// Resolves a single account from the available candidates.
+    /// Resolves the pinned <c>SPOT</c> account ID for a currency from the available candidates.
     /// </summary>
-    /// <param name="candidates">Available Luno accounts for the target currency.</param>
-    /// <param name="targetCurrency">The currency code being resolved (for error reporting).</param>
-    /// <param name="preference">Optional user preference for this currency.</param>
-    /// <exception cref="WalletAmbiguityException">Thrown if multiple accounts exist without a preference.</exception>
-    /// <exception cref="WalletNotFoundException">Thrown if no accounts exist.</exception>
-    public LunoAccount Resolve(IEnumerable<LunoAccount> candidates, string targetCurrency, TradingAccountPreference? preference)
+    /// <exception cref="UnpinnedWalletException">Thrown when no trading wallet preference is pinned.</exception>
+    /// <exception cref="PinnedWalletNotFoundException">Thrown when the pinned account is absent.</exception>
+    /// <exception cref="NonSpotWalletException">Thrown when the pinned account is not a SPOT wallet.</exception>
+    public long ResolveSpotAccountId(
+        IEnumerable<LunoAccount> candidates,
+        string targetCurrency,
+        TradingAccountPreference? preference)
     {
-        var matches = candidates.ToList();
-
-        if (matches.Count == 0)
+        if (preference is null)
         {
-            throw new WalletNotFoundException(targetCurrency);
+            throw new UnpinnedWalletException(targetCurrency);
         }
 
-        if (matches.Count == 1)
+        var preferred = candidates.FirstOrDefault(a => a.Id == preference.AccountId);
+        if (preferred is null)
         {
-            return matches[0];
+            throw new PinnedWalletNotFoundException(targetCurrency, preference.AccountId);
         }
 
-        // Ambiguity Detected: Multiple accounts found. Check preference.
-        if (preference is not null)
+        if (preferred.AccountType != "SPOT")
         {
-            var preferred = matches.FirstOrDefault(a => a.Id == preference.AccountId);
-            if (preferred is not null)
-            {
-                return preferred;
-            }
+            throw new NonSpotWalletException(targetCurrency, preferred.Id, preferred.AccountType);
         }
 
-        // Crisis: Multiple accounts exist but no valid preference is set.
-        throw new WalletAmbiguityException(targetCurrency, matches.Count);
+        return preferred.Id;
     }
 }
 

@@ -31,7 +31,8 @@ public class LunoSdkAccountAdapter(ILunoClient lunoClient, ILogger<LunoSdkAccoun
                     {
                         Id = long.Parse(b.AccountId),
                         Name = b.Name,
-                        Balance = b.Available
+                        Balance = b.Available,
+                        AccountType = b.AccountType
                     }).ToList()
                 );
         }

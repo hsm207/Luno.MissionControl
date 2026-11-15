@@ -1,0 +1,21 @@
+.active-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: rgba(0, 255, 127, 0.1);
+    border-radius: 4px;
+}
+
+.status-text {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #00FF7F;
+    text-transform: uppercase;
+}
+
+.action-button {
+    height: 32px !important;
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+}

@@ -2,97 +2,83 @@ using Luno.MissionControl.Core.Exceptions;
 using Luno.MissionControl.Core.Models;
 using Luno.MissionControl.Core.Services;
 using Xunit;
-using WalletAmbiguityException = Luno.MissionControl.Core.Exceptions.WalletAmbiguityException;
 
 namespace Luno.MissionControl.Core.Tests;
 
+/// <summary>Unit tests for <see cref="WalletResolver"/> SPOT account resolution.</summary>
 public class WalletResolverTests
 {
-    [Fact(DisplayName = "Given an asset with exactly one associated Luno account, the resolver must automatically select that account to ensure seamless execution.")]
-    public void Given_A_Single_Account_When_Resolving_Then_It_Should_Return_The_Account()
+    private const long TransactionalAccountId = 101L;
+    private const long SpotAccountId = 102L;
+    private const long MissingAccountId = 999L;
+    private const decimal DefaultBalance = 1.0m;
+    private const decimal SpotBalance = 2.0m;
+    private const decimal TransactionalBalance = 0.5m;
+
+    private readonly WalletResolver _resolver = new();
+
+    /// <summary>Given a pinned SPOT account, Returns its AccountId.</summary>
+    [Fact(DisplayName = "Given a pinned SPOT account among candidates, "
+        + "When ResolveSpotAccountId runs, Then return the pinned AccountId")]
+    public void Given_Pinned_Spot_Account_When_ResolveSpotAccountId_Then_Returns_AccountId()
     {
-        // Arrange
-        var resolver = new WalletResolver();
-        var candidates = new[]
-        {
-            new LunoAccount { Id = 123, Name = "XBT Wallet", Balance = 1.0m }
-        };
+        LunoAccount[] candidates =
+        [
+            Account(TransactionalAccountId, "TRANSACTIONAL", "XBT Transactional", TransactionalBalance),
+            Account(SpotAccountId, "SPOT", "XBT Spot", SpotBalance)
+        ];
 
-        // Act
-        var result = resolver.Resolve(candidates, "XBT", null);
+        var result = _resolver.ResolveSpotAccountId(candidates, "XBT", Preference(SpotAccountId));
 
-        // Assert
-        Assert.Equal(123, result.Id);
+        Assert.Equal(SpotAccountId, result);
     }
 
-    [Fact(DisplayName = "Given an asset with multiple accounts and a valid user preference, the resolver must strictly adhere to the pinned selection to ensure deterministic order placement.")]
-    public void Given_Multiple_Accounts_With_A_Pinned_Preference_When_Resolving_Then_It_Should_Return_The_Preferred_Account()
+    /// <summary>Given an unpinned asset, Throws <see cref="UnpinnedWalletException"/>.</summary>
+    [Fact(DisplayName = "Given an unpinned asset, When ResolveSpotAccountId runs, "
+        + "Then throw UnpinnedWalletException")]
+    public void Given_Unpinned_Asset_When_ResolveSpotAccountId_Then_Throws_UnpinnedWalletException()
     {
-        // Arrange
-        var resolver = new WalletResolver();
-        var candidates = new[]
-        {
-            new LunoAccount { Id = 101, Name = "XBT Trading", Balance = 0.5m },
-            new LunoAccount { Id = 102, Name = "XBT Savings", Balance = 2.0m }
-        };
-        var preference = new TradingAccountPreference
-        {
-            CurrencyCode = "XBT",
-            AccountId = 101,
-            LastUpdated = DateTime.UtcNow
-        };
+        LunoAccount[] candidates = [Account(SpotAccountId, "SPOT", "XBT Spot")];
 
-        // Act
-        var result = resolver.Resolve(candidates, "XBT", preference);
-
-        // Assert
-        Assert.Equal(101, result.Id);
+        Assert.Throws<UnpinnedWalletException>(() =>
+            _resolver.ResolveSpotAccountId(candidates, "XBT", null));
     }
 
-    [Fact(DisplayName = "Given an asset with multiple accounts but no user preference, the resolver must fail-fast with an ambiguity exception to prevent non-deterministic execution.")]
-    public void Given_Multiple_Accounts_Without_A_Preference_When_Resolving_Then_It_Should_Throw_WalletAmbiguityException()
+    /// <summary>Given a pinned non-SPOT account type, Throws <see cref="NonSpotWalletException"/>.</summary>
+    [Theory(DisplayName = "Given a pinned non-SPOT account type, When ResolveSpotAccountId runs, "
+        + "Then throw NonSpotWalletException")]
+    [InlineData("TRANSACTIONAL")]
+    [InlineData("STAKING")]
+    [InlineData("SAVINGS")]
+    [InlineData("EARN")]
+    [InlineData("")]
+    public void Given_Pinned_NonSpot_Account_When_ResolveSpotAccountId_Then_Throws_NonSpotWalletException(
+        string accountType)
     {
-        // Arrange
-        var resolver = new WalletResolver();
-        var candidates = new[]
-        {
-            new LunoAccount { Id = 101, Name = "XBT Trading", Balance = 0.5m },
-            new LunoAccount { Id = 102, Name = "XBT Savings", Balance = 2.0m }
-        };
+        LunoAccount[] candidates = [Account(TransactionalAccountId, accountType, "XBT Non-Spot")];
 
-        // Act & Assert
-        Assert.Throws<WalletAmbiguityException>(() => resolver.Resolve(candidates, "XBT", null));
+        Assert.Throws<NonSpotWalletException>(() =>
+            _resolver.ResolveSpotAccountId(candidates, "XBT", Preference(TransactionalAccountId)));
     }
 
-    [Fact(DisplayName = "Given an asset with multiple accounts and a preference that no longer matches any live account, the resolver must treat the state as ambiguous and fail-fast.")]
-    public void Given_Multiple_Accounts_With_An_Invalid_Preference_When_Resolving_Then_It_Should_Throw_WalletAmbiguityException()
+    /// <summary>Given a stale pinned AccountId, Throws <see cref="PinnedWalletNotFoundException"/>.</summary>
+    [Fact(DisplayName = "Given a pinned AccountId absent from live candidates, "
+        + "When ResolveSpotAccountId runs, Then throw PinnedWalletNotFoundException")]
+    public void Given_Pinned_Account_Missing_When_ResolveSpotAccountId_Then_Throws_PinnedWalletNotFoundException()
     {
-        // Arrange
-        var resolver = new WalletResolver();
-        var candidates = new[]
-        {
-            new LunoAccount { Id = 101, Name = "XBT Trading", Balance = 0.5m },
-            new LunoAccount { Id = 102, Name = "XBT Savings", Balance = 2.0m }
-        };
-        var stalePreference = new TradingAccountPreference
-        {
-            CurrencyCode = "XBT",
-            AccountId = 999, // Doesn't match any live account
-            LastUpdated = DateTime.UtcNow
-        };
+        LunoAccount[] candidates = [Account(SpotAccountId, "SPOT", "XBT Spot")];
 
-        // Act & Assert
-        Assert.Throws<WalletAmbiguityException>(() => resolver.Resolve(candidates, "XBT", stalePreference));
+        Assert.Throws<PinnedWalletNotFoundException>(() =>
+            _resolver.ResolveSpotAccountId(candidates, "XBT", Preference(MissingAccountId)));
     }
 
-    [Fact(DisplayName = "Given a request to resolve an asset that has no associated Luno accounts, the resolver must throw a descriptive exception to facilitate diagnostic troubleshooting.")]
-    public void Given_No_Accounts_When_Resolving_Then_It_Should_Throw_WalletNotFoundException()
-    {
-        // Arrange
-        var resolver = new WalletResolver();
-        var candidates = Array.Empty<LunoAccount>();
+    private static LunoAccount Account(
+        long id,
+        string accountType,
+        string name,
+        decimal balance = DefaultBalance) =>
+        new() { Id = id, Name = name, Balance = balance, AccountType = accountType };
 
-        // Act & Assert
-        Assert.Throws<WalletNotFoundException>(() => resolver.Resolve(candidates, "XBT", null));
-    }
+    private static TradingAccountPreference Preference(long accountId) =>
+        new() { CurrencyCode = "XBT", AccountId = accountId, LastUpdated = DateTime.UtcNow };
 }

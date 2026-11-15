@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Deploys Luno.MissionControl full-stack locally using Aspire and Docker Compose.
 
@@ -107,12 +107,9 @@ function Get-ServiceUrl {
         return ""
     }
 
-    $portOutput = docker port $containerId $ContainerPort 2>$null
-    if ($portOutput) {
-        # Matches the published host port at the end of the line (e.g. 0.0.0.0:54321 -> 54321)
-        if ($portOutput -match '(?<port>\d+)$') {
-            return "http://localhost:$($Matches.port)"
-        }
+    $port = docker inspect --format "{{(index (index .NetworkSettings.Ports `"$ContainerPort/tcp`") 0).HostPort}}" $containerId 2>$null
+    if ($port) {
+        return "http://localhost:$($port.Trim())"
     }
 
     return ""
