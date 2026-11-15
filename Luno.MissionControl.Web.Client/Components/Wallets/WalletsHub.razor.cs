@@ -42,7 +42,9 @@ public partial class WalletsHub
                     i.Asset,
                     i.Accounts,
                     i.ResolvedAccountId?.ToString(),
-                    i.IsAmbiguous
+                    i.IsAmbiguous,
+                    i.SpotAccounts,
+                    i.ViewOnlyAccounts
                 )).ToList();
 
             activity?.SetTag("ui.wallet_count", items.Count);

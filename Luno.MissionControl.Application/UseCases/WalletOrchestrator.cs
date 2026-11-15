@@ -30,42 +30,61 @@ public class WalletOrchestrator(
 
         foreach (var (asset, assetAccounts) in groupedAccounts.OrderBy(x => x.Key))
         {
-            var preference = await walletRepository.GetPreferenceAsync(asset, ct);
-
-            long? resolvedId = null;
-            try
-            {
-                // RESOLUTION: Passing preference to the hardened resolver
-                var resolved = resolver.Resolve(assetAccounts, asset, preference);
-                resolvedId = resolved.Id;
-                ForensicMetrics.WalletsResolved.Add(1, new KeyValuePair<string, object?>("asset", asset));
-            }
-            catch (WalletAmbiguityException ex)
-            {
-                logger.LogWarning("Ambiguity detected for {Asset}: {Message}", asset, ex.Message);
-                activity?.AddEvent(new("WalletAmbiguityDetected", DateTimeOffset.UtcNow, new() { { "asset", asset }, { "candidates", assetAccounts.Count } }));
-                ForensicMetrics.WalletsAmbiguous.Add(1, new KeyValuePair<string, object?>("asset", asset));
-            }
-            catch (WalletNotFoundException ex)
-            {
-                logger.LogError("No accounts found for {Asset}: {Message}", asset, ex.Message);
-                ForensicMetrics.WalletsNotFound.Add(1, new KeyValuePair<string, object?>("asset", asset));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Unexpected error during wallet resolution for {Asset}", asset);
-            }
-
-            overview.Add(new Wallet
-            {
-                Asset = asset,
-                Accounts = assetAccounts,
-                PinnedPreference = preference,
-                ResolvedAccountId = resolvedId
-            });
+            overview.Add(await BuildWalletOverviewItemAsync(asset, assetAccounts, ct));
         }
 
         return overview;
+    }
+
+    private async Task<Wallet> BuildWalletOverviewItemAsync(
+        string asset,
+        List<LunoAccount> assetAccounts,
+        CancellationToken ct)
+    {
+        var preference = await walletRepository.GetPreferenceAsync(asset, ct);
+        var resolvedId = ResolveSpotIdForOverview(asset, assetAccounts, preference);
+
+        return new Wallet
+        {
+            Asset = asset,
+            Accounts = assetAccounts,
+            PinnedPreference = preference,
+            ResolvedAccountId = resolvedId
+        };
+    }
+
+    private long? ResolveSpotIdForOverview(
+        string asset,
+        List<LunoAccount> assetAccounts,
+        TradingAccountPreference? preference)
+    {
+        try
+        {
+            var resolvedId = resolver.ResolveSpotAccountId(assetAccounts, asset, preference);
+            ForensicMetrics.WalletsResolved.Add(1, new KeyValuePair<string, object?>("asset", asset));
+            return resolvedId;
+        }
+        catch (UnpinnedWalletException ex)
+        {
+            logger.LogInformation("Asset {Asset} has no pinned SPOT wallet yet: {Message}", asset, ex.Message);
+            return null;
+        }
+        catch (NonSpotWalletException ex)
+        {
+            logger.LogWarning("Pinned account for {Asset} is not a SPOT wallet: {Message}", asset, ex.Message);
+            return null;
+        }
+        catch (PinnedWalletNotFoundException ex)
+        {
+            logger.LogWarning("Pinned account for {Asset} missing from live balances: {Message}", asset, ex.Message);
+            ForensicMetrics.WalletsNotFound.Add(1, new KeyValuePair<string, object?>("asset", asset));
+            return null;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unexpected error during wallet resolution for {Asset}", asset);
+            return null;
+        }
     }
 
     /// <summary>

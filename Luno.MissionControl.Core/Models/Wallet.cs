@@ -31,4 +31,16 @@ public record Wallet
     /// Gets the ID of the 'Active' account, if resolution is possible.
     /// </summary>
     public long? ResolvedAccountId { get; init; }
+
+    /// <summary>
+    /// Gets the SPOT trading wallets for this asset (the only accounts eligible for pinning).
+    /// </summary>
+    public IReadOnlyList<LunoAccount> SpotAccounts =>
+        Accounts.Where(a => a.AccountType == "SPOT").ToList();
+
+    /// <summary>
+    /// Gets non-SPOT accounts (e.g., TRANSACTIONAL, STAKING) displayed as view-only.
+    /// </summary>
+    public IReadOnlyList<LunoAccount> ViewOnlyAccounts =>
+        Accounts.Where(a => a.AccountType != "SPOT").ToList();
 }

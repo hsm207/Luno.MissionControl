@@ -6,5 +6,7 @@ public record WalletOverviewViewModel(
     string Asset,
     List<LunoAccount> Accounts,
     string? ResolvedAccountId,
-    bool IsAmbiguous
+    bool IsAmbiguous,
+    IReadOnlyList<LunoAccount> SpotAccounts,
+    IReadOnlyList<LunoAccount> ViewOnlyAccounts
 );

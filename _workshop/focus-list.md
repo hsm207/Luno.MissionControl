@@ -1,5 +1,7 @@
 # Luno Exchange Migration
 
-## Slice 6 — Strangler Cutover: `BasketOrchestrator` Pre-Trade Guard
-- ✅ **Test 9 (Application Test):** Given a 2-allocation basket (`ETHMYR` pinned `SPOT`, `XRPMYR` pinned `TRANSACTIONAL`), When `ExecuteAsync` runs, Then return failure and place **zero** orders (`SpyTrader.Calls` is empty) (`WalletResolutionIntegrationTests` → `BasketOrchestrator.ExecuteAsync`)
-- ✅ **Test 10 (Application Test):** Given unpinned single/multiple accounts vs pinned `SPOT` accounts, When `ExecuteAsync` runs, Then refuse unpinned and execute only pinned `SPOT` accounts (`WalletResolutionIntegrationTests`)
+## Slice 7 — Strangler Cutover: `WalletOrchestrator` & Overview Projection
+- ✅ **Test 11 (Application Test):** Given unpinned `SPOT` + `TRANSACTIONAL` accounts, When `GetWalletOverviewAsync` runs, Then `ResolvedAccountId` is `null` and accounts are grouped into `SpotAccounts` vs `ViewOnlyAccounts` (`WalletOrchestratorTests` → `Wallet.cs` + `WalletOrchestrator.cs`)
+- ✅ **Test 12 (Application Test):** Given a preference pinned to a `TRANSACTIONAL` account, When `GetWalletOverviewAsync` runs, Then `ResolvedAccountId` is `null` (`WalletOrchestratorTests`)
+- ✅ **Test 13 (Application Test):** Given a preference pinned to a `SPOT` account, When `GetWalletOverviewAsync` runs, Then `ResolvedAccountId` equals the pinned `SPOT` `AccountId` (`WalletOrchestratorTests`)
+- ✅ **Refinement:** Expose `SpotAccounts` and `ViewOnlyAccounts` on `WalletOverviewViewModel` and `WalletsHub.razor.cs` (`WalletOverviewViewModel.cs`, `WalletsHub.razor.cs`)
