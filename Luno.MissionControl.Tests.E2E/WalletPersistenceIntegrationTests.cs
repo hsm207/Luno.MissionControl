@@ -12,7 +12,7 @@ namespace Luno.MissionControl.Tests.E2E;
 public class WalletPersistenceIntegrationTests(MissionControlTestingApplicationFactory factory)
     : IClassFixture<MissionControlTestingApplicationFactory>
 {
-    private const long SolSpotAccountId = 4078499081933439467L;
+    private const long SolSpotAccountId = 7516729353163814818L;
 
     /// <summary>
     /// Verifies pinning a SOL account via HTTP POST persists to Postgres and reflects in GET overview.
