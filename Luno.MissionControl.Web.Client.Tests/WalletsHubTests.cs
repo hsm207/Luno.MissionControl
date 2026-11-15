@@ -10,83 +10,142 @@ using Xunit;
 
 namespace Luno.MissionControl.Web.Client.Tests;
 
-/// <summary>
-/// Unit tests for the <see cref="WalletsHub"/> component, focusing on state-driven rendering logic
-/// and boundary discipline verification using bUnit.
-/// </summary>
+/// <summary>bUnit tests for <see cref="WalletsHub"/> rendering and SPOT account segregation.</summary>
 public class WalletsHubTests : BunitContext
 {
+    private const int RenderTimeoutSeconds = 5;
+    private const long PrimarySpotId = 101L;
+    private const long SecondarySpotId = 102L;
+    private const long TransactionalId = 201L;
+    private const long StakingId = 301L;
+    private const decimal DefaultSpotBalance = 1.0m;
+    private const decimal DefaultNonSpotBalance = 0.5m;
+    private const string SimulatedFailure = "Luno API unreachable";
+
+    private static readonly TimeSpan RenderTimeout = TimeSpan.FromSeconds(RenderTimeoutSeconds);
+
     private readonly IWalletOrchestrator _mockOrchestrator;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="WalletsHubTests"/> class.
-    /// Configures the test context with required mock services and loose JSInterop.
-    /// </summary>
+    /// <summary>Initializes a fresh bUnit test context with mocked orchestrator and state bridge.</summary>
     public WalletsHubTests()
     {
         _mockOrchestrator = Substitute.For<IWalletOrchestrator>();
         Services.AddSingleton(_mockOrchestrator);
         Services.AddFluentUIComponents();
         JSInterop.Mode = JSRuntimeMode.Loose;
-
-        // Register the real PersistenceBridge using the bUnit-provided fake PersistentComponentState
         this.AddBunitPersistentComponentState();
         Services.AddScoped<IPersistenceBridge, PersistenceBridge>();
     }
 
-    [Fact(DisplayName = "Given an ambiguous asset, When rendered, Then the ambiguity indicator must be visible")]
-    public void GivenAmbiguousAsset_WhenRendered_ThenAmbiguityIndicatorVisible()
+    /// <summary>Given an unpinned SPOT asset, When rendered, Then displays Unpinned badge and Pin button.</summary>
+    [Fact(DisplayName = "Given an unpinned SPOT asset, When rendered, "
+        + "Then the Unpinned badge and Pin button must be visible")]
+    public void GivenUnpinnedSpotAsset_WhenRendered_ThenUnpinnedBadgeVisible()
     {
-        // Arrange
-        _mockOrchestrator.GetWalletOverviewAsync().Returns(new List<Wallet>
-        {
-            new()
-            {
-                Asset = "XBT",
-                Accounts = [
-                    new() { Id = 1, Name = "Trading", Balance = 1.0m, AccountType = "SPOT" },
-                    new() { Id = 2, Name = "Savings", Balance = 0.5m, AccountType = "SPOT" }
-                ],
-                PinnedPreference = null,
-                ResolvedAccountId = null
-            }
-        });
+        ArrangeWallet("XBT", null, Spot(PrimarySpotId, "Trading"), Spot(SecondarySpotId, "Savings"));
 
-        // Act
         var cut = Render<WalletsHub>();
 
-        // Assert
-        cut.WaitForAssertion(() =>
-        {
-            Assert.Contains("Needs attention", cut.Markup);
-        }, TimeSpan.FromSeconds(5));
+        AssertMarkup(cut, expected: ["Unpinned", "Pin SPOT wallet"]);
     }
 
-    [Fact(DisplayName = "Given a pinned asset, When rendered, Then the active badge must be visible on the correct account")]
-    public void GivenPinnedAsset_WhenRendered_ThenActiveBadgeVisible()
+    /// <summary>Given a pinned SPOT asset, When rendered, Then displays Pinned badge and active styling.</summary>
+    [Fact(DisplayName = "Given a pinned SPOT asset, When rendered, "
+        + "Then the Pinned badge must be visible on the correct account")]
+    public void GivenPinnedSpotAsset_WhenRendered_ThenPinnedBadgeVisible()
     {
-        // Arrange
-        _mockOrchestrator.GetWalletOverviewAsync().Returns(new List<Wallet>
-        {
-            new()
-            {
-                Asset = "MYR",
-                Accounts = [
-                    new() { Id = 10, Name = "Main", Balance = 1000m, AccountType = "SPOT" }
-                ],
-                PinnedPreference = new TradingAccountPreference { CurrencyCode = "MYR", AccountId = 10, LastUpdated = DateTime.UtcNow },
-                ResolvedAccountId = 10
-            }
-        });
+        ArrangeWallet("MYR", PrimarySpotId, Spot(PrimarySpotId, "Main"));
 
-        // Act
         var cut = Render<WalletsHub>();
 
-        // Assert
+        AssertMarkup(cut, expected: ["Pinned", "is-active"]);
+    }
+
+    /// <summary>Given mixed account types, When rendered, Then only SPOT accounts expose Pin buttons.</summary>
+    [Fact(DisplayName = "Given SPOT, TRANSACTIONAL, and STAKING accounts, "
+        + "When rendered, Then only SPOT accounts expose Pin buttons")]
+    public void GivenMixedAccountTypes_WhenRendered_ThenOnlySpotAccountsExposePinButtons()
+    {
+        ArrangeWallet("XBT", null, Spot(PrimarySpotId, "Spot"),
+            NonSpot(TransactionalId, "TRANSACTIONAL", "Tx"), NonSpot(StakingId, "STAKING", "Stake"));
+
+        var cut = Render<WalletsHub>();
+
+        AssertMarkup(cut,
+            expected: ["Spot Trading Wallets", PinButtonId(PrimarySpotId)],
+            forbidden: [PinButtonId(TransactionalId), PinButtonId(StakingId)]);
+    }
+
+    /// <summary>Given load failure, When rendered, Then displays Error banner.</summary>
+    [Fact(DisplayName = "Given load failure, When rendered, Then displays Error banner")]
+    public void GivenOrchestratorLoadFailure_WhenRendered_ThenErrorBannerVisible()
+    {
+        ArrangeLoadFailure(SimulatedFailure);
+
+        var cut = Render<WalletsHub>();
+
+        AssertMarkup(cut, expected: ["Error", $"Failed to load wallets: {SimulatedFailure}"]);
+    }
+
+    /// <summary>Given pin failure, When Pin clicked, Then displays Error banner.</summary>
+    [Fact(DisplayName = "Given pin failure, When Pin clicked, Then displays Error banner")]
+    public void GivenOrchestratorPinFailure_WhenPinClicked_ThenErrorBannerVisible()
+    {
+        var cut = ArrangeRenderedHubWithFailingPin();
+
+        cut.Find($"#{PinButtonId(PrimarySpotId)}").Click();
+
+        AssertMarkup(cut, expected: ["Error", $"Failed to pin account: {SimulatedFailure}"]);
+    }
+
+    private static string PinButtonId(long accountId) => $"btn-{accountId}";
+
+    private static LunoAccount Spot(long id, string name) =>
+        new() { Id = id, Name = name, Balance = DefaultSpotBalance, AccountType = "SPOT" };
+
+    private static LunoAccount NonSpot(long id, string accountType, string name) =>
+        new() { Id = id, Name = name, Balance = DefaultNonSpotBalance, AccountType = accountType };
+
+    private void ArrangeWallet(string asset, long? pinnedAccountId, params LunoAccount[] accounts)
+    {
+        TradingAccountPreference? preference = pinnedAccountId is { } id
+            ? new TradingAccountPreference { CurrencyCode = asset, AccountId = id, LastUpdated = DateTime.UtcNow }
+            : null;
+
+        _mockOrchestrator.GetWalletOverviewAsync().Returns([
+            new Wallet
+            {
+                Asset = asset,
+                Accounts = [.. accounts],
+                PinnedPreference = preference,
+                ResolvedAccountId = pinnedAccountId
+            }
+        ]);
+    }
+
+    private void ArrangeLoadFailure(string message) =>
+        _mockOrchestrator.GetWalletOverviewAsync()
+            .Returns(Task.FromException<List<Wallet>>(new InvalidOperationException(message)));
+
+    private IRenderedComponent<WalletsHub> ArrangeRenderedHubWithFailingPin()
+    {
+        ArrangeWallet("XBT", null, Spot(PrimarySpotId, "Trading"));
+        _mockOrchestrator.PinAccountAsync("XBT", PrimarySpotId)
+            .Returns(Task.FromException(new InvalidOperationException(SimulatedFailure)));
+        var cut = Render<WalletsHub>();
+        cut.WaitForElement($"#{PinButtonId(PrimarySpotId)}", RenderTimeout);
+        return cut;
+    }
+
+    private static void AssertMarkup(
+        IRenderedComponent<WalletsHub> cut,
+        string[] expected,
+        string[]? forbidden = null)
+    {
         cut.WaitForAssertion(() =>
         {
-            Assert.Contains("Ready", cut.Markup);
-            Assert.Contains("is-active", cut.Markup);
-        }, TimeSpan.FromSeconds(5));
+            Assert.All(expected, text => Assert.Contains(text, cut.Markup));
+            Assert.All(forbidden ?? [], text => Assert.DoesNotContain(text, cut.Markup));
+        }, RenderTimeout);
     }
 }

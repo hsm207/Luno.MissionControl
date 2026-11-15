@@ -1,7 +1,6 @@
 # Luno Exchange Migration
 
-## Slice 7 — Strangler Cutover: `WalletOrchestrator` & Overview Projection
-- ✅ **Test 11 (Application Test):** Given unpinned `SPOT` + `TRANSACTIONAL` accounts, When `GetWalletOverviewAsync` runs, Then `ResolvedAccountId` is `null` and accounts are grouped into `SpotAccounts` vs `ViewOnlyAccounts` (`WalletOrchestratorTests` → `Wallet.cs` + `WalletOrchestrator.cs`)
-- ✅ **Test 12 (Application Test):** Given a preference pinned to a `TRANSACTIONAL` account, When `GetWalletOverviewAsync` runs, Then `ResolvedAccountId` is `null` (`WalletOrchestratorTests`)
-- ✅ **Test 13 (Application Test):** Given a preference pinned to a `SPOT` account, When `GetWalletOverviewAsync` runs, Then `ResolvedAccountId` equals the pinned `SPOT` `AccountId` (`WalletOrchestratorTests`)
-- ✅ **Refinement:** Expose `SpotAccounts` and `ViewOnlyAccounts` on `WalletOverviewViewModel` and `WalletsHub.razor.cs` (`WalletOverviewViewModel.cs`, `WalletsHub.razor.cs`)
+## Slice 8 — Strangler Cutover: Don Norman `WalletsHub` Tabs
+- ✅ **Test 14 (UI Test):** Given an asset with `SPOT`, `TRANSACTIONAL`, and `STAKING` accounts, When `WalletsHub` renders, Then only the `SPOT` account has a Pin button (`btn-{id}`) and `TRANSACTIONAL`/`STAKING` tabs have zero Pin affordances (`WalletsHubTests` → `WalletsHub.razor`)
+- ✅ **Test 15 (UI Test):** Given unpinned vs pinned `SPOT` wallets, When `WalletsHub` renders, Then display `Unpinned` / `Pinned` state badges (`WalletsHubTests` → `WalletsHub.razor.cs`)
+- ✅ **Test 16 (UI Error Path Tests):** Given orchestrator load or pin failure, When `WalletsHub` loads or handles a Pin click, Then render the `Error` message bar (`WalletsHubTests` → `WalletsHub.razor.cs`)

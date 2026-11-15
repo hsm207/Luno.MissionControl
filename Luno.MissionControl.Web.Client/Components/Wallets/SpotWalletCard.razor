@@ -1,0 +1,50 @@
+@namespace Luno.MissionControl.Web.Client.Components.Wallets
+@using Microsoft.FluentUI.AspNetCore.Components
+
+@if (_card is not null)
+{
+    <WalletCard Card="_card" OnCopyId="OnCopyId">
+        <ActionSlot Context="row">
+            @if (row.IsActive)
+            {
+                <div class="active-badge">
+                    <FluentIcon Value="@(new Icons.Filled.Size16.CheckmarkCircle())"
+                                Color="Color.Success" />
+                    <span class="status-text">Pinned</span>
+                </div>
+            }
+            else
+            {
+                <FluentButton Id="@($"btn-{row.AccountId}")"
+                              Appearance="@ButtonAppearanceForPin"
+                              Class="action-button"
+                              OnClick="@(() => OnPin.InvokeAsync(row.AccountId))">
+                    @(IsPinned ? "Switch pin" : "Pin SPOT wallet")
+                </FluentButton>
+            }
+        </ActionSlot>
+    </WalletCard>
+}
+
+@code {
+    private WalletCardModel? _card;
+
+    [Parameter, EditorRequired]
+    public SpotWalletViewModel Wallet { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public EventCallback<long> OnPin { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<string> OnCopyId { get; set; }
+
+    private bool IsPinned => !string.IsNullOrEmpty(Wallet.ResolvedAccountId);
+
+    private ButtonAppearance ButtonAppearanceForPin =>
+        IsPinned ? ButtonAppearance.Default : ButtonAppearance.Primary;
+
+    protected override void OnParametersSet()
+    {
+        _card = WalletDisplayFormatter.BuildSpotCard(Wallet);
+    }
+}
