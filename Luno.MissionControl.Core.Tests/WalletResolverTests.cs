@@ -145,4 +145,32 @@ public class WalletResolverTests
         // Act & Assert
         Assert.Throws<NonSpotWalletException>(() => resolver.ResolveSpotAccountId(candidates, "XBT", preference));
     }
+
+    [Theory(DisplayName = "Given a pinned non-SPOT account type, When ResolveSpotAccountId runs, Then throw NonSpotWalletException")]
+    [InlineData("STAKING")]
+    [InlineData("SAVINGS")]
+    [InlineData("EARN")]
+    [InlineData("")]
+    public void Given_Pinned_NonSpot_Account_When_ResolveSpotAccountId_Then_Throws_NonSpotWalletException(string accountType)
+    {
+        // Arrange
+        var resolver = new WalletResolver();
+        var candidates = new[] { new LunoAccount { Id = 101, Name = "XBT Non-Spot", Balance = 1m, AccountType = accountType } };
+        var preference = new TradingAccountPreference { CurrencyCode = "XBT", AccountId = 101, LastUpdated = DateTime.UtcNow };
+
+        // Act & Assert
+        Assert.Throws<NonSpotWalletException>(() => resolver.ResolveSpotAccountId(candidates, "XBT", preference));
+    }
+
+    [Fact(DisplayName = "Given a pinned AccountId absent from live candidates, When ResolveSpotAccountId runs, Then throw PinnedWalletNotFoundException")]
+    public void Given_Pinned_Account_Missing_When_ResolveSpotAccountId_Then_Throws_PinnedWalletNotFoundException()
+    {
+        // Arrange
+        var resolver = new WalletResolver();
+        var candidates = new[] { new LunoAccount { Id = 101, Name = "XBT Spot", Balance = 1m, AccountType = "SPOT" } };
+        var stalePreference = new TradingAccountPreference { CurrencyCode = "XBT", AccountId = 999, LastUpdated = DateTime.UtcNow };
+
+        // Act & Assert
+        Assert.Throws<PinnedWalletNotFoundException>(() => resolver.ResolveSpotAccountId(candidates, "XBT", stalePreference));
+    }
 }
