@@ -116,7 +116,8 @@ public class WalletsHubTests : BunitContext
             new Wallet
             {
                 Asset = asset,
-                Accounts = [.. accounts],
+                SpotAccounts = [.. accounts.Where(a => a.AccountType == "SPOT")],
+                ViewOnlyAccounts = [.. accounts.Where(a => a.AccountType != "SPOT")],
                 PinnedPreference = preference,
                 ResolvedAccountId = pinnedAccountId
             }

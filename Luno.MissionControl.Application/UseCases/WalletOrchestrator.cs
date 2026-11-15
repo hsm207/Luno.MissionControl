@@ -47,7 +47,8 @@ public class WalletOrchestrator(
         return new Wallet
         {
             Asset = asset,
-            Accounts = assetAccounts,
+            SpotAccounts = [.. assetAccounts.Where(a => a.AccountType == "SPOT")],
+            ViewOnlyAccounts = [.. assetAccounts.Where(a => a.AccountType != "SPOT")],
             PinnedPreference = preference,
             ResolvedAccountId = resolvedId
         };

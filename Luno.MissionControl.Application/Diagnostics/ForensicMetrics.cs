@@ -15,9 +15,6 @@ public static class ForensicMetrics
     public static readonly Counter<long> WalletsResolved = Meter.CreateCounter<long>(
         "wallets.resolved", "count", "Number of successful wallet resolutions");
 
-    public static readonly Counter<long> WalletsAmbiguous = Meter.CreateCounter<long>(
-        "wallets.ambiguous", "count", "Number of detected wallet ambiguities requiring user intervention");
-
     public static readonly Counter<long> WalletsNotFound = Meter.CreateCounter<long>(
         "wallets.not_found", "count", "Number of missing wallets");
 

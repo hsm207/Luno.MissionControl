@@ -12,31 +12,34 @@ namespace Luno.MissionControl.Tests.E2E;
 public class WalletPersistenceIntegrationTests(MissionControlTestingApplicationFactory factory)
     : IClassFixture<MissionControlTestingApplicationFactory>
 {
-    [Fact(DisplayName = "Scenario: Pinning an account via API must persist to Postgres and reflect in the overview")]
+    private const long SolSpotAccountId = 4078499081933439467L;
+
+    /// <summary>
+    /// Verifies pinning a SOL account via HTTP POST persists to Postgres and reflects in GET overview.
+    /// </summary>
+    [Fact(DisplayName = "Scenario: Pinning an account via API must persist to Postgres and reflect in overview")]
     public async Task PinAccount_ShouldPersistToDatabase_AndReflectInOverview()
     {
-        // --- 1. ARRANGE ---
         var app = await factory.CreateAndStartAsync();
         var client = app.CreateHttpClient("webfrontend");
 
-        const string asset = "SOL";
-        const long accountId = 4078499081933439467L;
-
-        // --- 2. ACT ---
-        var pinResponse = await client.PostAsync($"/api/wallets/pin?asset={asset}&accountId={accountId}", null);
+        var pinResponse = await client.PostAsync(
+            $"/api/wallets/pin?asset=SOL&accountId={SolSpotAccountId}", null);
         pinResponse.EnsureSuccessStatusCode();
+        var overview = await client.GetFromJsonAsync<List<Wallet>>("/api/wallets/overview");
 
-        // --- 3. ASSERT ---
-        var overviewResponse = await client.GetFromJsonAsync<List<Wallet>>("/api/wallets/overview");
+        AssertPinnedWallet(overview, "SOL", SolSpotAccountId);
+    }
 
-        Assert.NotNull(overviewResponse);
-        var solWallet = overviewResponse.FirstOrDefault(w => w.Asset == asset);
-
-        Assert.NotNull(solWallet);
-        Assert.Equal(accountId, solWallet.ResolvedAccountId);
-        Assert.False(solWallet.IsAmbiguous, "Wallet should no longer be ambiguous after pinning.");
-
-        Assert.NotNull(solWallet.PinnedPreference);
-        Assert.Equal(accountId, solWallet.PinnedPreference.AccountId);
+    private static void AssertPinnedWallet(
+        List<Wallet>? overview,
+        string asset,
+        long expectedAccountId)
+    {
+        Assert.NotNull(overview);
+        var wallet = Assert.Single(overview, w => w.Asset == asset);
+        Assert.Equal(expectedAccountId, wallet.ResolvedAccountId);
+        Assert.NotNull(wallet.PinnedPreference);
+        Assert.Equal(expectedAccountId, wallet.PinnedPreference.AccountId);
     }
 }
